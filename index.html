@@ -22,8 +22,33 @@
   
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Critical inline styles to prevent white flash -->
+  <style>
+    html, body {
+      background-color: #000000 !important;
+    }
+    .page-transition-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.3s ease-out;
+      pointer-events: none;
+    }
+    .page-transition-overlay.hidden {
+      opacity: 0;
+    }
+  </style>
 </head>
-<body>
+<body style="background-color: #000000;">
+  <!-- Page Transition Overlay -->
+  <div class="page-transition-overlay"></div>
+  
   <!-- Corner Accents -->
   <div class="corner-accent top-left"></div>
   <div class="corner-accent top-right"></div>
@@ -61,7 +86,7 @@
       <div class="cta-section">
         <p class="cta-text">Curious? See the 3d installation for yourself</p>
         
-        <a href="WORD SILHOUETTE.html" class="btn btn-primary">
+        <a href="installation.html" class="btn btn-primary">
           <span class="btn-text">EXPERIENCE IT YOURSELF</span>
           <span class="btn-arrow"> →</span>
         </a>
@@ -107,6 +132,23 @@
     }
   </script>
   <script type="module" src="js/scene.js"></script>
+  
+  <!-- Fade out page transition overlay -->
+  <script>
+    window.addEventListener('load', function() {
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          var overlay = document.querySelector('.page-transition-overlay');
+          if (overlay) {
+            overlay.classList.add('hidden');
+            overlay.addEventListener('transitionend', function() {
+              overlay.remove();
+            }, { once: true });
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
 

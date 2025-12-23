@@ -1,0 +1,908 @@
+/* ============================================
+   403 Super Vega Custom Font
+   ============================================ */
+@font-face {
+  font-family: '403 Super Vega';
+  src: url('../fonts/403-super-vega-regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================
+   CSS Custom Properties
+   ============================================ */
+:root {
+  /* Colors */
+  --color-bg: #000000;
+  --color-text: #FFFFFF;
+  --color-acrylic-yellow: #FDFF00;
+  --color-acrylic-red: #FF0505;
+  --color-acrylic-green: #11FF00;
+  --color-acrylic-blue: #2600FF;
+  
+  /* Typography - Desktop */
+  --font-title: '403 Super Vega', sans-serif;
+  --font-body: 'Nanum Myeongjo', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-arrow: 'Alegreya', serif;
+  
+  --title-size: 136px;
+  --title-line-height: 130px;
+  --title-letter-spacing: -4px;
+  
+  --body-size: 20px;
+  --body-line-height: 26px;
+  
+  --label-size: 14px;
+  --label-line-height: 14px;
+  
+  --arrow-size: 18px;
+  --arrow-line-height: 21.6px;
+  
+  /* Spacing */
+  --page-padding: 30px;
+  --corner-size: 25px;
+}
+
+/* ============================================
+   Reset & Base Styles
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  cursor: crosshair;
+}
+
+/* ============================================
+   Corner Accents
+   ============================================ */
+.corner-accent {
+  position: fixed;
+  width: var(--corner-size);
+  height: var(--corner-size);
+  background-color: var(--color-text);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.corner-accent.top-left {
+  top: 0;
+  left: 0;
+}
+
+.corner-accent.top-right {
+  top: 0;
+  right: 0;
+}
+
+.corner-accent.bottom-left {
+  bottom: 0;
+  left: 0;
+}
+
+.corner-accent.bottom-right {
+  bottom: 0;
+  right: 0;
+}
+
+/* ============================================
+   3D Scene Container (Full Screen)
+   ============================================ */
+#three-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+
+#three-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ============================================
+   Gradient Masks (above room, behind text)
+   ============================================ */
+.gradient-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.8) 20%,
+    rgba(0, 0, 0, 0.5) 50%,
+    rgba(0, 0, 0, 0.2) 75%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  z-index: 5;
+  pointer-events: none;
+}
+
+.gradient-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.8) 20%,
+    rgba(0, 0, 0, 0.5) 50%,
+    rgba(0, 0, 0, 0.2) 75%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* ============================================
+   Installation Overlay (UI Layer)
+   ============================================ */
+.installation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--page-padding);
+}
+
+/* Header Section */
+.installation-header {
+  pointer-events: auto;
+}
+
+.title {
+  font-family: var(--font-title);
+  font-size: var(--title-size);
+  font-weight: normal;
+  line-height: var(--title-line-height);
+  letter-spacing: var(--title-letter-spacing);
+  white-space: nowrap;
+}
+
+/* Footer Section */
+.installation-footer {
+  pointer-events: auto;
+  max-width: 520px;
+}
+
+.instruction-text {
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  font-weight: 700;
+  line-height: var(--body-line-height);
+  margin-bottom: 8px;
+}
+
+.learn-more {
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  font-weight: 700;
+  line-height: var(--body-line-height);
+  margin-bottom: 20px;
+}
+
+/* Navigation Buttons */
+.nav-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 30px;
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  pointer-events: auto;
+}
+
+.btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.btn-text {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  font-weight: 500;
+  line-height: var(--label-line-height);
+  text-transform: uppercase;
+}
+
+.btn-arrow {
+  font-family: var(--font-arrow);
+  font-size: var(--arrow-size);
+  font-style: italic;
+  line-height: var(--arrow-line-height);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ============================================
+   Back Button
+   ============================================ */
+.back-button {
+  position: fixed;
+  top: var(--page-padding);
+  right: var(--page-padding);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 30px;
+  color: var(--color-text);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.back-arrow {
+  font-family: var(--font-arrow);
+  font-size: 16px;
+  font-style: italic;
+}
+
+/* ============================================
+   Controls Toggle Button
+   ============================================ */
+.controls-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  cursor: pointer;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.controls-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ============================================
+   Room Controls Panel
+   ============================================ */
+.room-controls {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 300px;
+  max-height: calc(100vh - 140px);
+  background: rgba(10, 10, 12, 0.95);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transform: translateY(20px);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.room-controls.open {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.controls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.controls-header span {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.controls-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.controls-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.controls-content {
+  padding: 16px 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.controls-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.controls-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.controls-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.controls-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Section Headers */
+.control-section {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 20px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.control-section:first-child {
+  margin-top: 0;
+}
+
+/* Control Row */
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 0 2px;
+}
+
+.control-row label {
+  flex: 0 0 80px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Color picker */
+.control-row input[type="color"] {
+  width: 40px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+.control-row input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 3px;
+}
+
+.control-row input[type="color"]::-webkit-color-swatch {
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Checkbox */
+.control-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #64d2ff;
+  border-radius: 4px;
+}
+
+.control-row input[type="range"] {
+  flex: 1;
+  height: 5px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.control-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.1s ease;
+}
+
+.control-row input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.control-row input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(0.95);
+}
+
+.control-row .value {
+  flex: 0 0 42px;
+  font-size: 11px;
+  color: #64d2ff;
+  text-align: right;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-weight: 500;
+}
+
+/* Control Buttons */
+.control-buttons {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.control-buttons button {
+  width: 100%;
+  padding: 12px 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.control-buttons button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.control-buttons button:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   Controls Hint Modal
+   ============================================ */
+.controls-hint {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease;
+}
+
+.controls-hint.hidden {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.hint-content {
+  text-align: center;
+  max-width: 400px;
+  padding: 40px;
+  background: rgba(20, 20, 25, 0.95);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+}
+
+.hint-icon {
+  margin-bottom: 20px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.hint-title {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-text);
+  margin-bottom: 24px;
+}
+
+.hint-keys {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.key-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.key.wide {
+  min-width: 80px;
+}
+
+.key-label {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: 8px;
+}
+
+.hint-dismiss {
+  padding: 12px 32px;
+  background: var(--color-text);
+  border: none;
+  border-radius: 30px;
+  color: var(--color-bg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hint-dismiss:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   Pointer Lock Active State
+   ============================================ */
+body.pointer-locked {
+  cursor: none;
+}
+
+body.pointer-locked .installation-overlay,
+body.pointer-locked .back-button,
+body.pointer-locked .controls-toggle,
+body.pointer-locked .room-controls {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* Gradients ALWAYS hidden in movement mode - use !important to override cinematic-revealed */
+body.pointer-locked .gradient-top,
+body.pointer-locked .gradient-bottom {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.3s ease;
+}
+
+body.pointer-locked:hover .installation-overlay,
+body.pointer-locked:hover .back-button,
+body.pointer-locked:hover .controls-toggle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Gradients stay hidden in movement mode (no hover restore) */
+
+/* ============================================
+   Cinematic Intro Animation
+   ============================================ */
+
+/* Hide all UI during cinematic intro - NO transition initially */
+body.cinematic-intro .installation-overlay,
+body.cinematic-intro .gradient-top,
+body.cinematic-intro .gradient-bottom,
+body.cinematic-intro .back-button,
+body.cinematic-intro .controls-toggle,
+body.cinematic-intro .room-controls,
+body.cinematic-intro .navigation-hint {
+  opacity: 0 !important;
+  pointer-events: none;
+  transition: none !important; /* Prevent flash on load */
+}
+
+/* Only enable transitions when revealed class is added */
+body.cinematic-revealed .installation-overlay,
+body.cinematic-revealed .gradient-top,
+body.cinematic-revealed .gradient-bottom {
+  opacity: 1;
+  /* Keep pointer-events: none so clicks pass through to canvas */
+  transition: opacity 0.35s ease-out;
+}
+
+body.cinematic-revealed .back-button,
+body.cinematic-revealed .controls-toggle {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.35s ease-out;
+}
+
+/* Staggered reveal using transition-delay */
+body.cinematic-revealed .gradient-top,
+body.cinematic-revealed .gradient-bottom {
+  transition-delay: 0s;
+}
+
+body.cinematic-revealed .installation-header {
+  transition-delay: 0.05s;
+}
+
+body.cinematic-revealed .installation-footer {
+  transition-delay: 0.1s;
+}
+
+body.cinematic-revealed .back-button {
+  transition-delay: 0.15s;
+}
+
+body.cinematic-revealed .controls-toggle {
+  transition-delay: 0.2s;
+}
+
+/* Skip animation indicator */
+.skip-hint {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+body:not(.cinematic-intro) .skip-hint {
+  display: none;
+}
+
+/* ============================================
+   Mobile Responsive Styles (matching Figma mweb)
+   ============================================ */
+@media screen and (max-width: 768px) {
+  :root {
+    --title-size: 56px;
+    --title-line-height: 52px;
+    --title-letter-spacing: -2px;
+    
+    --body-size: 14px;
+    --body-line-height: 18px;
+    
+    --label-size: 12px;
+    --arrow-size: 14px;
+    
+    --page-padding: 16px;
+    --corner-size: 10px;
+  }
+  
+  .installation-overlay {
+    padding: var(--page-padding);
+    padding-bottom: 24px;
+  }
+  
+  .title {
+    margin-bottom: 0;
+  }
+  
+  .installation-footer {
+    max-width: 100%;
+  }
+  
+  .instruction-text {
+    font-size: var(--body-size);
+    line-height: var(--body-line-height);
+    margin-bottom: 4px;
+  }
+  
+  .learn-more {
+    font-size: var(--body-size);
+    line-height: var(--body-line-height);
+    margin-bottom: 16px;
+  }
+  
+  .nav-links {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .btn {
+    padding: 6px 12px;
+  }
+  
+  .btn-text {
+    font-size: var(--label-size);
+  }
+  
+  .btn-arrow {
+    font-size: var(--arrow-size);
+  }
+  
+  .back-button {
+    top: var(--page-padding);
+    right: var(--page-padding);
+    padding: 6px 12px;
+    font-size: 10px;
+  }
+  
+  .back-arrow {
+    font-size: 14px;
+  }
+  
+  .controls-toggle {
+    bottom: 15px;
+    right: 15px;
+    width: 44px;
+    height: 44px;
+  }
+  
+  .room-controls {
+    right: 10px;
+    bottom: 70px;
+    width: calc(100vw - 20px);
+    max-width: 320px;
+    max-height: calc(100vh - 100px);
+  }
+  
+  .hint-content {
+    margin: 20px;
+    padding: 30px 24px;
+  }
+  
+  .hint-title {
+    font-size: 12px;
+  }
+  
+  .key {
+    min-width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  
+  .key-label {
+    font-size: 12px;
+  }
+}
+
+/* Extra small screens (iPhone SE, etc.) */
+@media screen and (max-width: 390px) {
+  :root {
+    --title-size: 48px;
+    --title-line-height: 44px;
+    --title-letter-spacing: -1.5px;
+    
+    --body-size: 13px;
+    --body-line-height: 17px;
+  }
+  
+  .nav-links {
+    gap: 6px;
+  }
+  
+  .btn {
+    padding: 5px 10px;
+  }
+  
+  .btn-text {
+    font-size: 11px;
+  }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+.hidden {
+  display: none !important;
+}

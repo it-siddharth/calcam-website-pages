@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Calculated Camouflage - Experience the Installation in 3D">
+  <meta name="theme-color" content="#000000">
+  <title>The Installation | Calculated Camouflage</title>
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="fonts/403-super-vega-regular.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="css/installation.css" as="style">
+  
+  <!-- DNS prefetch for external resources -->
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/installation.css">
+  
+  <!-- Critical inline styles to prevent white flash and text flash -->
+  <style>
+    html, body {
+      background-color: #000000 !important;
+    }
+    /* Hide UI elements immediately before CSS loads */
+    body.cinematic-intro .installation-overlay,
+    body.cinematic-intro .gradient-top,
+    body.cinematic-intro .gradient-bottom,
+    body.cinematic-intro .back-button,
+    body.cinematic-intro .controls-toggle {
+      opacity: 0 !important;
+      transition: none !important;
+    }
+    .page-transition-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #000000;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+    }
+    .page-transition-overlay.fade-out {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body class="cinematic-intro" style="background-color: #000000;">
+  <!-- Page transition overlay (prevents white flash) -->
+  <div class="page-transition-overlay" id="page-transition"></div>
+  
+  <!-- Skip Animation Hint (shown during cinematic intro) -->
+  <div class="skip-hint">Press ESC or click to skip</div>
+  
+  <!-- Corner Accents -->
+  <div class="corner-accent top-left"></div>
+  <div class="corner-accent top-right"></div>
+  <div class="corner-accent bottom-left"></div>
+  <div class="corner-accent bottom-right"></div>
+
+  <!-- 3D Scene Container (Full Screen Background) -->
+  <div id="three-container"></div>
+  
+  <!-- Gradient Masks (above room, behind text) -->
+  <div class="gradient-top"></div>
+  <div class="gradient-bottom"></div>
+
+  <!-- UI Overlay -->
+  <main class="installation-overlay">
+    <!-- Header Section -->
+    <header class="installation-header">
+      <h1 class="title">THE<br>INSTALLATION</h1>
+    </header>
+
+    <!-- Instructions & Navigation -->
+    <footer class="installation-footer">
+      <p class="instruction-text">Use your arrow keys and mouse to move around and explore the room.</p>
+      <p class="learn-more">Know more about how this came to being.</p>
+      
+      <nav class="nav-links">
+        <a href="#process" class="btn btn-secondary">
+          <span class="btn-text">process</span>
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="#journal" class="btn btn-secondary">
+          <span class="btn-text">viewer journal</span>
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="#gallery" class="btn btn-secondary">
+          <span class="btn-text">gallery</span>
+          <span class="btn-arrow">→</span>
+        </a>
+      </nav>
+    </footer>
+  </main>
+
+  <!-- Room Controls Panel -->
+  <div id="room-controls" class="room-controls">
+    <div class="controls-header">
+      <span>Settings</span>
+      <button class="controls-close" onclick="toggleRoomControls()">×</button>
+    </div>
+    <div class="controls-content">
+      <!-- Acrylic Panels Section -->
+      <div class="control-section">Acrylic Panels</div>
+      <div class="control-row">
+        <label>Opacity</label>
+        <input type="range" id="ctrl-panelopacity" min="0.1" max="1" step="0.05" value="0.45">
+        <span class="value" id="val-panelopacity">0.45</span>
+      </div>
+        <div class="control-row">
+          <label>Thickness</label>
+          <input type="range" id="ctrl-thickness" min="0.01" max="0.2" step="0.01" value="0.02">
+          <span class="value" id="val-thickness">0.02</span>
+        </div>
+      <div class="control-row">
+        <label>H-Spread</label>
+        <input type="range" id="ctrl-hspread" min="-1" max="1" step="0.05" value="0.35">
+        <span class="value" id="val-hspread">0.35</span>
+      </div>
+      <div class="control-row">
+        <label>V-Spread</label>
+        <input type="range" id="ctrl-vspread" min="-2" max="2" step="0.05" value="1">
+        <span class="value" id="val-vspread">1.00</span>
+      </div>
+        <div class="control-row">
+          <label>Z-Offset</label>
+          <input type="range" id="ctrl-zoffset" min="-0.5" max="0.5" step="0.02" value="0.50">
+          <span class="value" id="val-zoffset">0.50</span>
+        </div>
+
+      <!-- TV Section -->
+      <div class="control-section">TV Appearance</div>
+      <div class="control-row">
+        <label>Frame Color</label>
+        <input type="color" id="ctrl-tvframe" value="#8f8f8f">
+      </div>
+
+      <!-- Rotation Section -->
+      <div class="control-section">Rotation</div>
+        <div class="control-row">
+          <label>Rotate X</label>
+          <input type="range" id="ctrl-rotx" min="-180" max="180" step="1" value="0">
+          <span class="value" id="val-rotx">0°</span>
+        </div>
+      <div class="control-row">
+        <label>Rotate Y</label>
+        <input type="range" id="ctrl-roty" min="-180" max="180" step="1" value="0">
+        <span class="value" id="val-roty">0°</span>
+      </div>
+      <div class="control-row">
+        <label>Rotate Z</label>
+        <input type="range" id="ctrl-rotz" min="-180" max="180" step="1" value="0">
+        <span class="value" id="val-rotz">0°</span>
+      </div>
+
+        <!-- View Section -->
+        <div class="control-section">View</div>
+        <div class="control-row">
+          <label>Eye Level</label>
+          <input type="range" id="ctrl-cameraheight" min="0.8" max="3.0" step="0.05" value="2.25">
+          <span class="value" id="val-cameraheight">2.25</span>
+        </div>
+        <div class="control-row">
+          <label>TV Height</label>
+          <input type="range" id="ctrl-tvheight" min="0.8" max="3.5" step="0.05" value="2.25">
+          <span class="value" id="val-tvheight">2.25</span>
+        </div>
+
+        <!-- Room Section -->
+        <div class="control-section">Room</div>
+        <div class="control-row">
+          <label>Ambient</label>
+          <input type="range" id="ctrl-ambient" min="0" max="0.2" step="0.01" value="0.02">
+          <span class="value" id="val-ambient">0.02</span>
+        </div>
+      <div class="control-row">
+        <label>Wall Color</label>
+        <input type="color" id="ctrl-wallcolor" value="#1a1a1a">
+      </div>
+      <div class="control-row">
+        <label>Floor Color</label>
+        <input type="color" id="ctrl-floorcolor" value="#0a0a0a">
+      </div>
+      <div class="control-row">
+        <label>Ceiling Color</label>
+        <input type="color" id="ctrl-ceilingcolor" value="#0d0d0d">
+      </div>
+
+      <!-- Wall Projection Section -->
+      <div class="control-section">Wall Projection</div>
+      <div class="control-row">
+        <label>Projection</label>
+        <input type="checkbox" id="ctrl-projection" checked>
+      </div>
+      <div class="control-row">
+        <label>Intensity</label>
+        <input type="range" id="ctrl-projintensity" min="0.1" max="1.5" step="0.1" value="0.8">
+        <span class="value" id="val-projintensity">0.8</span>
+      </div>
+
+      <div class="control-buttons">
+        <button onclick="resetRoomSettings()">Reset All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls Toggle Button -->
+  <button id="controls-toggle" class="controls-toggle" onclick="toggleRoomControls()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    </svg>
+  </button>
+
+  <!-- Back Button -->
+  <a href="index.html" class="back-button">
+    <span class="back-arrow">←</span>
+    <span class="back-text">BACK</span>
+  </a>
+
+  <!-- Controls Hint (shown initially) -->
+  <div id="controls-hint" class="controls-hint">
+    <div class="hint-content">
+      <div class="hint-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2L12 6M12 18L12 22M2 12L6 12M18 12L22 12"/>
+          <circle cx="12" cy="12" r="4"/>
+        </svg>
+      </div>
+      <p class="hint-title">Navigation Controls</p>
+      <div class="hint-keys">
+        <div class="key-group">
+          <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
+          <span class="key-label">or Arrow Keys to move</span>
+        </div>
+        <div class="key-group">
+          <span class="key wide">Mouse</span>
+          <span class="key-label">to look around</span>
+        </div>
+      </div>
+      <button class="hint-dismiss" id="hint-dismiss-btn">Got it</button>
+    </div>
+  </div>
+  
+  <!-- Inline script for hint dismiss (runs early, doesn't depend on module) -->
+  <script>
+    document.getElementById('hint-dismiss-btn').addEventListener('click', function() {
+      document.getElementById('controls-hint').classList.add('hidden');
+      localStorage.setItem('installationHintDismissed', 'true');
+    });
+    // Auto-hide if already dismissed
+    if (localStorage.getItem('installationHintDismissed')) {
+      document.getElementById('controls-hint').classList.add('hidden');
+    }
+  </script>
+
+  <!-- Hidden iframe for WORD SILHOUETTE (webcam-based) -->
+  <iframe 
+    id="silhouette-iframe" 
+    src="WORD SILHOUETTE.html" 
+    allow="camera; microphone" 
+    style="position: fixed; left: -9999px; top: 0; width: 640px; height: 480px; border: none;"
+  ></iframe>
+
+  <!-- Three.js and dependencies -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="js/installation-scene.js"></script>
+</body>
+</html>
+
