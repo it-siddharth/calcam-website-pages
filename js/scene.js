@@ -105,6 +105,9 @@ function init() {
   // Handle resize
   window.addEventListener('resize', onWindowResize);
   
+  // Initial viewport adjustment
+  adjustCameraForViewport(width, height);
+  
   // Start animation loop
   animate();
 }
@@ -196,12 +199,12 @@ function createAcrylicPanels() {
   const { panel, colors } = CONFIG;
   
   // Panel configurations (positions matching the Figma layout - 2x2 grid arrangement)
-  // The panels overlap in the center to create the color mixing effect
+  // Panels overlap in the center with slight offset for depth
   const panelConfigs = [
-    { color: colors.yellow, x: -0.35, y: 0.95, z: 0.12 },    // Top-left
-    { color: colors.green, x: 0.45, y: 1.15, z: 0.14 },      // Top-right
-    { color: colors.red, x: -0.25, y: 0.15, z: 0.16 },       // Bottom-left
-    { color: colors.blue, x: 0.55, y: 0.35, z: 0.18 }        // Bottom-right
+    { color: colors.yellow, x: -0.45, y: 0.75, z: 0.10 },    // Top-left
+    { color: colors.green, x: 0.50, y: 0.95, z: 0.12 },      // Top-right
+    { color: colors.red, x: -0.35, y: 0.05, z: 0.14 },       // Bottom-left
+    { color: colors.blue, x: 0.60, y: 0.25, z: 0.16 }        // Bottom-right
   ];
   
   panelConfigs.forEach((config, index) => {
@@ -246,16 +249,7 @@ function createStand() {
   const pole = new THREE.Mesh(poleGeometry, poleMaterial);
   pole.position.y = -stand.poleHeight / 2 - 0.4;
   
-  // Vertical line extending down (matching Figma design)
-  const lineGeometry = new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(0, -0.9, 0.08),
-    new THREE.Vector3(0, -2.5, 0.08)
-  ]);
-  const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-  const verticalLine = new THREE.Line(lineGeometry, lineMaterial);
-  
   installationGroup.add(pole);
-  installationGroup.add(verticalLine);
 }
 
 // ============================================
@@ -487,6 +481,46 @@ function onWindowResize() {
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
+  
+  // Dynamically adjust camera distance based on viewport
+  adjustCameraForViewport(width, height);
+}
+
+// ============================================
+// Adjust Camera for Viewport Size
+// ============================================
+function adjustCameraForViewport(width, height) {
+  if (!camera || !controls) return;
+  
+  // Calculate optimal camera distance based on viewport
+  const minDimension = Math.min(width, height);
+  const baseDist = 5;
+  
+  // Scale camera distance inversely with viewport size
+  // Smaller viewport = closer camera, larger = further
+  let scaleFactor = 1;
+  
+  if (minDimension < 400) {
+    scaleFactor = 0.8;
+  } else if (minDimension < 600) {
+    scaleFactor = 0.9;
+  } else if (minDimension > 900) {
+    scaleFactor = 1.1;
+  }
+  
+  // Update camera position while maintaining direction
+  const direction = camera.position.clone().normalize();
+  const newDist = baseDist * scaleFactor;
+  
+  // Only adjust if not actively using orbit controls
+  if (!controls.enabled || controls.autoRotate) {
+    camera.position.copy(direction.multiplyScalar(newDist));
+  }
+  
+  // Update controls limits
+  controls.minDistance = newDist * 0.6;
+  controls.maxDistance = newDist * 2;
+  controls.update();
 }
 
 // ============================================
