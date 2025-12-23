@@ -808,28 +808,26 @@ function onWindowResize() {
 // Adjust Camera for Viewport Size
 // ============================================
 // Global camera distance that animate() uses
-let cameraDistance = 5;
+let cameraDistance = 6;
 
 function adjustCameraForViewport(width, height) {
   if (!camera) return;
   
-  // Use width as primary factor since model is beside content
-  const baseDist = 5;
+  // Base distance further back to ensure model doesn't get cut off
+  const baseDist = 6;
   
   // Scale camera distance based on available width
-  // Smaller width = much closer camera to fill space
+  // Keep model fully visible at all sizes
   let scaleFactor = 1;
   
   if (width < 500) {
-    scaleFactor = 0.5;   // Very close for mobile/small
+    scaleFactor = 0.75;   // Closer for mobile but still visible
   } else if (width < 700) {
-    scaleFactor = 0.6;
+    scaleFactor = 0.85;
   } else if (width < 900) {
-    scaleFactor = 0.75;
-  } else if (width < 1200) {
-    scaleFactor = 0.9;
+    scaleFactor = 0.95;
   } else {
-    scaleFactor = 1.0;   // Full distance for large screens
+    scaleFactor = 1.0;    // Full distance for large screens
   }
   
   cameraDistance = baseDist * scaleFactor;
