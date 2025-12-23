@@ -1,0 +1,411 @@
+/* ============================================
+   403 Super Vega Custom Font
+   ============================================ */
+@font-face {
+  font-family: '403 Super Vega';
+  src: url('../fonts/403-super-vega-regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================
+   CSS Custom Properties
+   ============================================ */
+:root {
+  /* Colors */
+  --color-bg: #000000;
+  --color-text: #FFFFFF;
+  --color-acrylic-yellow: #FDFF00;
+  --color-acrylic-red: #FF0505;
+  --color-acrylic-green: #11FF00;
+  --color-acrylic-blue: #2600FF;
+  
+  /* Typography - Desktop */
+  --font-title: '403 Super Vega', sans-serif;
+  --font-body: 'Nanum Myeongjo', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-arrow: 'Alegreya', serif;
+  
+  --title-size: 97px;
+  --title-line-height: 97px;
+  --title-letter-spacing: -2.9106px;
+  
+  --body-size: 20px;
+  --body-line-height: 26px;
+  
+  --label-size: 14px;
+  --label-line-height: 14px;
+  
+  --arrow-size: 18px;
+  --arrow-line-height: 21.6px;
+  
+  /* Spacing */
+  --page-padding: 30px;
+  --corner-size: 25px;
+  
+  /* Layout */
+  --content-max-width: 510px;
+}
+
+/* ============================================
+   Reset & Base Styles
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   Corner Accents
+   ============================================ */
+.corner-accent {
+  position: fixed;
+  width: var(--corner-size);
+  height: var(--corner-size);
+  background-color: var(--color-text);
+  z-index: 100;
+}
+
+.corner-accent.top-left {
+  top: 0;
+  left: 0;
+}
+
+.corner-accent.top-right {
+  top: 0;
+  right: 0;
+}
+
+.corner-accent.bottom-left {
+  bottom: 0;
+  left: 0;
+}
+
+.corner-accent.bottom-right {
+  bottom: 0;
+  right: 0;
+}
+
+/* ============================================
+   Landing Page Layout
+   ============================================ */
+.landing-page {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
+
+/* ============================================
+   Content Section (Left Side)
+   ============================================ */
+.content-section {
+  display: flex;
+  flex-direction: column;
+  padding: var(--page-padding);
+  padding-top: 35px;
+  width: 45%;
+  min-width: 540px;
+  position: relative;
+  z-index: 10;
+  height: 100vh;
+}
+
+/* Title */
+.title {
+  font-family: var(--font-title);
+  font-size: var(--title-size);
+  font-weight: normal;
+  line-height: var(--title-line-height);
+  letter-spacing: var(--title-letter-spacing);
+  white-space: nowrap;
+  margin-bottom: 20px;
+}
+
+.title span {
+  display: block;
+}
+
+/* Description */
+.description {
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  font-weight: 700;
+  line-height: var(--body-line-height);
+  max-width: var(--content-max-width);
+  margin-bottom: 60px;
+}
+
+/* Meta Information */
+.meta-info {
+  display: flex;
+  gap: 136px;
+  flex-grow: 1;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.meta-label {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  font-weight: 500;
+  line-height: var(--label-line-height);
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.meta-value {
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  font-weight: 700;
+  line-height: var(--body-line-height);
+}
+
+/* CTA Section */
+.cta-section {
+  margin-top: auto;
+  padding-bottom: 20px;
+}
+
+.cta-text {
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  font-weight: 700;
+  line-height: var(--body-line-height);
+  margin-bottom: 22px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 30px;
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 0.8;
+}
+
+.btn-text {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  font-weight: 500;
+  line-height: var(--label-line-height);
+  text-transform: uppercase;
+}
+
+.btn-arrow {
+  font-family: var(--font-arrow);
+  font-size: var(--arrow-size);
+  font-style: italic;
+  line-height: var(--arrow-line-height);
+}
+
+.btn-primary {
+  background-color: var(--color-text);
+  color: var(--color-bg);
+  margin-bottom: 10px;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+}
+
+.nav-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   3D Scene Section (Right Side)
+   ============================================ */
+.scene-section {
+  flex: 1;
+  position: relative;
+  height: 100vh;
+  min-width: 0;
+}
+
+#three-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+#three-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.scene-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), #000000);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ============================================
+   3D Controls Panel
+   ============================================ */
+.lil-gui {
+  --background-color: rgba(0, 0, 0, 0.85) !important;
+  --text-color: #ffffff !important;
+  --title-background-color: rgba(0, 0, 0, 0.95) !important;
+  --widget-color: #333333 !important;
+  --hover-color: #444444 !important;
+  --focus-color: #555555 !important;
+  --number-color: #2196f3 !important;
+  --string-color: #2196f3 !important;
+  position: fixed !important;
+  right: 20px !important;
+  bottom: 20px !important;
+  top: auto !important;
+  z-index: 1000 !important;
+  max-width: 280px !important;
+}
+
+/* ============================================
+   Mobile Responsive Styles
+   ============================================ */
+@media screen and (max-width: 1024px) {
+  :root {
+    --title-size: 52px;
+    --title-line-height: 52px;
+    --title-letter-spacing: -1.56px;
+    
+    --body-size: 14px;
+    --body-line-height: 22px;
+    
+    --page-padding: 20px;
+    --corner-size: 15px;
+  }
+  
+  html, body {
+    overflow-y: auto;
+    height: auto;
+  }
+  
+  .landing-page {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .content-section {
+    width: 100%;
+    max-width: none;
+    min-width: auto;
+    padding-top: 25px;
+    height: auto;
+    flex-shrink: 0;
+  }
+  
+  .title {
+    margin-bottom: 15px;
+  }
+  
+  .description {
+    max-width: 315px;
+    margin-bottom: 30px;
+  }
+  
+  .meta-info {
+    gap: 0;
+    margin-bottom: 30px;
+    flex-grow: 0;
+  }
+  
+  .meta-item {
+    flex: 1;
+  }
+  
+  .scene-section {
+    position: relative;
+    height: 50vh;
+    min-height: 400px;
+    width: 100%;
+  }
+  
+  #three-container {
+    position: relative;
+  }
+  
+  .cta-section {
+    position: relative;
+    z-index: 20;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0), #000000 30%);
+    padding-top: 60px;
+    margin-top: -60px;
+  }
+  
+  .nav-links {
+    flex-wrap: wrap;
+  }
+  
+  .scene-gradient {
+    height: 100px;
+  }
+  
+  /* Hide GUI on mobile - too cluttered */
+  .lil-gui {
+    display: none !important;
+  }
+}
+
+/* Extra small screens */
+@media screen and (max-width: 480px) {
+  :root {
+    --title-size: 42px;
+    --title-line-height: 44px;
+  }
+  
+  .meta-info {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+.hidden {
+  display: none !important;
+}
+

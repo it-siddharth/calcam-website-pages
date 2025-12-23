@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webcam Text Silhouette</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #000;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      display: block;
+    }
+    #controls {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 300px;
+      padding: 15px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      border-radius: 5px;
+      z-index: 100;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    #fullscreenCTA {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      z-index: 1000;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    #fullscreenCTA.hidden {
+      display: none;
+    }
+    #fullscreenCTA button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 10px 2px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    #errorMessage {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(255, 0, 0, 0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 2000;
+      max-width: 80%;
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+    #leftControls {
+      position: fixed;
+      left: 10px;
+      top: 10px;
+      z-index: 100;
+    }
+    .control-btn {
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px;
+      margin-bottom: 5px;
+      cursor: pointer;
+      display: block;
+    }
+    .control-btn:hover {
+      background-color: rgba(50, 50, 50, 0.7);
+    }
+    #cameraSelect {
+      margin-bottom: 15px;
+      width: 100%;
+      padding: 8px;
+      background-color: rgba(30, 30, 30, 0.8);
+      color: white;
+      border: 1px solid #555;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Error message container -->
+  <div id="errorMessage" class="hidden"></div>
+  
+  <!-- Controls panel -->
+  <div id="controls">
+    <h2>Camera</h2>
+    <div class="control-group">
+      <select id="cameraSelect">
+        <option value="">Loading cameras...</option>
+      </select>
+    </div>
+    
+    <h2>Image Controls</h2>
+    <div class="control-group">
+      <label class="checkbox-label">
+        <input type="checkbox" id="invertColors">
+        Invert Colors
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="flipVideo">
+        Flip Video
+      </label>
+      <label>
+        Threshold: <span id="thresholdValue">83</span>
+        <input type="range" id="threshold" min="0" max="255" value="83">
+      </label>
+      <label>
+        Cell Width Factor: <span id="cellWidthValue">0.7</span>
+        <input type="range" id="cellWidthMultiplier" min="0.1" max="2" step="0.1" value="0.7">
+      </label>
+    </div>
+    
+    <h2>Contour Controls</h2>
+    <div class="control-group">
+      <label class="checkbox-label">
+        <input type="checkbox" id="showContour" checked>
+        Show Pixel Art Contour
+      </label>
+      <div id="contourControls" class="hidden">
+        <label>
+          Pixel Size: <span id="pixelSizeValue">2</span>
+          <input type="range" id="pixelSize" min="1" max="6" value="2">
+        </label>
+        <label>
+          Contour Sensitivity: <span id="contourSensitivityValue">5</span>
+          <input type="range" id="contourSensitivity" min="1" max="50" value="5">
+        </label>
+        <label>
+          Contour Density: <span id="contourDensityValue">2</span>
+          <input type="range" id="contourDensity" min="1" max="5" value="2">
+        </label>
+        <label>
+          Contour Color:
+          <input type="color" id="contourColor" value="#FFFFFF">
+        </label>
+      </div>
+    </div>
+    
+    <h2>Animation Controls</h2>
+    <div class="control-group">
+      <label class="checkbox-label">
+        <input type="checkbox" id="enableAnimation">
+        Enable Animation
+      </label>
+      <div id="animationControls" class="hidden">
+        <label>
+          Animation Type:
+          <select id="animationType">
+            <option value="wave">Wave</option>
+            <option value="pulse">Pulse</option>
+            <option value="rotate">Rotate</option>
+            <option value="bounce">Bounce</option>
+            <option value="flicker">Flicker</option>
+          </select>
+        </label>
+        <label>
+          Animation Speed: <span id="animationSpeedValue">5</span>
+          <input type="range" id="animationSpeed" min="1" max="20" value="5">
+        </label>
+      </div>
+      
+      <label class="checkbox-label">
+        <input type="checkbox" id="enableGlitch" checked>
+        Enable Glitch Effect
+      </label>
+      <div id="glitchControls" class="hidden">
+        <label>
+          Glitch Type:
+          <select id="glitchType">
+            <option value="scanlines">Scan Lines</option>
+            <option value="rgbshift">RGB Shift</option>
+            <option value="noise">Noise</option>
+            <option value="blockshift">Block Shift</option>
+            <option value="pixelation">Pixelation</option>
+            <option value="wavydistortion">Wavy Distortion</option>
+            <option value="vhstracking" selected>VHS Tracking</option>
+            <option value="ghosting">Ghosting</option>
+            <option value="digitaldropout">Digital Dropout</option>
+            <option value="combined">Combined</option>
+          </select>
+        </label>
+        <label>
+          Intensity: <span id="glitchIntensityValue">20</span>%
+          <input type="range" id="glitchIntensity" min="10" max="100" value="20">
+        </label>
+        <label>
+          Speed: <span id="glitchSpeedValue">2</span>
+          <input type="range" id="glitchSpeed" min="1" max="10" value="2">
+        </label>
+      </div>
+    </div>
+    
+    <h2>Global Text Settings</h2>
+    <div class="control-group">
+      <label>
+        Default Font Size: <span id="defaultFontSizeValue">10</span>px
+        <input type="range" id="defaultFontSize" min="6" max="24" value="10">
+      </label>
+      <label>
+        Text Density: <span id="textDensityValue">1</span>x
+        <input type="range" id="textDensity" min="0.5" max="3" step="0.1" value="1">
+      </label>
+    </div>
+    
+    <h2>Custom Words</h2>
+    <div class="control-group">
+      <input type="text" id="newWord" placeholder="Add new word/phrase">
+      <div style="display: flex; gap: 10px; margin: 10px 0;">
+        <div>
+          <label>Color:</label>
+          <input type="color" id="newWordColor" value="#FFFFFF">
+        </div>
+        <div>
+          <label>Font:</label>
+          <select id="newWordFont">
+            <option value="monospace">Monospace</option>
+            <option value="sans-serif">Sans-serif</option>
+            <option value="serif">Serif</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="cursive">Cursive</option>
+          </select>
+        </div>
+        <div>
+          <label>Size:</label>
+          <input type="number" id="newWordSize" value="10" min="6" max="24">
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button id="addWordBtn">Add Word</button>
+        <button id="clearWordsBtn">Clear All</button>
+        <button id="resetWordsBtn">Reset Original</button>
+      </div>
+      <div id="wordsList"></div>
+    </div>
+  </div>
+  
+  <!-- Fullscreen CTA - hidden by default -->
+  <div id="fullscreenCTA" class="hidden">
+    <h2>Experience in Fullscreen</h2>
+    <p>Click the button below for the best experience</p>
+    <button id="enterFullscreen">Enter Fullscreen</button>
+  </div>
+  
+  <!-- Left control buttons -->
+  <div id="leftControls">
+    <button id="toggleFullscreen" class="control-btn" title="Toggle Fullscreen">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+    </button>
+    <button id="toggleControls" class="control-btn" title="Toggle Controls">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </button>
+  </div>
+
+  <script>
+    // Global variables
+    let video;
+    let canvas;
+    let defaultWords = [
+      { text: "YOU ARE", color: "#FF0000", font: "monospace", size: 10 },
+      { text: "YOUR CHOICES", color: "#0000FF", font: "serif", size: 22 },
+      { text: "PUBLIC SELF", color: "#00FF00", font: "monospace", size: 10 },
+      { text: "POSSIBILITY", color: "#FFFF00", font: "monospace", size: 10 }
+    ];
+    let wordsData = [...defaultWords];
+    let textGrid = [];
+    let textColumns, textRows;
+    let invertColors = false;
+    let flipVideo = false;
+    let threshold = 83;
+    let cellWidthMultiplier = 0.7;
+    let fontSize = 10;
+    let showContour = true;
+    let pixelSize = 2;
+    let contourSensitivity = 5;
+    let contourColor = "#FFFFFF";
+    let contourDensity = 2;
+    let textDensity = 1;
+    let enableAnimation = false;
+    let animationType = 'wave';
+    let animationSpeed = 5;
+    let enableGlitch = true;
+    let glitchType = 'vhstracking';
+    let glitchIntensity = 20;
+    let glitchSpeed = 2;
+    let glitchLastUpdate = 0;
+    let glitchRandomValues = [];
+    let edgePixels = [];
+    let lastFrameTime = 0;
+    let currentCameraId = null;
+    let cameraDevices = [];
+    let isFullscreen = false;
+    
+    // Video display variables to maintain aspect ratio
+    let displayX = 0;
+    let displayY = 0;
+    let displayWidth = 0;
+    let displayHeight = 0;
+    
+    // Error handling
+    window.onerror = function(message, source, lineno, colno, error) {
+      showError(`Error: ${message}<br>Line: ${lineno}`);
+      return true; // Prevents the default error handling
+    };
+    
+    function showError(message) {
+      const errorElement = document.getElementById('errorMessage');
+      errorElement.innerHTML = message;
+      if (!isFullscreen) {
+        errorElement.classList.remove('hidden');
+      }
+      
+      // Hide error after 5 seconds
+      setTimeout(() => {
+        errorElement.classList.add('hidden');
+      }, 5000);
+    }
+    
+    // Enumerate available camera devices
+    async function enumerateCameras() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        cameraDevices = videoDevices;
+        
+        const select = document.getElementById('cameraSelect');
+        select.innerHTML = '';
+        
+        if (videoDevices.length === 0) {
+          select.innerHTML = '<option value="">No cameras found</option>';
+          return;
+        }
+        
+        videoDevices.forEach(device => {
+          const option = document.createElement('option');
+          option.value = device.deviceId;
+          option.text = device.label || `Camera ${videoDevices.indexOf(device) + 1}`;
+          select.appendChild(option);
+        });
+        
+        // Set the first camera as default
+        if (videoDevices.length > 0 && !currentCameraId) {
+          currentCameraId = videoDevices[0].deviceId;
+          select.value = currentCameraId;
+        }
+      } catch (e) {
+        showError(`Error enumerating cameras: ${e.message}`);
+      }
+    }
+    
+    // Start webcam with specific device
+    async function startCamera(deviceId) {
+      try {
+        // If a video already exists, stop it
+        if (video) {
+          video.remove();
+        }
+        
+        const constraints = {
+          video: deviceId ? { deviceId: { exact: deviceId } } : true
+        };
+        
+        // Create new video
+        video = createCapture(constraints, videoLoaded);
+        video.size(640, 480);
+        video.hide();
+        currentCameraId = deviceId;
+      } catch (e) {
+        showError(`Error starting camera: ${e.message}`);
+      }
+    }
+    
+    function setup() {
+      try {
+        canvas = createCanvas(windowWidth, windowHeight);
+        
+        // Initialize camera enumeration
+        if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+          enumerateCameras().then(() => {
+            startCamera(currentCameraId);
+          });
+        } else {
+          // Fallback if device enumeration not supported
+          startCamera();
+        }
+        
+        // Initialize the grid
+        updateGridDimensions();
+        initializeGrid();
+        
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Setup fullscreen change detection
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        
+        // Initialize controls to reflect default values
+        updateControlValues();
+      } catch(e) {
+        showError(`Setup error: ${e.message}`);
+      }
+    }
+    
+    function videoLoaded() {
+      // Webcam is ready
+      if (!video.label && currentCameraId) {
+        // If the label is empty, we may need to update the device list
+        // to get the labels (permissions may have been granted)
+        enumerateCameras();
+      }
+      
+      // Calculate the display area to maintain aspect ratio
+      updateDisplayArea();
+    }
+    
+    // Update the display area to fill the screen, cropping sides if needed
+    function updateDisplayArea() {
+      if (!video || !video.width || !video.height) return;
+      
+      // Calculate aspect ratio
+      const videoRatio = video.width / video.height;
+      const canvasRatio = width / height;
+      
+      // Always fit height and allow cropping from sides if needed
+      displayHeight = height;
+      displayWidth = displayHeight * videoRatio;
+      
+      // If video width is too narrow, scale up to fill width
+      if (displayWidth < width) {
+        displayWidth = width;
+        displayHeight = displayWidth / videoRatio;
+      }
+      
+      // Center the video
+      displayX = (width - displayWidth) / 2;
+      displayY = (height - displayHeight) / 2;
+    }
+    
+    function handleFullscreenChange() {
+      isFullscreen = !!document.fullscreenElement;
+      
+      if (isFullscreen) {
+        // Hide controls and other UI elements in fullscreen
+        document.getElementById('controls').classList.add('hidden');
+        document.getElementById('leftControls').classList.add('hidden');
+        document.getElementById('errorMessage').classList.add('hidden');
+      } else {
+        // Show controls when exiting fullscreen
+        document.getElementById('controls').classList.remove('hidden');
+        document.getElementById('leftControls').classList.remove('hidden');
+      }
+    }
+    
+    function draw() {
+      try {
+        background(invertColors ? 255 : 0);
+        
+        // Only proceed if video is ready
+        if (!video || !video.loadedmetadata || !video.width || !video.height) {
+          return;
+        }
+        
+        // Load pixel data from the video
+        video.loadPixels();
+        
+        // Check if pixels are available
+        if (!video.pixels || video.pixels.length === 0) {
+          return;
+        }
+        
+        // Find edges for contour if enabled
+        if (showContour) {
+          detectSilhouetteContour();
+        }
+        
+        // Draw the text grid
+        drawTextGrid();
+        
+        // Draw contour if enabled
+        if (showContour && edgePixels.length > 0) {
+          drawContour();
+        }
+        
+        // Apply glitch effect if enabled
+        if (enableGlitch) {
+          applyGlitchEffect();
+        }
+        
+        // Update frame time
+        lastFrameTime = millis();
+      } catch(e) {
+        showError(`Draw error: ${e.message}`);
+      }
+    }
+    
+    function detectSilhouetteContour() {
+      edgePixels = [];
+      
+      // Sample less pixels for better performance
+      // Adjust sampling based on density - lower number means more pixels sampled
+      const sampleStep = max(1, floor(pixelSize / contourDensity));
+      
+      // Simplified edge detection
+      for (let y = sampleStep; y < video.height - sampleStep; y += sampleStep) {
+        for (let x = sampleStep; x < video.width - sampleStep; x += sampleStep) {
+          const idx = (y * video.width + x) * 4;
+          
+          // Get brightness of current pixel
+          const r1 = video.pixels[idx];
+          const g1 = video.pixels[idx + 1];
+          const b1 = video.pixels[idx + 2];
+          const brightness1 = (r1 + g1 + b1) / 3;
+          
+          // Get brightness of pixel to the right
+          const idx2 = (y * video.width + (x + sampleStep)) * 4;
+          const r2 = video.pixels[idx2];
+          const g2 = video.pixels[idx2 + 1];
+          const b2 = video.pixels[idx2 + 2];
+          const brightness2 = (r2 + g2 + b2) / 3;
+          
+          // Get brightness of pixel below
+          const idx3 = ((y + sampleStep) * video.width + x) * 4;
+          const r3 = video.pixels[idx3];
+          const g3 = video.pixels[idx3 + 1];
+          const b3 = video.pixels[idx3 + 2];
+          const brightness3 = (r3 + g3 + b3) / 3;
+          
+          // Calculate difference
+          const diffH = abs(brightness1 - brightness2);
+          const diffV = abs(brightness1 - brightness3);
+          
+          // If difference is greater than threshold, it's an edge
+          if (diffH > contourSensitivity || diffV > contourSensitivity) {
+            // Check if this would be visible based on threshold
+            const visible = invertColors ? 
+              (brightness1 > threshold) : 
+              (brightness1 < threshold);
+              
+            if (visible) {
+              edgePixels.push({ x, y });
+            }
+          }
+        }
+      }
+    }
+    
+    function drawContour() {
+      noStroke();
+      fill(contourColor);
+      
+      for (let i = 0; i < edgePixels.length; i++) {
+        const edge = edgePixels[i];
+        
+        // Map from video coordinates to display coordinates
+        let screenX = map(edge.x, 0, video.width, displayX, displayX + displayWidth);
+        let screenY = map(edge.y, 0, video.height, displayY, displayY + displayHeight);
+        
+        // Apply flip if needed
+        if (flipVideo) {
+          screenX = displayX + displayWidth - (screenX - displayX);
+        }
+        
+        // Draw a simple pixel square
+        rect(screenX, screenY, pixelSize, pixelSize);
+      }
+    }
+    
+    function updateGridDimensions() {
+      // Calculate grid dimensions based on font size and density
+      // Higher textDensity means more columns and rows (denser text)
+      textColumns = floor(width / (10 * fontSize * cellWidthMultiplier / textDensity));
+      textRows = floor(height / (fontSize / textDensity));
+    }
+    
+    function initializeGrid() {
+      textGrid = [];
+      
+      // Create a grid of words
+      for (let y = 0; y < textRows; y++) {
+        let row = [];
+        for (let x = 0; x < textColumns; x++) {
+          // Assign a random word to each cell
+          row.push(floor(random(wordsData.length)));
+        }
+        textGrid.push(row);
+      }
+    }
+    
+    function drawTextGrid() {
+      const now = millis();
+      
+      // We'll position text based on a dynamic grid where each cell can have a different size
+      let currentY = displayY;
+      
+      // Calculate grid cell height based on display area
+      const gridRowHeight = displayHeight / textRows;
+      const gridColWidth = displayWidth / textColumns;
+      
+      // Iterate through rows
+      for (let y = 0; y < textGrid.length; y++) {
+        let currentX = displayX;
+        let rowHeight = 0;
+        
+        // First pass: determine row height based on largest font size in the row
+        for (let x = 0; x < textGrid[y].length; x++) {
+          const wordIndex = textGrid[y][x];
+          if (wordIndex >= wordsData.length) continue;
+          
+          const word = wordsData[wordIndex];
+          rowHeight = max(rowHeight, word.size);
+        }
+        
+        // Make sure row height is at least grid cell height
+        rowHeight = max(rowHeight, gridRowHeight);
+        
+        // Second pass: draw the text for this row
+        for (let x = 0; x < textGrid[y].length; x++) {
+          try {
+            // Get the word for this position
+            const wordIndex = textGrid[y][x];
+            if (wordIndex >= wordsData.length) continue;
+            
+            const word = wordsData[wordIndex];
+            
+            // Map current position to webcam position
+            let vidX = floor(map(currentX, displayX, displayX + displayWidth, 0, video.width));
+            let vidY = floor(map(currentY, displayY, displayY + displayHeight, 0, video.height));
+            
+            // Apply flip if needed
+            if (flipVideo) {
+              vidX = video.width - vidX;
+            }
+            
+            // Make sure we're within bounds
+            vidX = constrain(vidX, 0, video.width - 1);
+            vidY = constrain(vidY, 0, video.height - 1);
+            
+            let index = (vidY * video.width + vidX) * 4;
+            
+            // Get pixel brightness, with safety checks
+            let brightness = 0;
+            if (index >= 0 && index < video.pixels.length - 4) {
+              let r = video.pixels[index];
+              let g = video.pixels[index + 1];
+              let b = video.pixels[index + 2];
+              brightness = (r + g + b) / 3;
+            }
+            
+            // Apply inverted threshold if invertColors is on
+            let shouldDrawText = invertColors ? 
+              (brightness > threshold) : 
+              (brightness < threshold);
+            
+            // Calculate cell width based on word length and size
+            const cellWidth = min(word.text.length * word.size * cellWidthMultiplier, gridColWidth * 2);
+            
+            if (shouldDrawText) {
+              // Set text properties based on the word's settings
+              textFont(word.font);
+              textSize(word.size);
+              fill(word.color);
+              textAlign(LEFT, TOP);
+              
+              // Apply animation effects if enabled
+              if (enableAnimation) {
+                push();
+                const anim = applyAnimation(word, currentX, currentY, cellWidth, rowHeight, now * 0.001);
+                
+                // Apply animation transformations
+                translate(anim.x + cellWidth/2, anim.y + rowHeight/2);
+                rotate(anim.rotation);
+                scale(anim.scale);
+                
+                // Set opacity if needed
+                let c = color(word.color);
+                c.setAlpha(anim.opacity);
+                fill(c);
+                
+                // Draw text centered at the transformation point
+                text(word.text, -cellWidth/2, -rowHeight/2);
+                pop();
+              } else {
+                // Draw text normally
+                text(word.text, currentX, currentY);
+              }
+            }
+            
+            // Move to the next cell
+            currentX += cellWidth;
+            
+            // If we've gone beyond the display area width, break
+            if (currentX > displayX + displayWidth) break;
+          } catch(e) {
+            // Skip this cell on error
+            continue;
+          }
+        }
+        
+        // Move to the next row
+        currentY += rowHeight;
+        
+        // If we've gone beyond the display area height, break
+        if (currentY > displayY + displayHeight) break;
+      }
+    }
+    
+    function applyAnimation(word, x, y, width, height, time) {
+      const speed = animationSpeed / 1000;
+      let result = {
+        x: x,
+        y: y,
+        rotation: 0,
+        scale: 1,
+        opacity: 255
+      };
+      
+      switch (animationType) {
+        case 'wave':
+          result.y += sin(time * speed * 2 + x / 100) * 10;
+          break;
+          
+        case 'pulse':
+          result.scale = 0.9 + 0.2 * sin(time * speed * 3);
+          break;
+          
+        case 'rotate':
+          result.rotation = sin(time * speed + x / 200) * 0.1;
+          break;
+          
+        case 'bounce':
+          result.y += abs(sin(time * speed * 2 + x / 150)) * -15;
+          break;
+          
+        case 'flicker':
+          result.opacity = 128 + 127 * sin(time * speed * 5 + x / 50);
+          break;
+      }
+      
+      return result;
+    }
+    
+    function applyGlitchEffect() {
+      const now = millis();
+      const timeFactor = now * glitchSpeed * 0.001;
+      const intensity = glitchIntensity / 100;
+      
+      // Update random values periodically for glitch effects
+      if (now - glitchLastUpdate > 1000 / (glitchSpeed * 2)) {
+        glitchRandomValues = [];
+        for (let i = 0; i < 20; i++) {
+          glitchRandomValues.push(random());
+        }
+        glitchLastUpdate = now;
+      }
+      
+      // Begin rendering to the screen
+      loadPixels();
+      
+      switch (glitchType) {
+        case 'scanlines':
+          applyScanLines(intensity, timeFactor);
+          break;
+        case 'rgbshift':
+          applyRGBShift(intensity, timeFactor);
+          break;
+        case 'noise':
+          applyNoise(intensity);
+          break;
+        case 'blockshift':
+          applyBlockShift(intensity);
+          break;
+        case 'pixelation':
+          applyPixelation(intensity, timeFactor);
+          break;
+        case 'wavydistortion':
+          applyWavyDistortion(intensity, timeFactor);
+          break;
+        case 'vhstracking':
+          applyVHSTracking(intensity, timeFactor);
+          break;
+        case 'ghosting':
+          applyGhosting(intensity);
+          break;
+        case 'digitaldropout':
+          applyDigitalDropout(intensity);
+          break;
+        case 'combined':
+          applyScanLines(intensity * 0.5, timeFactor);
+          applyRGBShift(intensity * 0.3, timeFactor);
+          applyNoise(intensity * 0.2);
+          applyBlockShift(intensity * 0.4);
+          break;
+      }
+      
+      updatePixels();
+    }
+    
+    function applyScanLines(intensity, timeFactor) {
+      // Create horizontal scan lines
+      for (let y = 0; y < height; y += 2) {
+        // Make some scan lines move
+        const offset = sin(y * 0.05 + timeFactor * 5) * 10;
+        const lineIntensity = 0.7 + sin(y * 0.1 + timeFactor * 3) * 0.3;
+        
+        // Only process some horizontal lines
+        if (sin(y * 0.2 + timeFactor) > 0.7) continue;
+        
+        for (let x = 0; x < width; x++) {
+          let destX = constrain(floor(x + offset * intensity), 0, width - 1);
+          const idx = (y * width + destX) * 4;
+          
+          if (idx < pixels.length - 4) {
+            // Darken scan lines
+            pixels[idx] = pixels[idx] * (1 - lineIntensity * intensity);
+            pixels[idx+1] = pixels[idx+1] * (1 - lineIntensity * intensity);
+            pixels[idx+2] = pixels[idx+2] * (1 - lineIntensity * intensity);
+          }
+        }
+      }
+    }
+    
+    function applyRGBShift(intensity, timeFactor) {
+      // RGB channel shifting
+      const shiftX = sin(timeFactor) * 10 * intensity;
+      const shiftY = cos(timeFactor * 1.3) * 8 * intensity;
+      
+      for (let y = 0; y < height; y += 2) {
+        for (let x = 0; x < width; x += 2) {
+          // Only apply to some regions for performance
+          if (y % 3 !== 0 || x % 3 !== 0) continue;
+          
+          const idx = (y * width + x) * 4;
+          if (idx >= pixels.length - 4) continue;
+          
+          // Get source pixels
+          const r = pixels[idx];
+          const g = pixels[idx+1];
+          const b = pixels[idx+2];
+          
+          // Shift red channel
+          const rx = constrain(floor(x + shiftX), 0, width - 1);
+          const ry = constrain(floor(y + shiftY), 0, height - 1);
+          const ridx = (ry * width + rx) * 4;
+          
+          // Shift blue channel opposite direction
+          const bx = constrain(floor(x - shiftX), 0, width - 1);
+          const by = constrain(floor(y - shiftY), 0, height - 1);
+          const bidx = (by * width + bx) * 4;
+          
+          if (ridx < pixels.length - 4 && bidx < pixels.length - 4) {
+            pixels[ridx] = r;
+            pixels[bidx+2] = b;
+          }
+        }
+      }
+    }
+    
+    function applyNoise(intensity) {
+      // Add random noise/static
+      for (let i = 0; i < width * height * intensity * 0.1; i++) {
+        const x = floor(random(width));
+        const y = floor(random(height));
+        const idx = (y * width + x) * 4;
+        
+        if (idx < pixels.length - 4) {
+          // Random bright or dark pixel
+          const val = random() > 0.5 ? 255 : 0;
+          pixels[idx] = val;
+          pixels[idx+1] = val;
+          pixels[idx+2] = val;
+        }
+      }
+    }
+    
+    function applyBlockShift(intensity) {
+      // Random block shifting
+      const numBlocks = floor(5 * intensity);
+      
+      for (let i = 0; i < numBlocks; i++) {
+        // Random block position and size
+        const blockX = floor(random(width * 0.8));
+        const blockY = floor(random(height));
+        const blockW = floor(random(20, 100) * intensity);
+        const blockH = floor(random(5, 20));
+        
+        // Random offset
+        const offsetX = floor(random(-30, 30) * intensity);
+        
+        // Only process if blocks are in bounds
+        if (blockX + blockW >= width || blockY + blockH >= height) continue;
+        
+        // Shift the block pixels
+        for (let y = blockY; y < blockY + blockH; y++) {
+          for (let x = blockX; x < blockX + blockW; x++) {
+            const srcIdx = (y * width + x) * 4;
+            const destX = constrain(x + offsetX, 0, width - 1);
+            const destIdx = (y * width + destX) * 4;
+            
+            if (srcIdx < pixels.length - 4 && destIdx < pixels.length - 4) {
+              pixels[destIdx] = pixels[srcIdx];
+              pixels[destIdx+1] = pixels[srcIdx+1];
+              pixels[destIdx+2] = pixels[srcIdx+2];
+              pixels[destIdx+3] = pixels[srcIdx+3];
+            }
+          }
+        }
+      }
+    }
+    
+    function applyPixelation(intensity, timeFactor) {
+      // Create temporary regions of pixelation
+      const numRegions = floor(3 * intensity);
+      
+      for (let i = 0; i < numRegions; i++) {
+        // Random region position and size
+        const regionX = floor(random(width * 0.8));
+        const regionY = floor(random(height * 0.8));
+        const regionW = floor(random(50, 200) * intensity);
+        const regionH = floor(random(50, 200) * intensity);
+        
+        // Random pixelation factor - higher means more pixelated
+        const pixelFactor = floor(random(5, 15) * intensity);
+        
+        // Only process if region is in bounds
+        if (regionX + regionW >= width || regionY + regionH >= height) continue;
+        
+        // Apply pixelation by sampling fewer pixels and copying them to blocks
+        for (let y = regionY; y < regionY + regionH; y += pixelFactor) {
+          for (let x = regionX; x < regionX + regionW; x += pixelFactor) {
+            // Get one pixel color
+            const srcIdx = (y * width + x) * 4;
+            if (srcIdx >= pixels.length - 4) continue;
+            
+            const r = pixels[srcIdx];
+            const g = pixels[srcIdx + 1];
+            const b = pixels[srcIdx + 2];
+            
+            // Apply this color to a block of pixels
+            for (let py = 0; py < pixelFactor && y + py < regionY + regionH; py++) {
+              for (let px = 0; px < pixelFactor && x + px < regionX + regionW; px++) {
+                const destIdx = ((y + py) * width + (x + px)) * 4;
+                if (destIdx < pixels.length - 4) {
+                  pixels[destIdx] = r;
+                  pixels[destIdx + 1] = g;
+                  pixels[destIdx + 2] = b;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    function applyWavyDistortion(intensity, timeFactor) {
+      // Create a copy of the pixels so we can read from them while writing
+      let origPixels = new Uint8Array(pixels);
+      
+      // Apply wavy distortion effect
+      for (let y = 0; y < height; y++) {
+        // Calculate horizontal wave offset for this row
+        const waveX = sin(y * 0.05 + timeFactor * 3) * 15 * intensity;
+        
+        // Apply vertical distortion too for more complex effect
+        const waveY = cos(y * 0.03 + timeFactor * 2) * sin(timeFactor * 0.5) * 10 * intensity;
+        
+        for (let x = 0; x < width; x++) {
+          // Calculate source position with distortion
+          const srcX = constrain(floor(x + waveX * sin(x * 0.01 + timeFactor)), 0, width - 1);
+          const srcY = constrain(floor(y + waveY), 0, height - 1);
+          
+          const srcIdx = (srcY * width + srcX) * 4;
+          const destIdx = (y * width + x) * 4;
+          
+          if (srcIdx < origPixels.length - 4 && destIdx < pixels.length - 4) {
+            pixels[destIdx] = origPixels[srcIdx];
+            pixels[destIdx + 1] = origPixels[srcIdx + 1];
+            pixels[destIdx + 2] = origPixels[srcIdx + 2];
+          }
+        }
+      }
+    }
+    
+    function applyVHSTracking(intensity, timeFactor) {
+      // VHS tracking errors appear as horizontal bands
+      const numBands = floor(5 * intensity);
+      
+      for (let i = 0; i < numBands; i++) {
+        // Create a tracking error band that moves vertically
+        const bandHeight = floor(random(3, 15));
+        const bandY = floor((sin(timeFactor * random(1, 3) + i) * 0.5 + 0.5) * height);
+        
+        // Horizontal displacement for the tracking error
+        const offsetX = sin(timeFactor * 2 + i) * 30 * intensity;
+        
+        // Make sure the band is on screen
+        if (bandY < 0 || bandY + bandHeight >= height) continue;
+        
+        // Apply the tracking error effect
+        for (let y = bandY; y < bandY + bandHeight; y++) {
+          for (let x = 0; x < width; x++) {
+            // Calculate source position with offset
+            const srcX = constrain(floor(x + offsetX), 0, width - 1);
+            const idx = (y * width + srcX) * 4;
+            const destIdx = (y * width + x) * 4;
+            
+            if (idx < pixels.length - 4 && destIdx < pixels.length - 4) {
+              // Shift pixels horizontally and add noise
+              pixels[destIdx] = min(255, pixels[idx] + random(-20, 20) * intensity);
+              pixels[destIdx + 1] = min(255, pixels[idx + 1] + random(-20, 20) * intensity);
+              pixels[destIdx + 2] = min(255, pixels[idx + 2] + random(-20, 20) * intensity);
+            }
+          }
+          
+          // Add completely corrupted scan lines within the tracking error
+          if (random() < 0.3 * intensity) {
+            for (let x = 0; x < width; x++) {
+              const idx = (y * width + x) * 4;
+              if (idx < pixels.length - 4) {
+                pixels[idx] = random(255);
+                pixels[idx + 1] = random(255);
+                pixels[idx + 2] = random(255);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    function applyGhosting(intensity) {
+      // Make a copy of the pixels
+      let origPixels = new Uint8Array(pixels);
+      
+      // Create ghost/echo images with slight offset and transparency
+      const numGhosts = floor(3 * intensity);
+      
+      for (let i = 0; i < numGhosts; i++) {
+        // Random ghost offset
+        const offsetX = floor(random(-20, 20) * intensity);
+        const offsetY = floor(random(-20, 20) * intensity);
+        
+        // Ghost transparency/opacity (lower is more transparent)
+        const ghostOpacity = 0.2 + (0.3 * random());
+        
+        // Apply ghosting effect
+        for (let y = 0; y < height; y++) {
+          const srcY = constrain(y + offsetY, 0, height - 1);
+          
+          for (let x = 0; x < width; x++) {
+            const srcX = constrain(x + offsetX, 0, width - 1);
+            
+            const srcIdx = (srcY * width + srcX) * 4;
+            const destIdx = (y * width + x) * 4;
+            
+            if (srcIdx < origPixels.length - 4 && destIdx < pixels.length - 4) {
+              // Blend the ghost with existing pixels
+              pixels[destIdx] = lerp(pixels[destIdx], origPixels[srcIdx], ghostOpacity);
+              pixels[destIdx + 1] = lerp(pixels[destIdx + 1], origPixels[srcIdx + 1], ghostOpacity);
+              pixels[destIdx + 2] = lerp(pixels[destIdx + 2], origPixels[srcIdx + 2], ghostOpacity);
+            }
+          }
+        }
+      }
+    }
+    
+    function applyDigitalDropout(intensity) {
+      // Create rectangular "dropout" areas that could happen with digital signal loss
+      const numDropouts = floor(5 * intensity);
+      
+      for (let i = 0; i < numDropouts; i++) {
+        // Random dropout position and size
+        const dropoutX = floor(random(width));
+        const dropoutY = floor(random(height));
+        const dropoutW = floor(random(10, 100) * intensity);
+        const dropoutH = floor(random(5, 30));
+        
+        // Corruption type (0: black, 1: white, 2: colored static)
+        const corruptionType = floor(random(3));
+        
+        // Only process if dropout is in bounds
+        if (dropoutX + dropoutW >= width || dropoutY + dropoutH >= height) continue;
+        
+        // Apply the dropout effect
+        for (let y = dropoutY; y < dropoutY + dropoutH; y++) {
+          for (let x = dropoutX; x < dropoutX + dropoutW; x++) {
+            const idx = (y * width + x) * 4;
+            
+            if (idx < pixels.length - 4) {
+              switch (corruptionType) {
+                case 0: // Black dropout
+                  pixels[idx] = 0;
+                  pixels[idx + 1] = 0;
+                  pixels[idx + 2] = 0;
+                  break;
+                case 1: // White dropout
+                  pixels[idx] = 255;
+                  pixels[idx + 1] = 255;
+                  pixels[idx + 2] = 255;
+                  break;
+                case 2: // Colored static
+                  pixels[idx] = random(255);
+                  pixels[idx + 1] = random(255);
+                  pixels[idx + 2] = random(255);
+                  break;
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      updateDisplayArea();
+      updateGridDimensions();
+      initializeGrid();
+    }
+    
+    function setupEventListeners() {
+      // Camera selection
+      document.getElementById('cameraSelect').addEventListener('change', function() {
+        const selectedCameraId = this.value;
+        if (selectedCameraId && selectedCameraId !== currentCameraId) {
+          startCamera(selectedCameraId);
+        }
+      });
+      
+      // Toggle fullscreen
+      document.getElementById('toggleFullscreen').addEventListener('click', toggleFullScreen);
+      
+      // Toggle controls
+      document.getElementById('toggleControls').addEventListener('click', function() {
+        document.getElementById('controls').classList.toggle('hidden');
+      });
+      
+      // Fullscreen CTA (now hidden by default)
+      document.getElementById('enterFullscreen').addEventListener('click', function() {
+        toggleFullScreen();
+        document.getElementById('fullscreenCTA').classList.add('hidden');
+      });
+      
+      // Image controls
+      document.getElementById('invertColors').addEventListener('change', function() {
+        invertColors = this.checked;
+      });
+      
+      document.getElementById('flipVideo').addEventListener('change', function() {
+        flipVideo = this.checked;
+      });
+      
+      document.getElementById('threshold').addEventListener('input', function() {
+        threshold = parseInt(this.value);
+        document.getElementById('thresholdValue').textContent = threshold;
+      });
+      
+      document.getElementById('cellWidthMultiplier').addEventListener('input', function() {
+        cellWidthMultiplier = parseFloat(this.value);
+        document.getElementById('cellWidthValue').textContent = cellWidthMultiplier;
+      });
+      
+      // Contour controls
+      document.getElementById('showContour').addEventListener('change', function() {
+        showContour = this.checked;
+        document.getElementById('contourControls').classList.toggle('hidden', !showContour);
+      });
+      
+      document.getElementById('pixelSize').addEventListener('input', function() {
+        pixelSize = parseInt(this.value);
+        document.getElementById('pixelSizeValue').textContent = pixelSize;
+      });
+      
+      document.getElementById('contourSensitivity').addEventListener('input', function() {
+        contourSensitivity = parseInt(this.value);
+        document.getElementById('contourSensitivityValue').textContent = contourSensitivity;
+      });
+      
+      document.getElementById('contourDensity').addEventListener('input', function() {
+        contourDensity = parseInt(this.value);
+        document.getElementById('contourDensityValue').textContent = contourDensity;
+      });
+      
+      document.getElementById('contourColor').addEventListener('input', function() {
+        contourColor = this.value;
+      });
+      
+      // Animation controls
+      document.getElementById('enableAnimation').addEventListener('change', function() {
+        enableAnimation = this.checked;
+        document.getElementById('animationControls').classList.toggle('hidden', !enableAnimation);
+      });
+      
+      document.getElementById('animationType').addEventListener('change', function() {
+        animationType = this.value;
+      });
+      
+      document.getElementById('animationSpeed').addEventListener('input', function() {
+        animationSpeed = parseInt(this.value);
+        document.getElementById('animationSpeedValue').textContent = animationSpeed;
+      });
+      
+      // Glitch effect controls
+      document.getElementById('enableGlitch').addEventListener('change', function() {
+        enableGlitch = this.checked;
+        document.getElementById('glitchControls').classList.toggle('hidden', !enableGlitch);
+      });
+      
+      document.getElementById('glitchType').addEventListener('change', function() {
+        glitchType = this.value;
+      });
+      
+      document.getElementById('glitchIntensity').addEventListener('input', function() {
+        glitchIntensity = parseInt(this.value);
+        document.getElementById('glitchIntensityValue').textContent = glitchIntensity;
+      });
+      
+      document.getElementById('glitchSpeed').addEventListener('input', function() {
+        glitchSpeed = parseInt(this.value);
+        document.getElementById('glitchSpeedValue').textContent = glitchSpeed;
+      });
+      
+      // Font size
+      document.getElementById('defaultFontSize').addEventListener('input', function() {
+        fontSize = parseInt(this.value);
+        document.getElementById('defaultFontSizeValue').textContent = fontSize;
+        updateGridDimensions();
+        initializeGrid();
+      });
+      
+      // Text density control
+      document.getElementById('textDensity').addEventListener('input', function() {
+        textDensity = parseFloat(this.value);
+        document.getElementById('textDensityValue').textContent = textDensity;
+        updateGridDimensions();
+        initializeGrid();
+      });
+      
+      // Word management
+      document.getElementById('addWordBtn').addEventListener('click', function() {
+        const text = document.getElementById('newWord').value.trim();
+        if (text) {
+          const color = document.getElementById('newWordColor').value;
+          const font = document.getElementById('newWordFont').value;
+          const size = parseInt(document.getElementById('newWordSize').value);
+          
+          wordsData.push({ text, color, font, size });
+          document.getElementById('newWord').value = '';
+          updateWordsList();
+        }
+      });
+      
+      document.getElementById('clearWordsBtn').addEventListener('click', function() {
+        wordsData = [];
+        updateWordsList();
+      });
+      
+      document.getElementById('resetWordsBtn').addEventListener('click', function() {
+        wordsData = [...defaultWords];
+        updateWordsList();
+      });
+    }
+    
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          showError(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+    
+    function updateWordsList() {
+      const wordsListElement = document.getElementById('wordsList');
+      wordsListElement.innerHTML = '';
+      
+      wordsData.forEach((word, index) => {
+        const div = document.createElement('div');
+        div.className = 'word-item';
+        
+        div.innerHTML = `
+          <div class="word-text" style="color: ${word.color}; font-family: ${word.font}; font-size: ${word.size}px;">${word.text}</div>
+          <div class="word-controls">
+            <div class="word-control">
+              <label>Color:</label>
+              <input type="color" value="${word.color}" data-index="${index}" data-property="color">
+            </div>
+            <div class="word-control">
+              <label>Font:</label>
+              <select data-index="${index}" data-property="font">
+                <option value="monospace" ${word.font === 'monospace' ? 'selected' : ''}>Monospace</option>
+                <option value="sans-serif" ${word.font === 'sans-serif' ? 'selected' : ''}>Sans-serif</option>
+                <option value="serif" ${word.font === 'serif' ? 'selected' : ''}>Serif</option>
+                <option value="fantasy" ${word.font === 'fantasy' ? 'selected' : ''}>Fantasy</option>
+                <option value="cursive" ${word.font === 'cursive' ? 'selected' : ''}>Cursive</option>
+              </select>
+            </div>
+            <div class="word-control">
+              <label>Size:</label>
+              <input type="number" value="${word.size}" min="6" max="24" data-index="${index}" data-property="size">
+            </div>
+          </div>
+          <div class="word-actions">
+            <button data-delete="${index}">Delete</button>
+          </div>
+        `;
+        
+        wordsListElement.appendChild(div);
+        
+        // Add event listeners to the new controls
+        div.querySelectorAll('input[data-property], select[data-property]').forEach(input => {
+          input.addEventListener('change', function() {
+            const index = parseInt(this.dataset.index);
+            const property = this.dataset.property;
+            const value = property === 'size' ? parseInt(this.value) : this.value;
+            
+            wordsData[index][property] = value;
+            updateWordsList();
+          });
+        });
+        
+        div.querySelector('button[data-delete]').addEventListener('click', function() {
+          const index = parseInt(this.dataset.delete);
+          wordsData.splice(index, 1);
+          updateWordsList();
+        });
+      });
+    }
+    
+    // Function to update control values to match defaults
+    function updateControlValues() {
+      // Update displayed values
+      document.getElementById('thresholdValue').textContent = threshold;
+      document.getElementById('cellWidthValue').textContent = cellWidthMultiplier;
+      document.getElementById('pixelSizeValue').textContent = pixelSize;
+      document.getElementById('contourSensitivityValue').textContent = contourSensitivity;
+      document.getElementById('contourDensityValue').textContent = contourDensity;
+      document.getElementById('glitchIntensityValue').textContent = glitchIntensity;
+      document.getElementById('glitchSpeedValue').textContent = glitchSpeed;
+      document.getElementById('defaultFontSizeValue').textContent = fontSize;
+      document.getElementById('textDensityValue').textContent = textDensity;
+      
+      // Show/hide controls based on toggles
+      document.getElementById('contourControls').classList.toggle('hidden', !showContour);
+      document.getElementById('glitchControls').classList.toggle('hidden', !enableGlitch);
+      
+      // Update words list to show the default words
+      updateWordsList();
+    }
+  </script>
+</body>
+</html>

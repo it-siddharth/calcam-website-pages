@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculated Camouflage</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Corner Accents -->
+  <div class="corner-accent top-left"></div>
+  <div class="corner-accent top-right"></div>
+  <div class="corner-accent bottom-left"></div>
+  <div class="corner-accent bottom-right"></div>
+
+  <!-- Main Content Container -->
+  <main class="landing-page">
+    <!-- Left Content Section -->
+    <section class="content-section">
+      <!-- Title -->
+      <h1 class="title">
+        <span>CALCULATED</span>
+        <span>CAMOUFLAGE</span>
+      </h1>
+      
+      <!-- Description -->
+      <p class="description">
+        Through an interactive installation of light and space, viewers explore how their authentic identity flows through every version of themselves.
+      </p>
+      
+      <!-- Meta Information -->
+      <div class="meta-info">
+        <div class="meta-item">
+          <span class="meta-label">on display from</span>
+          <span class="meta-value">23 Apr '25–31st Mar '25</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Installed at</span>
+          <span class="meta-value">Fox 3 building, Baltimore</span>
+        </div>
+      </div>
+      
+      <!-- CTA Section -->
+      <div class="cta-section">
+        <p class="cta-text">Curious? See the 3d installation for yourself</p>
+        
+        <a href="WORD SILHOUETTE.html" class="btn btn-primary">
+          <span class="btn-text">EXPERIENCE IT YOURSELF</span>
+          <span class="btn-arrow"> →</span>
+        </a>
+        
+        <div class="nav-links">
+          <a href="#process" class="btn btn-secondary">
+            <span class="btn-text">process</span>
+            <span class="btn-arrow"> →</span>
+          </a>
+          <a href="#journal" class="btn btn-secondary">
+            <span class="btn-text">viewer journal</span>
+            <span class="btn-arrow"> →</span>
+          </a>
+          <a href="#gallery" class="btn btn-secondary">
+            <span class="btn-text">gallery</span>
+            <span class="btn-arrow"> →</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3D Scene Section -->
+    <section class="scene-section" id="experience">
+      <div id="three-container"></div>
+      <!-- Gradient overlay at bottom -->
+      <div class="scene-gradient"></div>
+    </section>
+  </main>
+
+  <!-- Hidden iframe for WORD SILHOUETTE -->
+  <iframe id="silhouette-iframe" src="WORD SILHOUETTE.html" style="position: absolute; left: -9999px; width: 640px; height: 480px;"></iframe>
+
+  <!-- Three.js and dependencies -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lil-gui@0.19"></script>
+  <script type="module" src="js/scene.js"></script>
+</body>
+</html>
+
