@@ -41,7 +41,7 @@ const CONFIG = {
   
   // Stand dimensions
   stand: {
-    poleHeight: 1.5,
+    poleHeight: 8,  // Very tall to extend to bottom of any viewport
     poleRadius: 0.03,
     baseWidth: 0.4
   }
