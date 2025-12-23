@@ -57,6 +57,16 @@ let installationGroup;
 let silhouetteCanvas, silhouetteCtx;
 let gui;
 
+// Image quality settings (synced with WORD SILHOUETTE iframe)
+const imageSettings = {
+  threshold: 83,
+  invertColors: false,
+  flipVideo: false,
+  contourEnabled: true,
+  glitchEnabled: true,
+  glitchIntensity: 20
+};
+
 // ============================================
 // Initialize Scene
 // ============================================
@@ -78,10 +88,10 @@ function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
   
-  // Camera
+  // Camera - offset slightly right to optically center the model
   const aspect = width / height;
   camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
-  camera.position.set(0, 0.5, 5);
+  camera.position.set(0.3, 0.5, 5);
   
   // Renderer
   renderer = new THREE.WebGLRenderer({ 
@@ -410,8 +420,65 @@ function setupControls() {
   controls.maxDistance = 10;
   controls.minPolarAngle = Math.PI / 4;
   controls.maxPolarAngle = Math.PI / 1.5;
-  controls.target.set(0, 0.5, 0);
+  controls.target.set(0.3, 0.5, 0); // Match camera offset for centering
   controls.update();
+}
+
+// ============================================
+// Update Silhouette Settings via iframe
+// ============================================
+function updateSilhouetteSettings() {
+  const iframe = document.getElementById('silhouette-iframe');
+  if (!iframe || !iframe.contentWindow) return;
+  
+  try {
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    
+    // Update threshold
+    const thresholdInput = iframeDoc.getElementById('threshold');
+    if (thresholdInput) {
+      thresholdInput.value = imageSettings.threshold;
+      thresholdInput.dispatchEvent(new Event('input'));
+    }
+    
+    // Update invert colors
+    const invertInput = iframeDoc.getElementById('invertColors');
+    if (invertInput) {
+      invertInput.checked = imageSettings.invertColors;
+      invertInput.dispatchEvent(new Event('change'));
+    }
+    
+    // Update flip video
+    const flipInput = iframeDoc.getElementById('flipVideo');
+    if (flipInput) {
+      flipInput.checked = imageSettings.flipVideo;
+      flipInput.dispatchEvent(new Event('change'));
+    }
+    
+    // Update contour
+    const contourInput = iframeDoc.getElementById('showContour');
+    if (contourInput) {
+      contourInput.checked = imageSettings.contourEnabled;
+      contourInput.dispatchEvent(new Event('change'));
+    }
+    
+    // Update glitch
+    const glitchInput = iframeDoc.getElementById('enableGlitch');
+    if (glitchInput) {
+      glitchInput.checked = imageSettings.glitchEnabled;
+      glitchInput.dispatchEvent(new Event('change'));
+    }
+    
+    // Update glitch intensity
+    const glitchIntensityInput = iframeDoc.getElementById('glitchIntensity');
+    if (glitchIntensityInput) {
+      glitchIntensityInput.value = imageSettings.glitchIntensity;
+      glitchIntensityInput.dispatchEvent(new Event('input'));
+    }
+  } catch (e) {
+    // Cross-origin restrictions - silently fail
+    console.log('Cannot access iframe settings:', e.message);
+  }
 }
 
 // ============================================
@@ -435,20 +502,20 @@ function setupGUI() {
     rotateX: defaults.rotateX,
     rotateY: defaults.rotateY,
     rotateZ: defaults.rotateZ,
-    // View presets
+    // View presets - offset to optically center model
     viewFront: () => {
-      camera.position.set(0, 0.5, 5);
-      controls.target.set(0, 0.5, 0);
+      camera.position.set(0.3, 0.5, 5);
+      controls.target.set(0.3, 0.5, 0);
       controls.update();
     },
     viewSide: () => {
-      camera.position.set(5, 0.5, 0);
-      controls.target.set(0, 0.5, 0);
+      camera.position.set(5, 0.5, 0.3);
+      controls.target.set(0.3, 0.5, 0);
       controls.update();
     },
     viewTop: () => {
-      camera.position.set(0, 5, 0.1);
-      controls.target.set(0, 0.5, 0);
+      camera.position.set(0.3, 5, 0.1);
+      controls.target.set(0.3, 0.5, 0);
       controls.update();
     },
     resetAll: () => {
@@ -468,8 +535,8 @@ function setupGUI() {
         THREE.MathUtils.degToRad(defaults.rotateY),
         THREE.MathUtils.degToRad(defaults.rotateZ)
       );
-      camera.position.set(0, 0.5, 5);
-      controls.target.set(0, 0.5, 0);
+      camera.position.set(0.3, 0.5, 5);
+      controls.target.set(0.3, 0.5, 0);
       controls.update();
       gui.controllersRecursive().forEach(c => c.updateDisplay());
     }
@@ -516,6 +583,29 @@ function setupGUI() {
   
   // Reset button
   gui.add(params, 'resetAll').name('⟳ Reset All');
+  
+  // Image quality controls (affect the silhouette iframe)
+  const imageFolder = gui.addFolder('Image');
+  
+  imageFolder.add(imageSettings, 'threshold', 0, 255, 1).name('Threshold')
+    .onChange(updateSilhouetteSettings);
+  
+  imageFolder.add(imageSettings, 'invertColors').name('Invert')
+    .onChange(updateSilhouetteSettings);
+  
+  imageFolder.add(imageSettings, 'flipVideo').name('Flip')
+    .onChange(updateSilhouetteSettings);
+  
+  imageFolder.add(imageSettings, 'contourEnabled').name('Contour')
+    .onChange(updateSilhouetteSettings);
+  
+  imageFolder.add(imageSettings, 'glitchEnabled').name('Glitch')
+    .onChange(updateSilhouetteSettings);
+  
+  imageFolder.add(imageSettings, 'glitchIntensity', 10, 100, 5).name('Glitch %')
+    .onChange(updateSilhouetteSettings);
+  
+  imageFolder.close();
 }
 
 // ============================================
