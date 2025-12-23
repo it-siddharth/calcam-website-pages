@@ -395,8 +395,8 @@ function setupControls() {
 // ============================================
 function setupGUI() {
   gui = new lil.GUI({ 
-    title: 'Controls',
-    width: 180
+    title: 'Settings',
+    width: 240
   });
   
   // Acrylic Panel controls (primary - open by default)

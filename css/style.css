@@ -282,36 +282,92 @@ body {
 }
 
 /* ============================================
-   3D Controls Panel - lil-gui overrides
+   3D Controls Panel - Settings Style
    ============================================ */
 .lil-gui.root,
 .lil-gui {
-  --background-color: #1a1a1a !important;
-  --text-color: #ccc !important;
-  --title-background-color: #222 !important;
-  --title-text-color: #999 !important;
-  --widget-color: #333 !important;
-  --hover-color: #444 !important;
-  --focus-color: #555 !important;
-  --number-color: #6af !important;
-  --font-size: 10px !important;
-  --font-family: 'JetBrains Mono', monospace !important;
-  --padding: 6px !important;
-  --spacing: 3px !important;
-  --widget-height: 18px !important;
-  --title-height: 22px !important;
-  --row-height: 22px !important;
-  --name-width: 38% !important;
-  --slider-input-width: 32px !important;
+  --background-color: rgba(28, 28, 30, 0.98) !important;
+  --text-color: rgba(255, 255, 255, 0.9) !important;
+  --title-background-color: rgba(44, 44, 46, 0.98) !important;
+  --title-text-color: rgba(255, 255, 255, 0.6) !important;
+  --widget-color: rgba(72, 72, 74, 1) !important;
+  --hover-color: rgba(99, 99, 102, 1) !important;
+  --focus-color: rgba(120, 120, 128, 1) !important;
+  --number-color: #0a84ff !important;
+  --font-size: 13px !important;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  --padding: 10px !important;
+  --spacing: 4px !important;
+  --widget-height: 22px !important;
+  --title-height: 32px !important;
+  --row-height: 28px !important;
+  --name-width: 45% !important;
+  --slider-input-width: 45px !important;
+  --slider-knob-width: 12px !important;
   position: fixed !important;
-  right: 10px !important;
-  bottom: 10px !important;
+  right: 16px !important;
+  bottom: 16px !important;
   top: auto !important;
   z-index: 1000 !important;
-  width: 180px !important;
-  border: 1px solid #444 !important;
-  border-radius: 3px !important;
-  opacity: 0.95 !important;
+  width: 240px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+.lil-gui .title {
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  padding: 10px 12px !important;
+  border-radius: 8px 8px 0 0 !important;
+}
+
+.lil-gui > .children > .lil-gui > .title {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  padding: 8px 12px !important;
+  margin-top: 4px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.lil-gui .controller {
+  padding: 4px 12px !important;
+}
+
+.lil-gui .controller .name {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+}
+
+.lil-gui .controller.number .slider {
+  border-radius: 4px !important;
+  height: 6px !important;
+}
+
+.lil-gui .controller.number input[type="number"] {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  background: rgba(118, 118, 128, 0.24) !important;
+  border: none !important;
+  padding: 4px 6px !important;
+}
+
+.lil-gui .controller.function button {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  background: rgba(118, 118, 128, 0.24) !important;
+  transition: background 0.15s ease !important;
+}
+
+.lil-gui .controller.function button:hover {
+  background: rgba(118, 118, 128, 0.4) !important;
 }
 
 /* ============================================
