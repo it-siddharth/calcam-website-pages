@@ -53,15 +53,19 @@ const CONFIG = {
 // ============================================
 let scene, camera, renderer, controls;
 let tvScreen, tvScreenTexture, tvFrame, screenBorder;
+let tvGroup, standPole;
 let installationGroup;
 let silhouetteCanvas, silhouetteCtx;
-let leftLight;
+let leftLight, leftLightHelper;
+let cinematicMode = false;
+let cinematicAngle = 0;
 
 // TV appearance settings
 const tvSettings = {
   frameColor: '#111111',
   borderVisible: true,
-  borderColor: '#ffffff'
+  borderColor: '#ffffff',
+  scale: 1
 };
 
 // ============================================
@@ -152,16 +156,39 @@ function setupLighting() {
   rimLight.position.set(0, 2, -5);
   scene.add(rimLight);
   
-  // Subtle left-side glare light
-  leftLight = new THREE.SpotLight(0xffffff, 0.6);
-  leftLight.position.set(-8, 2, 3);
-  leftLight.angle = Math.PI / 6;
-  leftLight.penumbra = 0.8;
-  leftLight.decay = 1.5;
-  leftLight.distance = 20;
+  // Strong left-side spotlight for visible glare
+  leftLight = new THREE.SpotLight(0xffffff, 2);
+  leftLight.position.set(-6, 1, 4);
+  leftLight.angle = Math.PI / 5;
+  leftLight.penumbra = 0.5;
+  leftLight.decay = 1;
+  leftLight.distance = 25;
   leftLight.target.position.set(0, 0.5, 0);
   scene.add(leftLight);
   scene.add(leftLight.target);
+  
+  // Visible light ray/glow effect from left
+  createLightRays();
+}
+
+// Create visible light rays effect
+function createLightRays() {
+  // Light cone geometry to simulate visible rays
+  const rayGeometry = new THREE.ConeGeometry(3, 8, 32, 1, true);
+  const rayMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.03,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  
+  leftLightHelper = new THREE.Mesh(rayGeometry, rayMaterial);
+  leftLightHelper.position.set(-4, 0.5, 2);
+  leftLightHelper.rotation.z = Math.PI / 2 + 0.3;
+  leftLightHelper.rotation.y = -0.5;
+  scene.add(leftLightHelper);
 }
 
 // ============================================
@@ -210,7 +237,7 @@ function createTV() {
   screenBorder.visible = tvSettings.borderVisible;
   
   // Group TV components
-  const tvGroup = new THREE.Group();
+  tvGroup = new THREE.Group();
   tvGroup.add(tvFrame);
   tvGroup.add(tvScreen);
   tvGroup.add(screenBorder);
@@ -310,7 +337,7 @@ function updatePanelOpacity(opacity) {
 function createStand() {
   const { stand } = CONFIG;
   
-  // Main pole
+  // Main pole - uses same color as TV frame
   const poleGeometry = new THREE.CylinderGeometry(
     stand.poleRadius, 
     stand.poleRadius, 
@@ -318,14 +345,14 @@ function createStand() {
     16
   );
   const poleMaterial = new THREE.MeshStandardMaterial({ 
-    color: 0x222222,
+    color: new THREE.Color(tvSettings.frameColor),
     roughness: 0.5,
     metalness: 0.8
   });
-  const pole = new THREE.Mesh(poleGeometry, poleMaterial);
-  pole.position.y = -stand.poleHeight / 2 - 0.4;
+  standPole = new THREE.Mesh(poleGeometry, poleMaterial);
+  standPole.position.y = -stand.poleHeight / 2 - 0.4;
   
-  installationGroup.add(pole);
+  installationGroup.add(standPole);
 }
 
 // ============================================
@@ -478,7 +505,7 @@ function setupGUI() {
       </div>
       <div class="setting-row">
         <label>V-Spread</label>
-        <input type="range" id="ctrl-vspread" min="-1" max="1" step="0.05" value="${defaults.vSpread}">
+        <input type="range" id="ctrl-vspread" min="-2" max="2" step="0.05" value="${defaults.vSpread}">
         <span class="value" id="val-vspread">${defaults.vSpread}</span>
       </div>
       <div class="setting-row">
@@ -493,6 +520,11 @@ function setupGUI() {
         <input type="color" id="ctrl-tvcolor" value="${tvSettings.frameColor}">
       </div>
       <div class="setting-row">
+        <label>TV Size</label>
+        <input type="range" id="ctrl-tvsize" min="0.5" max="1.5" step="0.05" value="1">
+        <span class="value" id="val-tvsize">1.0</span>
+      </div>
+      <div class="setting-row">
         <label>Border</label>
         <input type="checkbox" id="ctrl-tvborder" ${tvSettings.borderVisible ? 'checked' : ''}>
       </div>
@@ -502,8 +534,8 @@ function setupGUI() {
       </div>
       <div class="setting-row">
         <label>Left Light</label>
-        <input type="range" id="ctrl-leftlight" min="0" max="2" step="0.1" value="0.6">
-        <span class="value" id="val-leftlight">0.6</span>
+        <input type="range" id="ctrl-leftlight" min="0" max="5" step="0.1" value="2">
+        <span class="value" id="val-leftlight">2.0</span>
       </div>
       
       <div class="setting-section">Image / Video</div>
@@ -556,7 +588,10 @@ function setupGUI() {
         <button onclick="setView('front')">Front</button>
         <button onclick="setView('side')">Side</button>
         <button onclick="setView('top')">Top</button>
-        <button onclick="resetAll()">Reset</button>
+        <button id="btn-cinematic" onclick="toggleCinematic()">🎬 Cine</button>
+      </div>
+      <div class="setting-buttons" style="margin-top: 8px;">
+        <button onclick="resetAll()" style="grid-column: span 4;">Reset All</button>
       </div>
     </div>
   `;
@@ -703,11 +738,24 @@ function setupSettingsListeners() {
     installationGroup.rotation.z = THREE.MathUtils.degToRad(v);
   });
   
-  // TV Frame Color
+  // TV Frame Color (also updates stand)
   document.getElementById('ctrl-tvcolor').addEventListener('input', (e) => {
     tvSettings.frameColor = e.target.value;
     if (tvFrame) {
       tvFrame.material.color.set(e.target.value);
+    }
+    if (standPole) {
+      standPole.material.color.set(e.target.value);
+    }
+  });
+  
+  // TV Size
+  document.getElementById('ctrl-tvsize').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-tvsize').textContent = v.toFixed(2);
+    tvSettings.scale = v;
+    if (tvGroup) {
+      tvGroup.scale.set(v, v, v);
     }
   });
   
@@ -733,6 +781,9 @@ function setupSettingsListeners() {
     document.getElementById('val-leftlight').textContent = v.toFixed(1);
     if (leftLight) {
       leftLight.intensity = v;
+    }
+    if (leftLightHelper) {
+      leftLightHelper.material.opacity = v * 0.02;
     }
   });
   
@@ -893,6 +944,20 @@ function adjustCameraForViewport(width, height) {
 function animate() {
   requestAnimationFrame(animate);
   
+  // Cinematic pan mode
+  if (cinematicMode && controls) {
+    cinematicAngle += 0.002; // Slow rotation speed
+    const radius = 6;
+    const height = 0.8; // Slightly below center for downward angle
+    
+    camera.position.x = Math.sin(cinematicAngle) * radius;
+    camera.position.z = Math.cos(cinematicAngle) * radius;
+    camera.position.y = height;
+    
+    controls.target.set(0, 0.5, 0);
+    camera.lookAt(0, 0.5, 0);
+  }
+  
   // Update controls
   if (controls) {
     controls.update();
@@ -901,6 +966,18 @@ function animate() {
   // Render scene
   renderer.render(scene, camera);
 }
+
+// Toggle cinematic mode
+window.toggleCinematic = function() {
+  cinematicMode = !cinematicMode;
+  if (cinematicMode) {
+    cinematicAngle = Math.atan2(camera.position.x, camera.position.z);
+    controls.enabled = false;
+  } else {
+    controls.enabled = true;
+  }
+  document.getElementById('btn-cinematic').textContent = cinematicMode ? '⏸ Stop' : '🎬 Cine';
+};
 
 // ============================================
 // Initialize on DOM Load
