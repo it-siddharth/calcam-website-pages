@@ -396,124 +396,69 @@ function setupControls() {
 function setupGUI() {
   gui = new lil.GUI({ 
     title: 'Controls',
-    width: 220
+    width: 180
   });
   
-  // Position GUI in bottom-right
-  gui.domElement.style.position = 'fixed';
-  gui.domElement.style.bottom = '20px';
-  gui.domElement.style.right = '20px';
-  gui.domElement.style.top = 'auto';
-  gui.domElement.style.opacity = '0.9';
-  
-  // Rotation controls
-  const rotationFolder = gui.addFolder('Rotation');
-  
-  const rotationParams = {
-    rotateX: 0,
-    rotateY: 0,
-    rotateZ: 0
+  // Acrylic Panel controls (primary - open by default)
+  const panelParams = {
+    opacity: CONFIG.panel.opacity,
+    hSpacing: 0,
+    vSpacing: 0,
+    depth: 0
   };
   
-  rotationFolder.add(rotationParams, 'rotateX', -180, 180, 1)
-    .name('X Rotation')
-    .onChange((value) => {
-      installationGroup.rotation.x = THREE.MathUtils.degToRad(value);
-    });
+  gui.add(panelParams, 'opacity', 0.1, 1, 0.05)
+    .name('Opacity')
+    .onChange(updatePanelOpacity);
   
-  rotationFolder.add(rotationParams, 'rotateY', -180, 180, 1)
-    .name('Y Rotation')
-    .onChange((value) => {
-      installationGroup.rotation.y = THREE.MathUtils.degToRad(value);
-    });
+  gui.add(panelParams, 'hSpacing', -1, 1, 0.05)
+    .name('H-Spread')
+    .onChange((v) => updatePanelSpacing(v, panelParams.vSpacing, panelParams.depth));
   
-  rotationFolder.add(rotationParams, 'rotateZ', -180, 180, 1)
-    .name('Z Rotation')
-    .onChange((value) => {
-      installationGroup.rotation.z = THREE.MathUtils.degToRad(value);
-    });
+  gui.add(panelParams, 'vSpacing', -1, 1, 0.05)
+    .name('V-Spread')
+    .onChange((v) => updatePanelSpacing(panelParams.hSpacing, v, panelParams.depth));
   
-  rotationFolder.open();
+  gui.add(panelParams, 'depth', -0.5, 0.5, 0.02)
+    .name('Depth')
+    .onChange((v) => updatePanelSpacing(panelParams.hSpacing, panelParams.vSpacing, v));
   
-  // View presets
-  const viewFolder = gui.addFolder('View Presets');
+  // Rotation folder (collapsed by default)
+  const rotationFolder = gui.addFolder('Rotation');
+  const rotationParams = { x: 0, y: 0, z: 0 };
   
-  const viewPresets = {
-    front: () => {
-      camera.position.set(0, 0.5, 5);
-      controls.target.set(0, 0.5, 0);
-      controls.update();
-    },
-    side: () => {
-      camera.position.set(5, 0.5, 0);
-      controls.target.set(0, 0.5, 0);
-      controls.update();
-    },
-    top: () => {
-      camera.position.set(0, 5, 0.1);
-      controls.target.set(0, 0.5, 0);
-      controls.update();
-    },
-    diagonal: () => {
-      camera.position.set(3, 2, 4);
-      controls.target.set(0, 0.5, 0);
-      controls.update();
-    },
+  rotationFolder.add(rotationParams, 'x', -180, 180, 1).name('X')
+    .onChange((v) => { installationGroup.rotation.x = THREE.MathUtils.degToRad(v); });
+  rotationFolder.add(rotationParams, 'y', -180, 180, 1).name('Y')
+    .onChange((v) => { installationGroup.rotation.y = THREE.MathUtils.degToRad(v); });
+  rotationFolder.add(rotationParams, 'z', -180, 180, 1).name('Z')
+    .onChange((v) => { installationGroup.rotation.z = THREE.MathUtils.degToRad(v); });
+  rotationFolder.close();
+  
+  // View presets folder (collapsed by default)
+  const viewFolder = gui.addFolder('Views');
+  const views = {
+    front: () => { camera.position.set(0, 0.5, 5); controls.target.set(0, 0.5, 0); controls.update(); },
+    side: () => { camera.position.set(5, 0.5, 0); controls.target.set(0, 0.5, 0); controls.update(); },
+    top: () => { camera.position.set(0, 5, 0.1); controls.target.set(0, 0.5, 0); controls.update(); },
     reset: () => {
-      rotationParams.rotateX = 0;
-      rotationParams.rotateY = 0;
-      rotationParams.rotateZ = 0;
+      rotationParams.x = rotationParams.y = rotationParams.z = 0;
       installationGroup.rotation.set(0, 0, 0);
+      panelParams.hSpacing = panelParams.vSpacing = panelParams.depth = 0;
+      panelParams.opacity = CONFIG.panel.opacity;
+      updatePanelSpacing(0, 0, 0);
+      updatePanelOpacity(CONFIG.panel.opacity);
       camera.position.set(0, 0.5, 5);
       controls.target.set(0, 0.5, 0);
       controls.update();
       gui.controllersRecursive().forEach(c => c.updateDisplay());
     }
   };
-  
-  viewFolder.add(viewPresets, 'front').name('Front View');
-  viewFolder.add(viewPresets, 'side').name('Side View');
-  viewFolder.add(viewPresets, 'top').name('Top View');
-  viewFolder.add(viewPresets, 'diagonal').name('Diagonal View');
-  viewFolder.add(viewPresets, 'reset').name('Reset All');
-  
-  viewFolder.open();
-  
-  // Panel controls
-  const panelFolder = gui.addFolder('Acrylic Panels');
-  
-  const panelParams = {
-    opacity: CONFIG.panel.opacity,
-    horizontalSpread: 0,
-    verticalSpread: 0,
-    depthOffset: 0
-  };
-  
-  panelFolder.add(panelParams, 'opacity', 0.1, 1, 0.05)
-    .name('Translucency')
-    .onChange((value) => {
-      updatePanelOpacity(value);
-    });
-  
-  panelFolder.add(panelParams, 'horizontalSpread', -1, 1, 0.05)
-    .name('H Spacing')
-    .onChange((value) => {
-      updatePanelSpacing(value, panelParams.verticalSpread, panelParams.depthOffset);
-    });
-  
-  panelFolder.add(panelParams, 'verticalSpread', -1, 1, 0.05)
-    .name('V Spacing')
-    .onChange((value) => {
-      updatePanelSpacing(panelParams.horizontalSpread, value, panelParams.depthOffset);
-    });
-  
-  panelFolder.add(panelParams, 'depthOffset', -0.5, 0.5, 0.02)
-    .name('TV Distance')
-    .onChange((value) => {
-      updatePanelSpacing(panelParams.horizontalSpread, panelParams.verticalSpread, value);
-    });
-  
-  panelFolder.open();
+  viewFolder.add(views, 'front').name('Front');
+  viewFolder.add(views, 'side').name('Side');
+  viewFolder.add(views, 'top').name('Top');
+  viewFolder.add(views, 'reset').name('Reset All');
+  viewFolder.close();
 }
 
 // ============================================
