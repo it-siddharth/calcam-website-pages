@@ -63,7 +63,7 @@ const PAN_RANGE = 0.4;    // How far left/right to pan (radians)
 
 // TV appearance settings
 const tvSettings = {
-  frameColor: '#111111',
+  frameColor: '#8f8f8f',  // Medium gray from user
   borderVisible: true,
   borderColor: '#ffffff',
   scale: 1
@@ -146,12 +146,10 @@ function init() {
 function createTV() {
   const { tv } = CONFIG;
   
-  // TV frame (black bezel)
+  // TV frame (bezel) - using BasicMaterial so color shows exactly as specified
   const frameGeometry = new THREE.BoxGeometry(tv.width, tv.height, tv.depth);
-  const frameMaterial = new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color(tvSettings.frameColor),
-    roughness: 0.8,
-    metalness: 0.2
+  const frameMaterial = new THREE.MeshBasicMaterial({ 
+    color: new THREE.Color(tvSettings.frameColor)
   });
   tvFrame = new THREE.Mesh(frameGeometry, frameMaterial);
   
@@ -293,10 +291,8 @@ function createStand() {
     stand.poleHeight, 
     16
   );
-  const poleMaterial = new THREE.MeshStandardMaterial({ 
-    color: new THREE.Color(tvSettings.frameColor),
-    roughness: 0.5,
-    metalness: 0.8
+  const poleMaterial = new THREE.MeshBasicMaterial({ 
+    color: new THREE.Color(tvSettings.frameColor)
   });
   standPole = new THREE.Mesh(poleGeometry, poleMaterial);
   standPole.position.y = -stand.poleHeight / 2 - 0.4;
@@ -808,27 +804,24 @@ function onWindowResize() {
 // Adjust Camera for Viewport Size
 // ============================================
 // Global camera distance that animate() uses
-let cameraDistance = 6;
+let cameraDistance = 5;
 
 function adjustCameraForViewport(width, height) {
   if (!camera) return;
   
-  // Base distance further back to ensure model doesn't get cut off
-  const baseDist = 6;
+  // Base distance - consistent model size across all screens
+  const baseDist = 5;
   
-  // Scale camera distance based on available width
-  // Keep model fully visible at all sizes
+  // Keep model size CONSISTENT regardless of screen size
+  // Only adjust slightly for very small screens to prevent cutoff
   let scaleFactor = 1;
   
-  if (width < 500) {
-    scaleFactor = 0.75;   // Closer for mobile but still visible
-  } else if (width < 700) {
-    scaleFactor = 0.85;
-  } else if (width < 900) {
-    scaleFactor = 0.95;
-  } else {
-    scaleFactor = 1.0;    // Full distance for large screens
+  if (width < 400) {
+    scaleFactor = 1.1;    // Slightly further on very small to prevent cutoff
+  } else if (width < 600) {
+    scaleFactor = 1.05;   // Slightly further on small
   }
+  // All larger screens: same distance = same model size
   
   cameraDistance = baseDist * scaleFactor;
 }
