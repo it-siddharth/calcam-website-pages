@@ -813,20 +813,23 @@ let cameraDistance = 5;
 function adjustCameraForViewport(width, height) {
   if (!camera) return;
   
-  // Calculate optimal camera distance based on viewport
-  const minDimension = Math.min(width, height);
+  // Use width as primary factor since model is beside content
   const baseDist = 5;
   
-  // Scale camera distance inversely with viewport size
-  // Smaller viewport = closer camera, larger = further
+  // Scale camera distance based on available width
+  // Smaller width = much closer camera to fill space
   let scaleFactor = 1;
   
-  if (minDimension < 400) {
-    scaleFactor = 0.7;  // Much closer for small screens
-  } else if (minDimension < 600) {
-    scaleFactor = 0.85;
-  } else if (minDimension > 1000) {
-    scaleFactor = 1.15;
+  if (width < 500) {
+    scaleFactor = 0.5;   // Very close for mobile/small
+  } else if (width < 700) {
+    scaleFactor = 0.6;
+  } else if (width < 900) {
+    scaleFactor = 0.75;
+  } else if (width < 1200) {
+    scaleFactor = 0.9;
+  } else {
+    scaleFactor = 1.0;   // Full distance for large screens
   }
   
   cameraDistance = baseDist * scaleFactor;
