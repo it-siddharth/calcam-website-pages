@@ -56,7 +56,6 @@ let tvScreen, tvScreenTexture, tvFrame, screenBorder;
 let tvGroup, standPole;
 let installationGroup;
 let silhouetteCanvas, silhouetteCtx;
-let leftLightHelper;
 let cinematicMode = false;
 let cinematicAngle = 0;
 
@@ -233,30 +232,6 @@ function setupLighting() {
   studioLights.area.distance = 15;
   scene.add(studioLights.area);
   
-  // ═══════════════════════════════════════════
-  // VISIBLE LIGHT RAYS - Atmospheric effect
-  // ═══════════════════════════════════════════
-  createLightRays();
-}
-
-// Create visible light rays effect
-function createLightRays() {
-  // Light cone geometry to simulate visible rays from accent light
-  const rayGeometry = new THREE.ConeGeometry(2.5, 7, 32, 1, true);
-  const rayMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.04,
-    side: THREE.DoubleSide,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false
-  });
-  
-  leftLightHelper = new THREE.Mesh(rayGeometry, rayMaterial);
-  leftLightHelper.position.set(-4, 0.5, 2);
-  leftLightHelper.rotation.z = Math.PI / 2 + 0.3;
-  leftLightHelper.rotation.y = -0.5;
-  scene.add(leftLightHelper);
 }
 
 // ============================================
@@ -908,7 +883,6 @@ function setupSettingsListeners() {
     document.getElementById('val-accent').textContent = v.toFixed(1);
     lightSettings.accentIntensity = v;
     if (studioLights.accent) studioLights.accent.intensity = v;
-    if (leftLightHelper) leftLightHelper.material.opacity = v * 0.04;
   });
   
   // Image Controls - Threshold
