@@ -68,6 +68,9 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Performance: GPU acceleration */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* ============================================
@@ -327,9 +330,11 @@ body {
   transform: translateY(20px);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.25s ease;
+  transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
   display: flex;
   flex-direction: column;
+  will-change: transform, opacity;
+  contain: layout style;
 }
 
 .settings-panel.open {

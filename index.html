@@ -2,8 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Calculated Camouflage - An interactive installation of light and space">
+  <meta name="theme-color" content="#000000">
   <title>Calculated Camouflage</title>
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="fonts/403-super-vega-regular.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="css/style.css" as="style">
+  
+  <!-- DNS prefetch for external resources -->
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -81,8 +91,8 @@
     </section>
   </main>
 
-  <!-- Hidden iframe for WORD SILHOUETTE -->
-  <iframe id="silhouette-iframe" src="WORD SILHOUETTE.html" style="position: absolute; left: -9999px; width: 640px; height: 480px;"></iframe>
+  <!-- Hidden iframe for WORD SILHOUETTE (lazy loaded) -->
+  <iframe id="silhouette-iframe" src="WORD SILHOUETTE.html" loading="lazy" style="position: absolute; left: -9999px; width: 640px; height: 480px;"></iframe>
 
   <!-- Three.js and dependencies -->
   <script type="importmap">

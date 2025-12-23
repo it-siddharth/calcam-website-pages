@@ -87,22 +87,27 @@ const tvSettings = {
   scale: 1
 };
 
+// Performance settings
+const PERF = {
+  maxPixelRatio: window.devicePixelRatio > 1 ? 1.5 : 1, // Cap for performance
+  shadowMapSize: 1024, // Reduced from 2048
+  antialias: window.devicePixelRatio < 2, // Disable on retina
+  throttleResize: 100 // ms
+};
+
+let resizeTimeout;
+
 // ============================================
 // Initialize Scene
 // ============================================
 function init() {
   const container = document.getElementById('three-container');
-  if (!container) {
-    console.error('Three container not found');
-    return;
-  }
+  if (!container) return;
   
   // Get container dimensions
   const rect = container.getBoundingClientRect();
   const width = rect.width || window.innerWidth * 0.55;
   const height = rect.height || window.innerHeight;
-  
-  console.log('Container dimensions:', width, height);
   
   // Scene
   scene = new THREE.Scene();
@@ -110,16 +115,17 @@ function init() {
   
   // Camera - offset slightly right to optically center the model
   const aspect = width / height;
-  camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 100); // Reduced far plane
   camera.position.set(0.3, 0.5, 5);
   
-  // Renderer
+  // Renderer - optimized settings
   renderer = new THREE.WebGLRenderer({ 
-    antialias: true,
-    alpha: true 
+    antialias: PERF.antialias,
+    alpha: true,
+    powerPreference: 'high-performance'
   });
   renderer.setSize(width, height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, PERF.maxPixelRatio));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   container.appendChild(renderer.domElement);
   
@@ -142,8 +148,8 @@ function init() {
   setupControls();
   setupGUI();
   
-  // Handle resize
-  window.addEventListener('resize', onWindowResize);
+  // Handle resize with throttling
+  window.addEventListener('resize', throttledResize);
   
   // Initial viewport adjustment
   adjustCameraForViewport(width, height);
@@ -172,8 +178,8 @@ function setupLighting() {
   studioLights.key = new THREE.DirectionalLight(0xfff5e6, lightSettings.keyIntensity);
   studioLights.key.position.set(-4, 4, 5);
   studioLights.key.castShadow = true;
-  studioLights.key.shadow.mapSize.width = 2048;
-  studioLights.key.shadow.mapSize.height = 2048;
+  studioLights.key.shadow.mapSize.width = PERF.shadowMapSize;
+  studioLights.key.shadow.mapSize.height = PERF.shadowMapSize;
   studioLights.key.shadow.camera.near = 0.5;
   studioLights.key.shadow.camera.far = 20;
   studioLights.key.shadow.camera.left = -5;
@@ -214,8 +220,8 @@ function setupLighting() {
   studioLights.accent.decay = 1;
   studioLights.accent.distance = 20;
   studioLights.accent.castShadow = true;
-  studioLights.accent.shadow.mapSize.width = 1024;
-  studioLights.accent.shadow.mapSize.height = 1024;
+  studioLights.accent.shadow.mapSize.width = PERF.shadowMapSize;
+  studioLights.accent.shadow.mapSize.height = PERF.shadowMapSize;
   studioLights.accent.shadow.radius = 8;
   studioLights.accent.target.position.set(0, 0.5, 0);
   scene.add(studioLights.accent);
@@ -983,6 +989,12 @@ function updateIframeSettings() {
 // ============================================
 // Window Resize Handler
 // ============================================
+// Throttled resize for performance
+function throttledResize() {
+  if (resizeTimeout) clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(onWindowResize, PERF.throttleResize);
+}
+
 function onWindowResize() {
   const container = document.getElementById('three-container');
   if (!container || !renderer) return;
