@@ -55,17 +55,6 @@ let scene, camera, renderer, controls;
 let tvScreen, tvScreenTexture;
 let installationGroup;
 let silhouetteCanvas, silhouetteCtx;
-let gui;
-
-// Image quality settings (synced with WORD SILHOUETTE iframe)
-const imageSettings = {
-  threshold: 83,
-  invertColors: false,
-  flipVideo: false,
-  contourEnabled: true,
-  glitchEnabled: true,
-  glitchIntensity: 20
-};
 
 // ============================================
 // Initialize Scene
@@ -424,133 +413,80 @@ function setupControls() {
   controls.update();
 }
 
-// ============================================
-// Update Silhouette Settings via iframe
-// ============================================
-function updateSilhouetteSettings() {
-  const iframe = document.getElementById('silhouette-iframe');
-  if (!iframe || !iframe.contentWindow) return;
-  
-  try {
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    
-    // Update threshold
-    const thresholdInput = iframeDoc.getElementById('threshold');
-    if (thresholdInput) {
-      thresholdInput.value = imageSettings.threshold;
-      thresholdInput.dispatchEvent(new Event('input'));
-    }
-    
-    // Update invert colors
-    const invertInput = iframeDoc.getElementById('invertColors');
-    if (invertInput) {
-      invertInput.checked = imageSettings.invertColors;
-      invertInput.dispatchEvent(new Event('change'));
-    }
-    
-    // Update flip video
-    const flipInput = iframeDoc.getElementById('flipVideo');
-    if (flipInput) {
-      flipInput.checked = imageSettings.flipVideo;
-      flipInput.dispatchEvent(new Event('change'));
-    }
-    
-    // Update contour
-    const contourInput = iframeDoc.getElementById('showContour');
-    if (contourInput) {
-      contourInput.checked = imageSettings.contourEnabled;
-      contourInput.dispatchEvent(new Event('change'));
-    }
-    
-    // Update glitch
-    const glitchInput = iframeDoc.getElementById('enableGlitch');
-    if (glitchInput) {
-      glitchInput.checked = imageSettings.glitchEnabled;
-      glitchInput.dispatchEvent(new Event('change'));
-    }
-    
-    // Update glitch intensity
-    const glitchIntensityInput = iframeDoc.getElementById('glitchIntensity');
-    if (glitchIntensityInput) {
-      glitchIntensityInput.value = imageSettings.glitchIntensity;
-      glitchIntensityInput.dispatchEvent(new Event('input'));
-    }
-  } catch (e) {
-    // Cross-origin restrictions - silently fail
-    console.log('Cannot access iframe settings:', e.message);
-  }
-}
 
 // ============================================
-// Setup GUI Controls
+// Setup GUI Controls - Simple flat list
 // ============================================
 function setupGUI() {
-  gui = new lil.GUI({ 
-    title: 'Settings',
-    width: 240
-  });
-  
   const { defaults } = CONFIG;
   
-  // All parameters
-  const params = {
-    opacity: CONFIG.panel.opacity,
-    thickness: CONFIG.panel.depth,
-    hSpread: defaults.hSpread,
-    vSpread: defaults.vSpread,
-    zOffset: defaults.zOffset,
-    rotateX: defaults.rotateX,
-    rotateY: defaults.rotateY,
-    rotateZ: defaults.rotateZ,
-    // View presets
-    viewFront: () => {
-      camera.position.set(0.3, 0.5, 5);
-      controls.target.set(0.3, 0.5, 0);
-      controls.update();
-    },
-    viewSide: () => {
-      camera.position.set(5, 0.5, 0.3);
-      controls.target.set(0.3, 0.5, 0);
-      controls.update();
-    },
-    viewTop: () => {
-      camera.position.set(0.3, 5, 0.1);
-      controls.target.set(0.3, 0.5, 0);
-      controls.update();
-    },
-    resetAll: () => {
-      // Reset panel params
-      params.opacity = CONFIG.panel.opacity;
-      params.thickness = CONFIG.panel.depth;
-      params.hSpread = defaults.hSpread;
-      params.vSpread = defaults.vSpread;
-      params.zOffset = defaults.zOffset;
-      params.rotateX = defaults.rotateX;
-      params.rotateY = defaults.rotateY;
-      params.rotateZ = defaults.rotateZ;
-      // Reset image params
-      imageSettings.threshold = 83;
-      imageSettings.invertColors = false;
-      imageSettings.flipVideo = false;
-      imageSettings.contourEnabled = true;
-      imageSettings.glitchEnabled = true;
-      imageSettings.glitchIntensity = 20;
-      // Apply changes
-      updatePanelOpacity(CONFIG.panel.opacity);
-      updatePanelThickness(CONFIG.panel.depth);
-      updatePanelSpacing(defaults.hSpread, defaults.vSpread, defaults.zOffset);
-      installationGroup.rotation.set(
-        THREE.MathUtils.degToRad(defaults.rotateX),
-        THREE.MathUtils.degToRad(defaults.rotateY),
-        THREE.MathUtils.degToRad(defaults.rotateZ)
-      );
-      camera.position.set(0.3, 0.5, 5);
-      controls.target.set(0.3, 0.5, 0);
-      controls.update();
-      updateSilhouetteSettings();
-      gui.controllersRecursive().forEach(c => c.updateDisplay());
-    }
-  };
+  // Create settings panel container
+  const panel = document.createElement('div');
+  panel.id = 'settings-panel';
+  panel.className = 'settings-panel';
+  panel.innerHTML = `
+    <div class="settings-header">
+      <span>Settings</span>
+      <button class="settings-close" onclick="toggleSettings()">×</button>
+    </div>
+    <div class="settings-content">
+      <div class="setting-row">
+        <label>Opacity</label>
+        <input type="range" id="ctrl-opacity" min="0.1" max="1" step="0.05" value="${CONFIG.panel.opacity}">
+        <span class="value" id="val-opacity">${CONFIG.panel.opacity}</span>
+      </div>
+      <div class="setting-row">
+        <label>Thickness</label>
+        <input type="range" id="ctrl-thickness" min="0.01" max="0.2" step="0.01" value="${CONFIG.panel.depth}">
+        <span class="value" id="val-thickness">${CONFIG.panel.depth}</span>
+      </div>
+      <div class="setting-row">
+        <label>H-Spread</label>
+        <input type="range" id="ctrl-hspread" min="-1" max="1" step="0.05" value="${defaults.hSpread}">
+        <span class="value" id="val-hspread">${defaults.hSpread}</span>
+      </div>
+      <div class="setting-row">
+        <label>V-Spread</label>
+        <input type="range" id="ctrl-vspread" min="-1" max="1" step="0.05" value="${defaults.vSpread}">
+        <span class="value" id="val-vspread">${defaults.vSpread}</span>
+      </div>
+      <div class="setting-row">
+        <label>Z-Offset</label>
+        <input type="range" id="ctrl-zoffset" min="-0.5" max="0.5" step="0.02" value="${defaults.zOffset}">
+        <span class="value" id="val-zoffset">${defaults.zOffset}</span>
+      </div>
+      <div class="setting-row">
+        <label>Rotate X</label>
+        <input type="range" id="ctrl-rotx" min="-180" max="180" step="1" value="${defaults.rotateX}">
+        <span class="value" id="val-rotx">${defaults.rotateX}°</span>
+      </div>
+      <div class="setting-row">
+        <label>Rotate Y</label>
+        <input type="range" id="ctrl-roty" min="-180" max="180" step="1" value="${defaults.rotateY}">
+        <span class="value" id="val-roty">${defaults.rotateY}°</span>
+      </div>
+      <div class="setting-row">
+        <label>Rotate Z</label>
+        <input type="range" id="ctrl-rotz" min="-180" max="180" step="1" value="${defaults.rotateZ}">
+        <span class="value" id="val-rotz">${defaults.rotateZ}°</span>
+      </div>
+      <div class="setting-buttons">
+        <button onclick="setView('front')">Front</button>
+        <button onclick="setView('side')">Side</button>
+        <button onclick="setView('top')">Top</button>
+        <button onclick="resetAll()">Reset</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+  
+  // Create toggle button
+  const toggleBtn = document.createElement('button');
+  toggleBtn.id = 'settings-toggle';
+  toggleBtn.className = 'settings-toggle';
+  toggleBtn.innerHTML = '⚙';
+  toggleBtn.onclick = toggleSettings;
+  document.body.appendChild(toggleBtn);
   
   // Apply default values on init
   updatePanelSpacing(defaults.hSpread, defaults.vSpread, defaults.zOffset);
@@ -560,80 +496,130 @@ function setupGUI() {
     THREE.MathUtils.degToRad(defaults.rotateZ)
   );
   
-  // ═══════════════════════════════════════════
-  // ACRYLIC PANELS
-  // ═══════════════════════════════════════════
-  const panelFolder = gui.addFolder('Acrylic Panels');
+  // Setup event listeners
+  setupSettingsListeners();
+}
+
+// Toggle settings panel
+window.toggleSettings = function() {
+  const panel = document.getElementById('settings-panel');
+  panel.classList.toggle('open');
+};
+
+// Set camera view
+window.setView = function(view) {
+  switch(view) {
+    case 'front':
+      camera.position.set(0.3, 0.5, 5);
+      break;
+    case 'side':
+      camera.position.set(5, 0.5, 0.3);
+      break;
+    case 'top':
+      camera.position.set(0.3, 5, 0.1);
+      break;
+  }
+  controls.target.set(0.3, 0.5, 0);
+  controls.update();
+};
+
+// Reset all settings
+window.resetAll = function() {
+  const { defaults } = CONFIG;
   
-  panelFolder.add(params, 'opacity', 0.1, 1, 0.05).name('Opacity')
-    .onChange(updatePanelOpacity);
+  document.getElementById('ctrl-opacity').value = CONFIG.panel.opacity;
+  document.getElementById('ctrl-thickness').value = CONFIG.panel.depth;
+  document.getElementById('ctrl-hspread').value = defaults.hSpread;
+  document.getElementById('ctrl-vspread').value = defaults.vSpread;
+  document.getElementById('ctrl-zoffset').value = defaults.zOffset;
+  document.getElementById('ctrl-rotx').value = defaults.rotateX;
+  document.getElementById('ctrl-roty').value = defaults.rotateY;
+  document.getElementById('ctrl-rotz').value = defaults.rotateZ;
   
-  panelFolder.add(params, 'thickness', 0.01, 0.2, 0.01).name('Thickness')
-    .onChange(updatePanelThickness);
+  document.getElementById('val-opacity').textContent = CONFIG.panel.opacity;
+  document.getElementById('val-thickness').textContent = CONFIG.panel.depth;
+  document.getElementById('val-hspread').textContent = defaults.hSpread;
+  document.getElementById('val-vspread').textContent = defaults.vSpread;
+  document.getElementById('val-zoffset').textContent = defaults.zOffset;
+  document.getElementById('val-rotx').textContent = defaults.rotateX + '°';
+  document.getElementById('val-roty').textContent = defaults.rotateY + '°';
+  document.getElementById('val-rotz').textContent = defaults.rotateZ + '°';
   
-  panelFolder.add(params, 'hSpread', -1, 1, 0.05).name('H-Spread')
-    .onChange((v) => updatePanelSpacing(v, params.vSpread, params.zOffset));
+  updatePanelOpacity(CONFIG.panel.opacity);
+  updatePanelThickness(CONFIG.panel.depth);
+  updatePanelSpacing(defaults.hSpread, defaults.vSpread, defaults.zOffset);
+  installationGroup.rotation.set(
+    THREE.MathUtils.degToRad(defaults.rotateX),
+    THREE.MathUtils.degToRad(defaults.rotateY),
+    THREE.MathUtils.degToRad(defaults.rotateZ)
+  );
+  camera.position.set(0.3, 0.5, 5);
+  controls.target.set(0.3, 0.5, 0);
+  controls.update();
+};
+
+// Setup settings input listeners
+function setupSettingsListeners() {
+  const { defaults } = CONFIG;
+  let hSpread = defaults.hSpread;
+  let vSpread = defaults.vSpread;
+  let zOffset = defaults.zOffset;
   
-  panelFolder.add(params, 'vSpread', -1, 1, 0.05).name('V-Spread')
-    .onChange((v) => updatePanelSpacing(params.hSpread, v, params.zOffset));
+  // Opacity
+  document.getElementById('ctrl-opacity').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-opacity').textContent = v.toFixed(2);
+    updatePanelOpacity(v);
+  });
   
-  panelFolder.add(params, 'zOffset', -0.5, 0.5, 0.02).name('Z-Offset')
-    .onChange((v) => updatePanelSpacing(params.hSpread, params.vSpread, v));
+  // Thickness
+  document.getElementById('ctrl-thickness').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-thickness').textContent = v.toFixed(2);
+    updatePanelThickness(v);
+  });
   
-  panelFolder.open();
+  // H-Spread
+  document.getElementById('ctrl-hspread').addEventListener('input', (e) => {
+    hSpread = parseFloat(e.target.value);
+    document.getElementById('val-hspread').textContent = hSpread.toFixed(2);
+    updatePanelSpacing(hSpread, vSpread, zOffset);
+  });
   
-  // ═══════════════════════════════════════════
-  // ROTATION
-  // ═══════════════════════════════════════════
-  const rotationFolder = gui.addFolder('Rotation');
+  // V-Spread
+  document.getElementById('ctrl-vspread').addEventListener('input', (e) => {
+    vSpread = parseFloat(e.target.value);
+    document.getElementById('val-vspread').textContent = vSpread.toFixed(2);
+    updatePanelSpacing(hSpread, vSpread, zOffset);
+  });
   
-  rotationFolder.add(params, 'rotateX', -180, 180, 1).name('X')
-    .onChange((v) => { installationGroup.rotation.x = THREE.MathUtils.degToRad(v); });
+  // Z-Offset
+  document.getElementById('ctrl-zoffset').addEventListener('input', (e) => {
+    zOffset = parseFloat(e.target.value);
+    document.getElementById('val-zoffset').textContent = zOffset.toFixed(2);
+    updatePanelSpacing(hSpread, vSpread, zOffset);
+  });
   
-  rotationFolder.add(params, 'rotateY', -180, 180, 1).name('Y')
-    .onChange((v) => { installationGroup.rotation.y = THREE.MathUtils.degToRad(v); });
+  // Rotate X
+  document.getElementById('ctrl-rotx').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    document.getElementById('val-rotx').textContent = v + '°';
+    installationGroup.rotation.x = THREE.MathUtils.degToRad(v);
+  });
   
-  rotationFolder.add(params, 'rotateZ', -180, 180, 1).name('Z')
-    .onChange((v) => { installationGroup.rotation.z = THREE.MathUtils.degToRad(v); });
+  // Rotate Y
+  document.getElementById('ctrl-roty').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    document.getElementById('val-roty').textContent = v + '°';
+    installationGroup.rotation.y = THREE.MathUtils.degToRad(v);
+  });
   
-  rotationFolder.open();
-  
-  // ═══════════════════════════════════════════
-  // IMAGE / VIDEO
-  // ═══════════════════════════════════════════
-  const imageFolder = gui.addFolder('Image / Video');
-  
-  imageFolder.add(imageSettings, 'threshold', 0, 255, 1).name('Threshold')
-    .onChange(updateSilhouetteSettings);
-  
-  imageFolder.add(imageSettings, 'invertColors').name('Invert')
-    .onChange(updateSilhouetteSettings);
-  
-  imageFolder.add(imageSettings, 'flipVideo').name('Flip')
-    .onChange(updateSilhouetteSettings);
-  
-  imageFolder.add(imageSettings, 'contourEnabled').name('Contour')
-    .onChange(updateSilhouetteSettings);
-  
-  imageFolder.add(imageSettings, 'glitchEnabled').name('Glitch')
-    .onChange(updateSilhouetteSettings);
-  
-  imageFolder.add(imageSettings, 'glitchIntensity', 10, 100, 5).name('Glitch %')
-    .onChange(updateSilhouetteSettings);
-  
-  imageFolder.open();
-  
-  // ═══════════════════════════════════════════
-  // CAMERA VIEWS
-  // ═══════════════════════════════════════════
-  const viewFolder = gui.addFolder('Camera Views');
-  
-  viewFolder.add(params, 'viewFront').name('Front');
-  viewFolder.add(params, 'viewSide').name('Side');
-  viewFolder.add(params, 'viewTop').name('Top');
-  viewFolder.add(params, 'resetAll').name('⟳ Reset All');
-  
-  viewFolder.open();
+  // Rotate Z
+  document.getElementById('ctrl-rotz').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    document.getElementById('val-rotz').textContent = v + '°';
+    installationGroup.rotation.z = THREE.MathUtils.degToRad(v);
+  });
 }
 
 // ============================================
