@@ -27,9 +27,9 @@
   --font-mono: 'JetBrains Mono', monospace;
   --font-arrow: 'Alegreya', serif;
   
-  --title-size: 97px;
-  --title-line-height: 97px;
-  --title-letter-spacing: -2.9106px;
+  --title-size: 136px;
+  --title-line-height: 130px;
+  --title-letter-spacing: -4px;
   
   --body-size: 20px;
   --body-line-height: 26px;
@@ -380,18 +380,63 @@ body {
   border-radius: 2px;
 }
 
+/* Section Headers */
+.setting-section {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 16px;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.setting-section:first-child {
+  margin-top: 0;
+}
+
 /* Setting Row */
 .setting-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .setting-row label {
   flex: 0 0 70px;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.7);
+}
+
+/* Color picker */
+.setting-row input[type="color"] {
+  width: 32px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+.setting-row input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.setting-row input[type="color"]::-webkit-color-swatch {
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Checkbox */
+.setting-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #64d2ff;
 }
 
 .setting-row input[type="range"] {

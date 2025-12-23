@@ -52,9 +52,17 @@ const CONFIG = {
 // Global Variables
 // ============================================
 let scene, camera, renderer, controls;
-let tvScreen, tvScreenTexture;
+let tvScreen, tvScreenTexture, tvFrame, screenBorder;
 let installationGroup;
 let silhouetteCanvas, silhouetteCtx;
+let leftLight;
+
+// TV appearance settings
+const tvSettings = {
+  frameColor: '#111111',
+  borderVisible: true,
+  borderColor: '#ffffff'
+};
 
 // ============================================
 // Initialize Scene
@@ -143,6 +151,17 @@ function setupLighting() {
   const rimLight = new THREE.DirectionalLight(0xffffff, 0.2);
   rimLight.position.set(0, 2, -5);
   scene.add(rimLight);
+  
+  // Subtle left-side glare light
+  leftLight = new THREE.SpotLight(0xffffff, 0.6);
+  leftLight.position.set(-8, 2, 3);
+  leftLight.angle = Math.PI / 6;
+  leftLight.penumbra = 0.8;
+  leftLight.decay = 1.5;
+  leftLight.distance = 20;
+  leftLight.target.position.set(0, 0.5, 0);
+  scene.add(leftLight);
+  scene.add(leftLight.target);
 }
 
 // ============================================
@@ -154,11 +173,11 @@ function createTV() {
   // TV frame (black bezel)
   const frameGeometry = new THREE.BoxGeometry(tv.width, tv.height, tv.depth);
   const frameMaterial = new THREE.MeshStandardMaterial({ 
-    color: 0x111111,
+    color: new THREE.Color(tvSettings.frameColor),
     roughness: 0.8,
     metalness: 0.2
   });
-  const tvFrame = new THREE.Mesh(frameGeometry, frameMaterial);
+  tvFrame = new THREE.Mesh(frameGeometry, frameMaterial);
   
   // TV screen (will display WORD SILHOUETTE)
   const screenWidth = tv.width - tv.bezelWidth * 2;
@@ -185,9 +204,10 @@ function createTV() {
   const borderGeometry = new THREE.EdgesGeometry(
     new THREE.PlaneGeometry(screenWidth + 0.02, screenHeight + 0.02)
   );
-  const borderMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-  const screenBorder = new THREE.LineSegments(borderGeometry, borderMaterial);
+  const borderMaterial = new THREE.LineBasicMaterial({ color: new THREE.Color(tvSettings.borderColor) });
+  screenBorder = new THREE.LineSegments(borderGeometry, borderMaterial);
   screenBorder.position.z = tv.depth / 2 + 0.002;
+  screenBorder.visible = tvSettings.borderVisible;
   
   // Group TV components
   const tvGroup = new THREE.Group();
@@ -430,6 +450,7 @@ function setupGUI() {
       <button class="settings-close" onclick="toggleSettings()">×</button>
     </div>
     <div class="settings-content">
+      <div class="setting-section">Acrylic Panels</div>
       <div class="setting-row">
         <label>Opacity</label>
         <input type="range" id="ctrl-opacity" min="0.1" max="1" step="0.05" value="${CONFIG.panel.opacity}">
@@ -455,6 +476,27 @@ function setupGUI() {
         <input type="range" id="ctrl-zoffset" min="-0.5" max="0.5" step="0.02" value="${defaults.zOffset}">
         <span class="value" id="val-zoffset">${defaults.zOffset}</span>
       </div>
+      
+      <div class="setting-section">TV Appearance</div>
+      <div class="setting-row">
+        <label>Frame</label>
+        <input type="color" id="ctrl-tvcolor" value="${tvSettings.frameColor}">
+      </div>
+      <div class="setting-row">
+        <label>Border</label>
+        <input type="checkbox" id="ctrl-tvborder" ${tvSettings.borderVisible ? 'checked' : ''}>
+      </div>
+      <div class="setting-row">
+        <label>Border Color</label>
+        <input type="color" id="ctrl-bordercolor" value="${tvSettings.borderColor}">
+      </div>
+      <div class="setting-row">
+        <label>Left Light</label>
+        <input type="range" id="ctrl-leftlight" min="0" max="2" step="0.1" value="0.6">
+        <span class="value" id="val-leftlight">0.6</span>
+      </div>
+      
+      <div class="setting-section">Rotation</div>
       <div class="setting-row">
         <label>Rotate X</label>
         <input type="range" id="ctrl-rotx" min="-180" max="180" step="1" value="${defaults.rotateX}">
@@ -470,6 +512,7 @@ function setupGUI() {
         <input type="range" id="ctrl-rotz" min="-180" max="180" step="1" value="${defaults.rotateZ}">
         <span class="value" id="val-rotz">${defaults.rotateZ}°</span>
       </div>
+      
       <div class="setting-buttons">
         <button onclick="setView('front')">Front</button>
         <button onclick="setView('side')">Side</button>
@@ -619,6 +662,39 @@ function setupSettingsListeners() {
     const v = parseInt(e.target.value);
     document.getElementById('val-rotz').textContent = v + '°';
     installationGroup.rotation.z = THREE.MathUtils.degToRad(v);
+  });
+  
+  // TV Frame Color
+  document.getElementById('ctrl-tvcolor').addEventListener('input', (e) => {
+    tvSettings.frameColor = e.target.value;
+    if (tvFrame) {
+      tvFrame.material.color.set(e.target.value);
+    }
+  });
+  
+  // TV Border Visibility
+  document.getElementById('ctrl-tvborder').addEventListener('change', (e) => {
+    tvSettings.borderVisible = e.target.checked;
+    if (screenBorder) {
+      screenBorder.visible = e.target.checked;
+    }
+  });
+  
+  // TV Border Color
+  document.getElementById('ctrl-bordercolor').addEventListener('input', (e) => {
+    tvSettings.borderColor = e.target.value;
+    if (screenBorder) {
+      screenBorder.material.color.set(e.target.value);
+    }
+  });
+  
+  // Left Light Intensity
+  document.getElementById('ctrl-leftlight').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-leftlight').textContent = v.toFixed(1);
+    if (leftLight) {
+      leftLight.intensity = v;
+    }
   });
 }
 
