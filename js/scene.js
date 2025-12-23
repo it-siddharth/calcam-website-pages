@@ -487,12 +487,12 @@ function updateSilhouetteSettings() {
 function setupGUI() {
   gui = new lil.GUI({ 
     title: 'Settings',
-    width: 220
+    width: 240
   });
   
   const { defaults } = CONFIG;
   
-  // All parameters in one flat object with default values
+  // All parameters
   const params = {
     opacity: CONFIG.panel.opacity,
     thickness: CONFIG.panel.depth,
@@ -502,7 +502,7 @@ function setupGUI() {
     rotateX: defaults.rotateX,
     rotateY: defaults.rotateY,
     rotateZ: defaults.rotateZ,
-    // View presets - offset to optically center model
+    // View presets
     viewFront: () => {
       camera.position.set(0.3, 0.5, 5);
       controls.target.set(0.3, 0.5, 0);
@@ -519,6 +519,7 @@ function setupGUI() {
       controls.update();
     },
     resetAll: () => {
+      // Reset panel params
       params.opacity = CONFIG.panel.opacity;
       params.thickness = CONFIG.panel.depth;
       params.hSpread = defaults.hSpread;
@@ -527,6 +528,14 @@ function setupGUI() {
       params.rotateX = defaults.rotateX;
       params.rotateY = defaults.rotateY;
       params.rotateZ = defaults.rotateZ;
+      // Reset image params
+      imageSettings.threshold = 83;
+      imageSettings.invertColors = false;
+      imageSettings.flipVideo = false;
+      imageSettings.contourEnabled = true;
+      imageSettings.glitchEnabled = true;
+      imageSettings.glitchIntensity = 20;
+      // Apply changes
       updatePanelOpacity(CONFIG.panel.opacity);
       updatePanelThickness(CONFIG.panel.depth);
       updatePanelSpacing(defaults.hSpread, defaults.vSpread, defaults.zOffset);
@@ -538,6 +547,7 @@ function setupGUI() {
       camera.position.set(0.3, 0.5, 5);
       controls.target.set(0.3, 0.5, 0);
       controls.update();
+      updateSilhouetteSettings();
       gui.controllersRecursive().forEach(c => c.updateDisplay());
     }
   };
@@ -550,42 +560,48 @@ function setupGUI() {
     THREE.MathUtils.degToRad(defaults.rotateZ)
   );
   
-  // Panel controls
-  gui.add(params, 'opacity', 0.1, 1, 0.05).name('Opacity')
+  // ═══════════════════════════════════════════
+  // ACRYLIC PANELS
+  // ═══════════════════════════════════════════
+  const panelFolder = gui.addFolder('Acrylic Panels');
+  
+  panelFolder.add(params, 'opacity', 0.1, 1, 0.05).name('Opacity')
     .onChange(updatePanelOpacity);
   
-  gui.add(params, 'thickness', 0.01, 0.2, 0.01).name('Thickness')
+  panelFolder.add(params, 'thickness', 0.01, 0.2, 0.01).name('Thickness')
     .onChange(updatePanelThickness);
   
-  gui.add(params, 'hSpread', -1, 1, 0.05).name('H-Spread')
+  panelFolder.add(params, 'hSpread', -1, 1, 0.05).name('H-Spread')
     .onChange((v) => updatePanelSpacing(v, params.vSpread, params.zOffset));
   
-  gui.add(params, 'vSpread', -1, 1, 0.05).name('V-Spread')
+  panelFolder.add(params, 'vSpread', -1, 1, 0.05).name('V-Spread')
     .onChange((v) => updatePanelSpacing(params.hSpread, v, params.zOffset));
   
-  gui.add(params, 'zOffset', -0.5, 0.5, 0.02).name('Z-Offset')
+  panelFolder.add(params, 'zOffset', -0.5, 0.5, 0.02).name('Z-Offset')
     .onChange((v) => updatePanelSpacing(params.hSpread, params.vSpread, v));
   
-  // Rotation controls
-  gui.add(params, 'rotateX', -180, 180, 1).name('Rotate X')
+  panelFolder.open();
+  
+  // ═══════════════════════════════════════════
+  // ROTATION
+  // ═══════════════════════════════════════════
+  const rotationFolder = gui.addFolder('Rotation');
+  
+  rotationFolder.add(params, 'rotateX', -180, 180, 1).name('X')
     .onChange((v) => { installationGroup.rotation.x = THREE.MathUtils.degToRad(v); });
   
-  gui.add(params, 'rotateY', -180, 180, 1).name('Rotate Y')
+  rotationFolder.add(params, 'rotateY', -180, 180, 1).name('Y')
     .onChange((v) => { installationGroup.rotation.y = THREE.MathUtils.degToRad(v); });
   
-  gui.add(params, 'rotateZ', -180, 180, 1).name('Rotate Z')
+  rotationFolder.add(params, 'rotateZ', -180, 180, 1).name('Z')
     .onChange((v) => { installationGroup.rotation.z = THREE.MathUtils.degToRad(v); });
   
-  // View presets
-  gui.add(params, 'viewFront').name('📷 Front');
-  gui.add(params, 'viewSide').name('📷 Side');
-  gui.add(params, 'viewTop').name('📷 Top');
+  rotationFolder.open();
   
-  // Reset button
-  gui.add(params, 'resetAll').name('⟳ Reset All');
-  
-  // Image quality controls (affect the silhouette iframe)
-  const imageFolder = gui.addFolder('Image');
+  // ═══════════════════════════════════════════
+  // IMAGE / VIDEO
+  // ═══════════════════════════════════════════
+  const imageFolder = gui.addFolder('Image / Video');
   
   imageFolder.add(imageSettings, 'threshold', 0, 255, 1).name('Threshold')
     .onChange(updateSilhouetteSettings);
@@ -605,7 +621,19 @@ function setupGUI() {
   imageFolder.add(imageSettings, 'glitchIntensity', 10, 100, 5).name('Glitch %')
     .onChange(updateSilhouetteSettings);
   
-  imageFolder.close();
+  imageFolder.open();
+  
+  // ═══════════════════════════════════════════
+  // CAMERA VIEWS
+  // ═══════════════════════════════════════════
+  const viewFolder = gui.addFolder('Camera Views');
+  
+  viewFolder.add(params, 'viewFront').name('Front');
+  viewFolder.add(params, 'viewSide').name('Side');
+  viewFolder.add(params, 'viewTop').name('Top');
+  viewFolder.add(params, 'resetAll').name('⟳ Reset All');
+  
+  viewFolder.open();
 }
 
 // ============================================
