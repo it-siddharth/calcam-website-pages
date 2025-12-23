@@ -821,10 +821,10 @@ function adjustCameraForViewport(width, height) {
   isMobileView = width <= 768;
   
   if (isMobileView) {
-    // Mobile: center the model and position it much lower to avoid text overlap
-    scaleFactor = 1.5;    // Further back to fit and be smaller
-    cameraY = -0.8;       // Camera looks from much lower position
-    cameraTargetY = -0.3; // Look at lower point (model appears much lower on screen)
+    // Mobile: center the model and position it in bottom half to avoid ALL text overlap
+    scaleFactor = 1.8;    // Much further back - smaller model
+    cameraY = -1.5;       // Camera very low
+    cameraTargetY = -1.0; // Look at very low point - pushes model to bottom
     cameraOffsetX = 0;    // Center horizontally
   } else if (width >= 1400) {
     scaleFactor = 0.9;
