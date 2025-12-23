@@ -82,7 +82,7 @@ const lightSettings = {
 
 // TV appearance settings
 const tvSettings = {
-  frameColor: '#111111',
+  frameColor: '#333333',  // Lighter so lighting is visible
   borderVisible: true,
   borderColor: '#ffffff',
   scale: 1
@@ -426,6 +426,19 @@ function createStand() {
   standPole.receiveShadow = true;
   
   installationGroup.add(standPole);
+  
+  // Floor plane to show lighting and shadows
+  const floorGeometry = new THREE.PlaneGeometry(12, 12);
+  const floorMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0x111111,
+    roughness: 0.9,
+    metalness: 0.1
+  });
+  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -stand.poleHeight - 0.4;
+  floor.receiveShadow = true;
+  installationGroup.add(floor);
 }
 
 // ============================================
