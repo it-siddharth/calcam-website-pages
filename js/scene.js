@@ -803,8 +803,12 @@ function onWindowResize() {
 // ============================================
 // Adjust Camera for Viewport Size
 // ============================================
-// Global camera distance that animate() uses
+// Global camera settings that animate() uses
 let cameraDistance = 6;
+let cameraY = 0.5;
+let cameraTargetY = 0.5;
+let cameraOffsetX = 0.3;
+let isMobileView = false;
 
 function adjustCameraForViewport(width, height) {
   if (!camera) return;
@@ -813,20 +817,40 @@ function adjustCameraForViewport(width, height) {
   const baseDist = 6;
   let scaleFactor;
   
-  if (width >= 1400) {
-    scaleFactor = 0.9;    // Very large: closer
+  // Check if mobile layout (matches CSS breakpoint)
+  isMobileView = width <= 768;
+  
+  if (isMobileView) {
+    // Mobile: center the model and position it lower to avoid text overlap
+    scaleFactor = 1.3;    // Further back to fit
+    cameraY = -0.2;       // Camera looks from lower position
+    cameraTargetY = 0.2;  // Look at lower point (model appears lower on screen)
+    cameraOffsetX = 0;    // Center horizontally
+  } else if (width >= 1400) {
+    scaleFactor = 0.9;
+    cameraY = 0.5;
+    cameraTargetY = 0.5;
+    cameraOffsetX = 0.3;
   } else if (width >= 1200) {
-    scaleFactor = 0.95;   // Large: slightly closer
+    scaleFactor = 0.95;
+    cameraY = 0.5;
+    cameraTargetY = 0.5;
+    cameraOffsetX = 0.3;
   } else if (width >= 1000) {
-    scaleFactor = 1.0;    // Desktop: base
+    scaleFactor = 1.0;
+    cameraY = 0.5;
+    cameraTargetY = 0.5;
+    cameraOffsetX = 0.3;
   } else if (width >= 800) {
-    scaleFactor = 1.1;    // iPad landscape: further
-  } else if (width >= 600) {
-    scaleFactor = 1.25;   // iPad portrait / small windows: more further
-  } else if (width >= 400) {
-    scaleFactor = 1.4;    // Phone: even further
+    scaleFactor = 1.1;
+    cameraY = 0.5;
+    cameraTargetY = 0.5;
+    cameraOffsetX = 0.3;
   } else {
-    scaleFactor = 1.5;    // Very small phone
+    scaleFactor = 1.25;
+    cameraY = 0.5;
+    cameraTargetY = 0.5;
+    cameraOffsetX = 0.3;
   }
   
   cameraDistance = baseDist * scaleFactor;
@@ -845,12 +869,12 @@ function animate() {
   const panOffset = Math.sin(panAngle) * PAN_RANGE;
   
   // Camera orbits slightly left/right, always staying in front
-  camera.position.x = 0.3 + panOffset;  // Center offset + pan
+  camera.position.x = cameraOffsetX + panOffset;  // Center offset + pan
   camera.position.z = cameraDistance;   // Responsive distance
-  camera.position.y = 0.5;
+  camera.position.y = cameraY;
   
   // Always look at center of model
-  camera.lookAt(0.3, 0.5, 0);
+  camera.lookAt(cameraOffsetX, cameraTargetY, 0);
   
   // Render scene
   renderer.render(scene, camera);
