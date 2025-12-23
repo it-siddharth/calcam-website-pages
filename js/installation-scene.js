@@ -107,6 +107,14 @@ let moveLeft = false, moveRight = false;
 let isSprinting = false;
 let prevTime = performance.now();
 
+// Touch controls for mobile
+let isMobile = false;
+let touchStartX = 0, touchStartY = 0;
+let touchDeltaX = 0, touchDeltaY = 0;
+let isTouching = false;
+let cameraEuler = { yaw: 0, pitch: 0 };
+const TOUCH_SENSITIVITY = 0.003;
+
 // Projection animation
 let projectionTime = 0;
 let particlePositions = [];
@@ -245,6 +253,13 @@ function finishCinematicIntro() {
   camera.position.set(0, roomSettings.cameraHeight, CONFIG.room.depth / 2 - 2);
   camera.lookAt(0, roomSettings.tvHeight, -CONFIG.room.depth / 2);
   
+  // Sync camera euler for mobile touch controls
+  if (isMobile) {
+    const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+    cameraEuler.yaw = euler.y;
+    cameraEuler.pitch = euler.x;
+  }
+  
   // Reveal UI elements with staggered animation
   revealUIElements();
 }
@@ -311,29 +326,39 @@ function init() {
   renderer.toneMapping = THREE.NoToneMapping;
   container.appendChild(renderer.domElement);
   
-  // Pointer Lock Controls
+  // Detect mobile/touch device
+  isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  // Pointer Lock Controls (desktop only)
   controls = new PointerLockControls(camera, document.body);
   
-  // Click to enable pointer lock
-  container.addEventListener('click', () => {
-    if (!controls.isLocked) {
-      controls.lock();
-    }
-  });
-  
-  controls.addEventListener('lock', () => {
+  if (isMobile) {
+    // Mobile: use touch controls instead of pointer lock
+    setupTouchControls(container);
+    // Add pointer-locked class to hide UI on mobile too
     document.body.classList.add('pointer-locked');
-  });
-  
-  controls.addEventListener('unlock', () => {
-    document.body.classList.remove('pointer-locked');
-    // Reset all movement states when pointer lock is released
-    moveForward = false;
-    moveBackward = false;
-    moveLeft = false;
-    moveRight = false;
-    isSprinting = false;
-  });
+  } else {
+    // Desktop: click to enable pointer lock
+    container.addEventListener('click', () => {
+      if (!controls.isLocked) {
+        controls.lock();
+      }
+    });
+    
+    controls.addEventListener('lock', () => {
+      document.body.classList.add('pointer-locked');
+    });
+    
+    controls.addEventListener('unlock', () => {
+      document.body.classList.remove('pointer-locked');
+      // Reset all movement states when pointer lock is released
+      moveForward = false;
+      moveBackward = false;
+      moveLeft = false;
+      moveRight = false;
+      isSprinting = false;
+    });
+  }
   
   // Create scene elements
   createLighting();
@@ -909,6 +934,61 @@ function setupKeyboardControls() {
 }
 
 // ============================================
+// Setup Touch Controls (Mobile)
+// ============================================
+function setupTouchControls(container) {
+  // Initialize camera euler from current camera rotation
+  const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+  cameraEuler.yaw = euler.y;
+  cameraEuler.pitch = euler.x;
+  
+  container.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      isTouching = true;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+  
+  container.addEventListener('touchmove', (e) => {
+    if (!isTouching || e.touches.length !== 1) return;
+    
+    const touchX = e.touches[0].clientX;
+    const touchY = e.touches[0].clientY;
+    
+    // Calculate delta from last position
+    touchDeltaX = touchX - touchStartX;
+    touchDeltaY = touchY - touchStartY;
+    
+    // Update start position for next move
+    touchStartX = touchX;
+    touchStartY = touchY;
+    
+    // Apply rotation to camera
+    cameraEuler.yaw -= touchDeltaX * TOUCH_SENSITIVITY;
+    cameraEuler.pitch -= touchDeltaY * TOUCH_SENSITIVITY;
+    
+    // Clamp pitch to prevent flipping
+    cameraEuler.pitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraEuler.pitch));
+    
+    // Apply euler angles to camera
+    camera.quaternion.setFromEuler(new THREE.Euler(cameraEuler.pitch, cameraEuler.yaw, 0, 'YXZ'));
+  }, { passive: true });
+  
+  container.addEventListener('touchend', () => {
+    isTouching = false;
+    touchDeltaX = 0;
+    touchDeltaY = 0;
+  }, { passive: true });
+  
+  container.addEventListener('touchcancel', () => {
+    isTouching = false;
+    touchDeltaX = 0;
+    touchDeltaY = 0;
+  }, { passive: true });
+}
+
+// ============================================
 // Setup Room Controls
 // ============================================
 function setupRoomControls() {
@@ -1258,7 +1338,8 @@ function updateProjection(time) {
 // Update Player Movement
 // ============================================
 function updateMovement(delta) {
-  if (!controls.isLocked) return;
+  // On mobile, always allow movement; on desktop, require pointer lock
+  if (!isMobile && !controls.isLocked) return;
   
   const inputZ = Number(moveForward) - Number(moveBackward);
   const inputX = Number(moveRight) - Number(moveLeft);

@@ -786,6 +786,11 @@ body:not(.cinematic-intro) .skip-hint {
     --corner-size: 10px;
   }
   
+  /* Hide keyboard controls hint on mobile */
+  .controls-hint {
+    display: none !important;
+  }
+  
   .installation-overlay {
     padding: var(--page-padding);
     padding-bottom: 24px;
