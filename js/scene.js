@@ -193,26 +193,30 @@ function createTV() {
 }
 
 // ============================================
+// Acrylic Panel State (for GUI controls)
+// ============================================
+let acrylicPanels = [];
+let panelBasePositions = [
+  { x: -0.45, y: 0.75, z: 0.10 },    // Top-left (yellow)
+  { x: 0.50, y: 0.95, z: 0.12 },     // Top-right (green)
+  { x: -0.35, y: 0.05, z: 0.14 },    // Bottom-left (red)
+  { x: 0.60, y: 0.25, z: 0.16 }      // Bottom-right (blue)
+];
+
+// ============================================
 // Create Acrylic Panels
 // ============================================
 function createAcrylicPanels() {
   const { panel, colors } = CONFIG;
   
-  // Panel configurations (positions matching the Figma layout - 2x2 grid arrangement)
-  // Panels overlap in the center with slight offset for depth
-  const panelConfigs = [
-    { color: colors.yellow, x: -0.45, y: 0.75, z: 0.10 },    // Top-left
-    { color: colors.green, x: 0.50, y: 0.95, z: 0.12 },      // Top-right
-    { color: colors.red, x: -0.35, y: 0.05, z: 0.14 },       // Bottom-left
-    { color: colors.blue, x: 0.60, y: 0.25, z: 0.16 }        // Bottom-right
-  ];
+  const panelColors = [colors.yellow, colors.green, colors.red, colors.blue];
   
-  panelConfigs.forEach((config, index) => {
+  panelBasePositions.forEach((basePos, index) => {
     const geometry = new THREE.PlaneGeometry(panel.width, panel.height);
     
     // Create material with additive blending for lighten effect
     const material = new THREE.MeshBasicMaterial({
-      color: config.color,
+      color: panelColors[index],
       transparent: true,
       opacity: panel.opacity,
       side: THREE.DoubleSide,
@@ -221,10 +225,39 @@ function createAcrylicPanels() {
     });
     
     const panelMesh = new THREE.Mesh(geometry, material);
-    panelMesh.position.set(config.x, config.y, config.z);
+    panelMesh.position.set(basePos.x, basePos.y, basePos.z);
     panelMesh.userData.isAcrylicPanel = true;
+    panelMesh.userData.basePosition = { ...basePos };
+    panelMesh.userData.panelIndex = index;
     
+    acrylicPanels.push(panelMesh);
     installationGroup.add(panelMesh);
+  });
+}
+
+// ============================================
+// Update Panel Positions Based on Spacing
+// ============================================
+function updatePanelSpacing(horizontalSpread, verticalSpread, depthOffset) {
+  acrylicPanels.forEach((panel, index) => {
+    const base = panel.userData.basePosition;
+    
+    // Calculate spread direction based on panel position
+    const xDir = index % 2 === 0 ? -1 : 1;  // Left panels go left, right go right
+    const yDir = index < 2 ? 1 : -1;         // Top panels go up, bottom go down
+    
+    panel.position.x = base.x + (xDir * horizontalSpread * 0.5);
+    panel.position.y = base.y + (yDir * verticalSpread * 0.3);
+    panel.position.z = base.z + depthOffset;
+  });
+}
+
+// ============================================
+// Update Panel Opacity
+// ============================================
+function updatePanelOpacity(opacity) {
+  acrylicPanels.forEach(panel => {
+    panel.material.opacity = opacity;
   });
 }
 
@@ -446,25 +479,41 @@ function setupGUI() {
   
   viewFolder.open();
   
-  // Panel opacity control
+  // Panel controls
   const panelFolder = gui.addFolder('Acrylic Panels');
   
   const panelParams = {
-    opacity: CONFIG.panel.opacity
+    opacity: CONFIG.panel.opacity,
+    horizontalSpread: 0,
+    verticalSpread: 0,
+    depthOffset: 0
   };
   
   panelFolder.add(panelParams, 'opacity', 0.1, 1, 0.05)
-    .name('Panel Opacity')
+    .name('Translucency')
     .onChange((value) => {
-      installationGroup.children.forEach(child => {
-        if (child.userData && child.userData.isAcrylicPanel) {
-          child.material.opacity = value;
-        }
-      });
+      updatePanelOpacity(value);
     });
   
-  // Close this folder by default to save space
-  panelFolder.close();
+  panelFolder.add(panelParams, 'horizontalSpread', -1, 1, 0.05)
+    .name('H Spacing')
+    .onChange((value) => {
+      updatePanelSpacing(value, panelParams.verticalSpread, panelParams.depthOffset);
+    });
+  
+  panelFolder.add(panelParams, 'verticalSpread', -1, 1, 0.05)
+    .name('V Spacing')
+    .onChange((value) => {
+      updatePanelSpacing(panelParams.horizontalSpread, value, panelParams.depthOffset);
+    });
+  
+  panelFolder.add(panelParams, 'depthOffset', -0.5, 0.5, 0.02)
+    .name('TV Distance')
+    .onChange((value) => {
+      updatePanelSpacing(panelParams.horizontalSpread, panelParams.verticalSpread, value);
+    });
+  
+  panelFolder.open();
 }
 
 // ============================================
