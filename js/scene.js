@@ -809,19 +809,24 @@ let cameraDistance = 5;
 function adjustCameraForViewport(width, height) {
   if (!camera) return;
   
-  // Base distance - consistent model size across all screens
+  // Model should SCALE with available space
+  // Bigger window = closer camera = bigger model
+  // Smaller window = further camera = smaller model
+  
   const baseDist = 5;
+  let scaleFactor;
   
-  // Keep model size CONSISTENT regardless of screen size
-  // Only adjust slightly for very small screens to prevent cutoff
-  let scaleFactor = 1;
-  
-  if (width < 400) {
-    scaleFactor = 1.1;    // Slightly further on very small to prevent cutoff
-  } else if (width < 600) {
-    scaleFactor = 1.05;   // Slightly further on small
+  if (width >= 1200) {
+    scaleFactor = 0.85;   // Large screens: closer = bigger model
+  } else if (width >= 900) {
+    scaleFactor = 0.95;   // Medium-large
+  } else if (width >= 700) {
+    scaleFactor = 1.0;    // Medium: base size
+  } else if (width >= 500) {
+    scaleFactor = 1.15;   // Small: further = smaller model
+  } else {
+    scaleFactor = 1.3;    // Very small: even further
   }
-  // All larger screens: same distance = same model size
   
   cameraDistance = baseDist * scaleFactor;
 }
