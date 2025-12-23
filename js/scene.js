@@ -56,9 +56,29 @@ let tvScreen, tvScreenTexture, tvFrame, screenBorder;
 let tvGroup, standPole;
 let installationGroup;
 let silhouetteCanvas, silhouetteCtx;
-let leftLight, leftLightHelper;
+let leftLightHelper;
 let cinematicMode = false;
 let cinematicAngle = 0;
+
+// Studio lighting setup
+const studioLights = {
+  ambient: null,
+  key: null,
+  fill: null,
+  back: null,
+  accent: null,
+  area: null
+};
+
+// Lighting settings
+const lightSettings = {
+  ambientIntensity: 0.3,
+  keyIntensity: 1.2,
+  fillIntensity: 0.5,
+  backIntensity: 0.6,
+  accentIntensity: 0.8,
+  shadowSoftness: 0.5
+};
 
 // TV appearance settings
 const tvSettings = {
@@ -137,48 +157,96 @@ function init() {
 // Lighting Setup
 // ============================================
 function setupLighting() {
-  // Ambient light for base illumination
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-  scene.add(ambientLight);
+  // Enable shadows on renderer
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   
-  // Main directional light
-  const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
-  mainLight.position.set(5, 5, 5);
-  scene.add(mainLight);
+  // ═══════════════════════════════════════════
+  // AMBIENT LIGHT - Base illumination
+  // ═══════════════════════════════════════════
+  studioLights.ambient = new THREE.AmbientLight(0xffffff, lightSettings.ambientIntensity);
+  scene.add(studioLights.ambient);
   
-  // Fill light from the opposite side
-  const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
-  fillLight.position.set(-5, 3, -5);
-  scene.add(fillLight);
+  // ═══════════════════════════════════════════
+  // KEY LIGHT - Main light source (like studio softbox)
+  // ═══════════════════════════════════════════
+  studioLights.key = new THREE.DirectionalLight(0xfff5e6, lightSettings.keyIntensity);
+  studioLights.key.position.set(-4, 4, 5);
+  studioLights.key.castShadow = true;
+  studioLights.key.shadow.mapSize.width = 2048;
+  studioLights.key.shadow.mapSize.height = 2048;
+  studioLights.key.shadow.camera.near = 0.5;
+  studioLights.key.shadow.camera.far = 20;
+  studioLights.key.shadow.camera.left = -5;
+  studioLights.key.shadow.camera.right = 5;
+  studioLights.key.shadow.camera.top = 5;
+  studioLights.key.shadow.camera.bottom = -5;
+  studioLights.key.shadow.bias = -0.0001;
+  studioLights.key.shadow.radius = 4; // Soft shadows
+  scene.add(studioLights.key);
   
-  // Subtle rim light from behind
-  const rimLight = new THREE.DirectionalLight(0xffffff, 0.2);
-  rimLight.position.set(0, 2, -5);
-  scene.add(rimLight);
+  // ═══════════════════════════════════════════
+  // FILL LIGHT - Softens shadows (opposite side)
+  // ═══════════════════════════════════════════
+  studioLights.fill = new THREE.DirectionalLight(0xe6f0ff, lightSettings.fillIntensity);
+  studioLights.fill.position.set(4, 2, 3);
+  scene.add(studioLights.fill);
   
-  // Strong left-side spotlight for visible glare
-  leftLight = new THREE.SpotLight(0xffffff, 2);
-  leftLight.position.set(-6, 1, 4);
-  leftLight.angle = Math.PI / 5;
-  leftLight.penumbra = 0.5;
-  leftLight.decay = 1;
-  leftLight.distance = 25;
-  leftLight.target.position.set(0, 0.5, 0);
-  scene.add(leftLight);
-  scene.add(leftLight.target);
+  // ═══════════════════════════════════════════
+  // BACK/RIM LIGHT - Creates edge definition
+  // ═══════════════════════════════════════════
+  studioLights.back = new THREE.SpotLight(0xffffff, lightSettings.backIntensity);
+  studioLights.back.position.set(0, 3, -5);
+  studioLights.back.angle = Math.PI / 4;
+  studioLights.back.penumbra = 0.8;
+  studioLights.back.decay = 1.5;
+  studioLights.back.distance = 15;
+  studioLights.back.target.position.set(0, 0.5, 0);
+  scene.add(studioLights.back);
+  scene.add(studioLights.back.target);
   
-  // Visible light ray/glow effect from left
+  // ═══════════════════════════════════════════
+  // ACCENT LIGHT - Left side dramatic lighting
+  // ═══════════════════════════════════════════
+  studioLights.accent = new THREE.SpotLight(0xffffff, lightSettings.accentIntensity);
+  studioLights.accent.position.set(-6, 1, 4);
+  studioLights.accent.angle = Math.PI / 5;
+  studioLights.accent.penumbra = 0.6;
+  studioLights.accent.decay = 1;
+  studioLights.accent.distance = 20;
+  studioLights.accent.castShadow = true;
+  studioLights.accent.shadow.mapSize.width = 1024;
+  studioLights.accent.shadow.mapSize.height = 1024;
+  studioLights.accent.shadow.radius = 8;
+  studioLights.accent.target.position.set(0, 0.5, 0);
+  scene.add(studioLights.accent);
+  scene.add(studioLights.accent.target);
+  
+  // ═══════════════════════════════════════════
+  // AREA LIGHT - Soft overhead fill (RectAreaLight)
+  // ═══════════════════════════════════════════
+  // Note: RectAreaLight requires RectAreaLightUniformsLib
+  // Using a point light as alternative for soft overhead
+  studioLights.area = new THREE.PointLight(0xfff8f0, 0.4);
+  studioLights.area.position.set(0, 6, 0);
+  studioLights.area.decay = 2;
+  studioLights.area.distance = 15;
+  scene.add(studioLights.area);
+  
+  // ═══════════════════════════════════════════
+  // VISIBLE LIGHT RAYS - Atmospheric effect
+  // ═══════════════════════════════════════════
   createLightRays();
 }
 
 // Create visible light rays effect
 function createLightRays() {
-  // Light cone geometry to simulate visible rays
-  const rayGeometry = new THREE.ConeGeometry(3, 8, 32, 1, true);
+  // Light cone geometry to simulate visible rays from accent light
+  const rayGeometry = new THREE.ConeGeometry(2.5, 7, 32, 1, true);
   const rayMaterial = new THREE.MeshBasicMaterial({
     color: 0xffffff,
     transparent: true,
-    opacity: 0.03,
+    opacity: 0.04,
     side: THREE.DoubleSide,
     blending: THREE.AdditiveBlending,
     depthWrite: false
@@ -205,6 +273,8 @@ function createTV() {
     metalness: 0.2
   });
   tvFrame = new THREE.Mesh(frameGeometry, frameMaterial);
+  tvFrame.castShadow = true;
+  tvFrame.receiveShadow = true;
   
   // TV screen (will display WORD SILHOUETTE)
   const screenWidth = tv.width - tv.bezelWidth * 2;
@@ -351,6 +421,8 @@ function createStand() {
   });
   standPole = new THREE.Mesh(poleGeometry, poleMaterial);
   standPole.position.y = -stand.poleHeight / 2 - 0.4;
+  standPole.castShadow = true;
+  standPole.receiveShadow = true;
   
   installationGroup.add(standPole);
 }
@@ -532,10 +604,31 @@ function setupGUI() {
         <label>Border Color</label>
         <input type="color" id="ctrl-bordercolor" value="${tvSettings.borderColor}">
       </div>
+      <div class="setting-section">Studio Lighting</div>
       <div class="setting-row">
-        <label>Left Light</label>
-        <input type="range" id="ctrl-leftlight" min="0" max="5" step="0.1" value="2">
-        <span class="value" id="val-leftlight">2.0</span>
+        <label>Ambient</label>
+        <input type="range" id="ctrl-ambient" min="0" max="1" step="0.05" value="${lightSettings.ambientIntensity}">
+        <span class="value" id="val-ambient">${lightSettings.ambientIntensity}</span>
+      </div>
+      <div class="setting-row">
+        <label>Key Light</label>
+        <input type="range" id="ctrl-key" min="0" max="3" step="0.1" value="${lightSettings.keyIntensity}">
+        <span class="value" id="val-key">${lightSettings.keyIntensity}</span>
+      </div>
+      <div class="setting-row">
+        <label>Fill Light</label>
+        <input type="range" id="ctrl-fill" min="0" max="2" step="0.1" value="${lightSettings.fillIntensity}">
+        <span class="value" id="val-fill">${lightSettings.fillIntensity}</span>
+      </div>
+      <div class="setting-row">
+        <label>Back Light</label>
+        <input type="range" id="ctrl-back" min="0" max="2" step="0.1" value="${lightSettings.backIntensity}">
+        <span class="value" id="val-back">${lightSettings.backIntensity}</span>
+      </div>
+      <div class="setting-row">
+        <label>Accent</label>
+        <input type="range" id="ctrl-accent" min="0" max="3" step="0.1" value="${lightSettings.accentIntensity}">
+        <span class="value" id="val-accent">${lightSettings.accentIntensity}</span>
       </div>
       
       <div class="setting-section">Image / Video</div>
@@ -775,16 +868,47 @@ function setupSettingsListeners() {
     }
   });
   
-  // Left Light Intensity
-  document.getElementById('ctrl-leftlight').addEventListener('input', (e) => {
+  // Studio Lighting Controls
+  
+  // Ambient Light
+  document.getElementById('ctrl-ambient').addEventListener('input', (e) => {
     const v = parseFloat(e.target.value);
-    document.getElementById('val-leftlight').textContent = v.toFixed(1);
-    if (leftLight) {
-      leftLight.intensity = v;
-    }
-    if (leftLightHelper) {
-      leftLightHelper.material.opacity = v * 0.02;
-    }
+    document.getElementById('val-ambient').textContent = v.toFixed(2);
+    lightSettings.ambientIntensity = v;
+    if (studioLights.ambient) studioLights.ambient.intensity = v;
+  });
+  
+  // Key Light
+  document.getElementById('ctrl-key').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-key').textContent = v.toFixed(1);
+    lightSettings.keyIntensity = v;
+    if (studioLights.key) studioLights.key.intensity = v;
+  });
+  
+  // Fill Light
+  document.getElementById('ctrl-fill').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-fill').textContent = v.toFixed(1);
+    lightSettings.fillIntensity = v;
+    if (studioLights.fill) studioLights.fill.intensity = v;
+  });
+  
+  // Back Light
+  document.getElementById('ctrl-back').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-back').textContent = v.toFixed(1);
+    lightSettings.backIntensity = v;
+    if (studioLights.back) studioLights.back.intensity = v;
+  });
+  
+  // Accent Light (left side)
+  document.getElementById('ctrl-accent').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-accent').textContent = v.toFixed(1);
+    lightSettings.accentIntensity = v;
+    if (studioLights.accent) studioLights.accent.intensity = v;
+    if (leftLightHelper) leftLightHelper.material.opacity = v * 0.04;
   });
   
   // Image Controls - Threshold
