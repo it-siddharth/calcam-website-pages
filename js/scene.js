@@ -820,9 +820,9 @@ function adjustCameraForViewport(width, height) {
   } else if (width >= 700) {
     scaleFactor = 1.05;   // Medium: slightly further
   } else if (width >= 500) {
-    scaleFactor = 1.1;    // Small: bit further
+    scaleFactor = 1.15;   // Small: further
   } else {
-    scaleFactor = 1.15;   // Phone: slightly further (not too small)
+    scaleFactor = 1.3;    // Phone: further to prevent left cutoff
   }
   
   cameraDistance = baseDist * scaleFactor;
