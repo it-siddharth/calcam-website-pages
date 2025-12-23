@@ -196,6 +196,8 @@ function createTV() {
 // Acrylic Panel State (for GUI controls)
 // ============================================
 let acrylicPanels = [];
+let overlayMeshes = [];
+let overlayTexture;
 let panelBasePositions = [
   { x: -0.45, y: 0.75, z: 0.10 },    // Top-left (yellow)
   { x: 0.50, y: 0.95, z: 0.12 },     // Top-right (green)
@@ -204,15 +206,56 @@ let panelBasePositions = [
 ];
 
 // ============================================
+// Create Text Overlay Texture
+// ============================================
+function createOverlayTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  
+  // Transparent background
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw subtitle text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'italic 28px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  
+  // Multi-line text
+  const lines = [
+    '- when we get',
+    'the amendment passed?',
+    '- Assuming we do.'
+  ];
+  
+  const lineHeight = 45;
+  const startY = canvas.height / 2 - (lines.length - 1) * lineHeight / 2;
+  
+  lines.forEach((line, i) => {
+    ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
+  });
+  
+  overlayTexture = new THREE.CanvasTexture(canvas);
+  overlayTexture.colorSpace = THREE.SRGBColorSpace;
+  return overlayTexture;
+}
+
+// ============================================
 // Create Acrylic Panels
 // ============================================
 function createAcrylicPanels() {
   const { panel, colors } = CONFIG;
   
+  // Create overlay texture
+  createOverlayTexture();
+  
   const panelColors = [colors.yellow, colors.green, colors.red, colors.blue];
   
   panelBasePositions.forEach((basePos, index) => {
-    const geometry = new THREE.PlaneGeometry(panel.width, panel.height);
+    // Use BoxGeometry for thickness/extrude
+    const geometry = new THREE.BoxGeometry(panel.width, panel.height, panel.depth);
     
     // Create material with additive blending for lighten effect
     const material = new THREE.MeshBasicMaterial({
@@ -232,6 +275,24 @@ function createAcrylicPanels() {
     
     acrylicPanels.push(panelMesh);
     installationGroup.add(panelMesh);
+    
+    // Create overlay plane on front of each panel
+    const overlayGeometry = new THREE.PlaneGeometry(panel.width, panel.height);
+    const overlayMaterial = new THREE.MeshBasicMaterial({
+      map: overlayTexture,
+      transparent: true,
+      opacity: 0.1,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    
+    const overlayMesh = new THREE.Mesh(overlayGeometry, overlayMaterial);
+    overlayMesh.position.set(basePos.x, basePos.y, basePos.z + panel.depth / 2 + 0.001);
+    overlayMesh.userData.basePosition = { ...basePos };
+    overlayMesh.userData.panelIndex = index;
+    
+    overlayMeshes.push(overlayMesh);
+    installationGroup.add(overlayMesh);
   });
 }
 
@@ -249,6 +310,32 @@ function updatePanelSpacing(horizontalSpread, verticalSpread, depthOffset) {
     panel.position.x = base.x + (xDir * horizontalSpread * 0.5);
     panel.position.y = base.y + (yDir * verticalSpread * 0.3);
     panel.position.z = base.z + depthOffset;
+    
+    // Update overlay position to match
+    if (overlayMeshes[index]) {
+      overlayMeshes[index].position.x = panel.position.x;
+      overlayMeshes[index].position.y = panel.position.y;
+      overlayMeshes[index].position.z = panel.position.z + CONFIG.panel.depth / 2 + 0.001;
+    }
+  });
+}
+
+// ============================================
+// Update Panel Thickness
+// ============================================
+function updatePanelThickness(thickness) {
+  CONFIG.panel.depth = thickness;
+  
+  acrylicPanels.forEach((panel, index) => {
+    // Remove old geometry and create new one with updated depth
+    panel.geometry.dispose();
+    panel.geometry = new THREE.BoxGeometry(CONFIG.panel.width, CONFIG.panel.height, thickness);
+    
+    // Update overlay z position
+    if (overlayMeshes[index]) {
+      const base = panel.userData.basePosition;
+      overlayMeshes[index].position.z = panel.position.z + thickness / 2 + 0.001;
+    }
   });
 }
 
@@ -402,21 +489,40 @@ function setupGUI() {
   // All parameters in one flat object
   const params = {
     opacity: CONFIG.panel.opacity,
+    thickness: CONFIG.panel.depth,
     hSpread: 0,
     vSpread: 0,
-    depth: 0,
+    zOffset: 0,
     rotateX: 0,
     rotateY: 0,
     rotateZ: 0,
+    // View presets
+    viewFront: () => {
+      camera.position.set(0, 0.5, 5);
+      controls.target.set(0, 0.5, 0);
+      controls.update();
+    },
+    viewSide: () => {
+      camera.position.set(5, 0.5, 0);
+      controls.target.set(0, 0.5, 0);
+      controls.update();
+    },
+    viewTop: () => {
+      camera.position.set(0, 5, 0.1);
+      controls.target.set(0, 0.5, 0);
+      controls.update();
+    },
     resetAll: () => {
       params.opacity = CONFIG.panel.opacity;
+      params.thickness = 0.02;
       params.hSpread = 0;
       params.vSpread = 0;
-      params.depth = 0;
+      params.zOffset = 0;
       params.rotateX = 0;
       params.rotateY = 0;
       params.rotateZ = 0;
       updatePanelOpacity(CONFIG.panel.opacity);
+      updatePanelThickness(0.02);
       updatePanelSpacing(0, 0, 0);
       installationGroup.rotation.set(0, 0, 0);
       camera.position.set(0, 0.5, 5);
@@ -430,13 +536,16 @@ function setupGUI() {
   gui.add(params, 'opacity', 0.1, 1, 0.05).name('Opacity')
     .onChange(updatePanelOpacity);
   
+  gui.add(params, 'thickness', 0.01, 0.2, 0.01).name('Thickness')
+    .onChange(updatePanelThickness);
+  
   gui.add(params, 'hSpread', -1, 1, 0.05).name('H-Spread')
-    .onChange((v) => updatePanelSpacing(v, params.vSpread, params.depth));
+    .onChange((v) => updatePanelSpacing(v, params.vSpread, params.zOffset));
   
   gui.add(params, 'vSpread', -1, 1, 0.05).name('V-Spread')
-    .onChange((v) => updatePanelSpacing(params.hSpread, v, params.depth));
+    .onChange((v) => updatePanelSpacing(params.hSpread, v, params.zOffset));
   
-  gui.add(params, 'depth', -0.5, 0.5, 0.02).name('Depth')
+  gui.add(params, 'zOffset', -0.5, 0.5, 0.02).name('Z-Offset')
     .onChange((v) => updatePanelSpacing(params.hSpread, params.vSpread, v));
   
   // Rotation controls
@@ -449,8 +558,13 @@ function setupGUI() {
   gui.add(params, 'rotateZ', -180, 180, 1).name('Rotate Z')
     .onChange((v) => { installationGroup.rotation.z = THREE.MathUtils.degToRad(v); });
   
+  // View presets
+  gui.add(params, 'viewFront').name('📷 Front');
+  gui.add(params, 'viewSide').name('📷 Side');
+  gui.add(params, 'viewTop').name('📷 Top');
+  
   // Reset button
-  gui.add(params, 'resetAll').name('Reset All');
+  gui.add(params, 'resetAll').name('⟳ Reset All');
 }
 
 // ============================================
