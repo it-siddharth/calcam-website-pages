@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // ============================================
 // Scene Configuration
@@ -51,38 +50,20 @@ const CONFIG = {
 // ============================================
 // Global Variables
 // ============================================
-let scene, camera, renderer, controls;
+let scene, camera, renderer;
 let tvScreen, tvScreenTexture, tvFrame, screenBorder;
 let tvGroup, standPole;
 let installationGroup;
 let silhouetteCanvas, silhouetteCtx;
-let cinematicMode = false;
-let cinematicAngle = 0;
 
-// Studio lighting setup
-const studioLights = {
-  ambient: null,
-  key: null,
-  fill: null,
-  back: null,
-  accent: null,
-  area: null
-};
-
-// Lighting settings
-const lightSettings = {
-  ambientIntensity: 0.3,
-  keyIntensity: 1.2,
-  fillIntensity: 0.5,
-  backIntensity: 0.6,
-  overheadIntensity: 1.5,
-  accentIntensity: 0.8,
-  shadowSoftness: 0.5
-};
+// Auto-pan animation
+let panAngle = 0;
+const PAN_SPEED = 0.003;  // Slow pan speed
+const PAN_RANGE = 0.4;    // How far left/right to pan (radians)
 
 // TV appearance settings
 const tvSettings = {
-  frameColor: '#333333',  // Lighter so lighting is visible
+  frameColor: '#111111',
   borderVisible: true,
   borderColor: '#ffffff',
   scale: 1
@@ -91,7 +72,6 @@ const tvSettings = {
 // Performance settings
 const PERF = {
   maxPixelRatio: window.devicePixelRatio > 1 ? 1.5 : 1, // Cap for performance
-  shadowMapSize: 1024, // Reduced from 2048
   antialias: window.devicePixelRatio < 2, // Disable on retina
   throttleResize: 100 // ms
 };
@@ -130,8 +110,9 @@ function init() {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   container.appendChild(renderer.domElement);
   
-  // Lighting
-  setupLighting();
+  // Simple ambient light only
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+  scene.add(ambientLight);
   
   // Create installation group (for rotation controls)
   installationGroup = new THREE.Group();
@@ -145,8 +126,7 @@ function init() {
   // Setup silhouette texture
   setupSilhouetteTexture();
   
-  // Controls
-  setupControls();
+  // GUI only (no user controls - auto pan)
   setupGUI();
   
   // Handle resize with throttling
@@ -159,106 +139,6 @@ function init() {
   animate();
 }
 
-// ============================================
-// Lighting Setup
-// ============================================
-function setupLighting() {
-  // Enable shadows on renderer
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  
-  // ═══════════════════════════════════════════
-  // AMBIENT LIGHT - Base illumination
-  // ═══════════════════════════════════════════
-  studioLights.ambient = new THREE.AmbientLight(0xffffff, lightSettings.ambientIntensity);
-  scene.add(studioLights.ambient);
-  
-  // ═══════════════════════════════════════════
-  // KEY LIGHT - Main light source (like studio softbox)
-  // ═══════════════════════════════════════════
-  studioLights.key = new THREE.DirectionalLight(0xfff5e6, lightSettings.keyIntensity);
-  studioLights.key.position.set(-4, 4, 5);
-  studioLights.key.castShadow = true;
-  studioLights.key.shadow.mapSize.width = PERF.shadowMapSize;
-  studioLights.key.shadow.mapSize.height = PERF.shadowMapSize;
-  studioLights.key.shadow.camera.near = 0.5;
-  studioLights.key.shadow.camera.far = 20;
-  studioLights.key.shadow.camera.left = -5;
-  studioLights.key.shadow.camera.right = 5;
-  studioLights.key.shadow.camera.top = 5;
-  studioLights.key.shadow.camera.bottom = -5;
-  studioLights.key.shadow.bias = -0.0001;
-  studioLights.key.shadow.radius = 4; // Soft shadows
-  scene.add(studioLights.key);
-  
-  // ═══════════════════════════════════════════
-  // FILL LIGHT - Softens shadows (opposite side)
-  // ═══════════════════════════════════════════
-  studioLights.fill = new THREE.DirectionalLight(0xe6f0ff, lightSettings.fillIntensity);
-  studioLights.fill.position.set(4, 2, 3);
-  scene.add(studioLights.fill);
-  
-  // ═══════════════════════════════════════════
-  // BACK/RIM LIGHT - Creates edge definition
-  // ═══════════════════════════════════════════
-  studioLights.back = new THREE.SpotLight(0xffffff, lightSettings.backIntensity);
-  studioLights.back.position.set(0, 3, -5);
-  studioLights.back.angle = Math.PI / 4;
-  studioLights.back.penumbra = 0.8;
-  studioLights.back.decay = 1.5;
-  studioLights.back.distance = 15;
-  studioLights.back.target.position.set(0, 0.5, 0);
-  scene.add(studioLights.back);
-  scene.add(studioLights.back.target);
-  
-  // ═══════════════════════════════════════════
-  // OVERHEAD LIGHT - Top-down dramatic spotlight
-  // ═══════════════════════════════════════════
-  studioLights.overhead = new THREE.SpotLight(0xffffff, lightSettings.overheadIntensity);
-  studioLights.overhead.position.set(0, 8, 0);
-  studioLights.overhead.angle = Math.PI / 6; // Focused cone
-  studioLights.overhead.penumbra = 0.5;
-  studioLights.overhead.decay = 1.2;
-  studioLights.overhead.distance = 15;
-  studioLights.overhead.target.position.set(0, 0, 0);
-  studioLights.overhead.castShadow = true;
-  studioLights.overhead.shadow.mapSize.width = PERF.shadowMapSize;
-  studioLights.overhead.shadow.mapSize.height = PERF.shadowMapSize;
-  studioLights.overhead.shadow.camera.near = 1;
-  studioLights.overhead.shadow.camera.far = 15;
-  studioLights.overhead.shadow.bias = -0.0001;
-  scene.add(studioLights.overhead);
-  scene.add(studioLights.overhead.target);
-  
-  // ═══════════════════════════════════════════
-  // ACCENT LIGHT - Left side dramatic lighting
-  // ═══════════════════════════════════════════
-  studioLights.accent = new THREE.SpotLight(0xffffff, lightSettings.accentIntensity);
-  studioLights.accent.position.set(-6, 1, 4);
-  studioLights.accent.angle = Math.PI / 5;
-  studioLights.accent.penumbra = 0.6;
-  studioLights.accent.decay = 1;
-  studioLights.accent.distance = 20;
-  studioLights.accent.castShadow = true;
-  studioLights.accent.shadow.mapSize.width = PERF.shadowMapSize;
-  studioLights.accent.shadow.mapSize.height = PERF.shadowMapSize;
-  studioLights.accent.shadow.radius = 8;
-  studioLights.accent.target.position.set(0, 0.5, 0);
-  scene.add(studioLights.accent);
-  scene.add(studioLights.accent.target);
-  
-  // ═══════════════════════════════════════════
-  // AREA LIGHT - Soft overhead fill (RectAreaLight)
-  // ═══════════════════════════════════════════
-  // Note: RectAreaLight requires RectAreaLightUniformsLib
-  // Using a point light as alternative for soft overhead
-  studioLights.area = new THREE.PointLight(0xfff8f0, 0.4);
-  studioLights.area.position.set(0, 6, 0);
-  studioLights.area.decay = 2;
-  studioLights.area.distance = 15;
-  scene.add(studioLights.area);
-  
-}
 
 // ============================================
 // Create TV Monitor
@@ -274,8 +154,6 @@ function createTV() {
     metalness: 0.2
   });
   tvFrame = new THREE.Mesh(frameGeometry, frameMaterial);
-  tvFrame.castShadow = true;
-  tvFrame.receiveShadow = true;
   
   // TV screen (will display WORD SILHOUETTE)
   const screenWidth = tv.width - tv.bezelWidth * 2;
@@ -422,23 +300,8 @@ function createStand() {
   });
   standPole = new THREE.Mesh(poleGeometry, poleMaterial);
   standPole.position.y = -stand.poleHeight / 2 - 0.4;
-  standPole.castShadow = true;
-  standPole.receiveShadow = true;
   
   installationGroup.add(standPole);
-  
-  // Floor plane to show lighting and shadows
-  const floorGeometry = new THREE.PlaneGeometry(12, 12);
-  const floorMaterial = new THREE.MeshStandardMaterial({ 
-    color: 0x111111,
-    roughness: 0.9,
-    metalness: 0.1
-  });
-  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = -stand.poleHeight - 0.4;
-  floor.receiveShadow = true;
-  installationGroup.add(floor);
 }
 
 // ============================================
@@ -533,18 +396,7 @@ function drawPlaceholderAnimation() {
 // ============================================
 // Setup Orbit Controls
 // ============================================
-function setupControls() {
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
-  controls.enablePan = false;
-  controls.minDistance = 3;
-  controls.maxDistance = 10;
-  controls.minPolarAngle = Math.PI / 4;
-  controls.maxPolarAngle = Math.PI / 1.5;
-  controls.target.set(0.3, 0.5, 0); // Match camera offset for centering
-  controls.update();
-}
+// Camera is now fixed - auto-pan handled in animate()
 
 
 // ============================================
@@ -618,38 +470,6 @@ function setupGUI() {
         <label>Border Color</label>
         <input type="color" id="ctrl-bordercolor" value="${tvSettings.borderColor}">
       </div>
-      <div class="setting-section">Studio Lighting</div>
-      <div class="setting-row">
-        <label>Ambient</label>
-        <input type="range" id="ctrl-ambient" min="0" max="1" step="0.05" value="${lightSettings.ambientIntensity}">
-        <span class="value" id="val-ambient">${lightSettings.ambientIntensity}</span>
-      </div>
-      <div class="setting-row">
-        <label>Key Light</label>
-        <input type="range" id="ctrl-key" min="0" max="3" step="0.1" value="${lightSettings.keyIntensity}">
-        <span class="value" id="val-key">${lightSettings.keyIntensity}</span>
-      </div>
-      <div class="setting-row">
-        <label>Fill Light</label>
-        <input type="range" id="ctrl-fill" min="0" max="2" step="0.1" value="${lightSettings.fillIntensity}">
-        <span class="value" id="val-fill">${lightSettings.fillIntensity}</span>
-      </div>
-      <div class="setting-row">
-        <label>Back Light</label>
-        <input type="range" id="ctrl-back" min="0" max="2" step="0.1" value="${lightSettings.backIntensity}">
-        <span class="value" id="val-back">${lightSettings.backIntensity}</span>
-      </div>
-      <div class="setting-row">
-        <label>Overhead</label>
-        <input type="range" id="ctrl-overhead" min="0" max="5" step="0.1" value="${lightSettings.overheadIntensity}">
-        <span class="value" id="val-overhead">${lightSettings.overheadIntensity}</span>
-      </div>
-      <div class="setting-row">
-        <label>Accent</label>
-        <input type="range" id="ctrl-accent" min="0" max="3" step="0.1" value="${lightSettings.accentIntensity}">
-        <span class="value" id="val-accent">${lightSettings.accentIntensity}</span>
-      </div>
-      
       <div class="setting-section">Image / Video</div>
       <div class="setting-row">
         <label>Threshold</label>
@@ -695,14 +515,7 @@ function setupGUI() {
         <span class="value" id="val-rotz">${defaults.rotateZ}°</span>
       </div>
       
-      <div class="setting-section">Camera</div>
-      <div class="setting-buttons">
-        <button onclick="setView('front')">Front</button>
-        <button onclick="setView('side')">Side</button>
-        <button onclick="setView('top')">Top</button>
-        <button id="btn-cinematic" onclick="toggleCinematic()">🎬 Cine</button>
-      </div>
-      <div class="setting-buttons" style="margin-top: 8px;">
+      <div class="setting-buttons" style="margin-top: 12px;">
         <button onclick="resetAll()" style="grid-column: span 4;">Reset All</button>
       </div>
     </div>
@@ -736,22 +549,6 @@ window.toggleSettings = function() {
 };
 
 // Set camera view
-window.setView = function(view) {
-  switch(view) {
-    case 'front':
-      camera.position.set(0.3, 0.5, 5);
-      break;
-    case 'side':
-      camera.position.set(5, 0.5, 0.3);
-      break;
-    case 'top':
-      camera.position.set(0.3, 5, 0.1);
-      break;
-  }
-  controls.target.set(0.3, 0.5, 0);
-  controls.update();
-};
-
 // Reset all settings
 window.resetAll = function() {
   const { defaults } = CONFIG;
@@ -782,9 +579,8 @@ window.resetAll = function() {
     THREE.MathUtils.degToRad(defaults.rotateY),
     THREE.MathUtils.degToRad(defaults.rotateZ)
   );
-  camera.position.set(0.3, 0.5, 5);
-  controls.target.set(0.3, 0.5, 0);
-  controls.update();
+  // Camera is auto-controlled, just reset pan angle
+  panAngle = 0;
 };
 
 // Setup settings input listeners
@@ -887,55 +683,6 @@ function setupSettingsListeners() {
     }
   });
   
-  // Studio Lighting Controls
-  
-  // Ambient Light
-  document.getElementById('ctrl-ambient').addEventListener('input', (e) => {
-    const v = parseFloat(e.target.value);
-    document.getElementById('val-ambient').textContent = v.toFixed(2);
-    lightSettings.ambientIntensity = v;
-    if (studioLights.ambient) studioLights.ambient.intensity = v;
-  });
-  
-  // Key Light
-  document.getElementById('ctrl-key').addEventListener('input', (e) => {
-    const v = parseFloat(e.target.value);
-    document.getElementById('val-key').textContent = v.toFixed(1);
-    lightSettings.keyIntensity = v;
-    if (studioLights.key) studioLights.key.intensity = v;
-  });
-  
-  // Fill Light
-  document.getElementById('ctrl-fill').addEventListener('input', (e) => {
-    const v = parseFloat(e.target.value);
-    document.getElementById('val-fill').textContent = v.toFixed(1);
-    lightSettings.fillIntensity = v;
-    if (studioLights.fill) studioLights.fill.intensity = v;
-  });
-  
-  // Back Light
-  document.getElementById('ctrl-back').addEventListener('input', (e) => {
-    const v = parseFloat(e.target.value);
-    document.getElementById('val-back').textContent = v.toFixed(1);
-    lightSettings.backIntensity = v;
-    if (studioLights.back) studioLights.back.intensity = v;
-  });
-  
-  // Overhead Light (top-down)
-  document.getElementById('ctrl-overhead').addEventListener('input', (e) => {
-    const v = parseFloat(e.target.value);
-    document.getElementById('val-overhead').textContent = v.toFixed(1);
-    lightSettings.overheadIntensity = v;
-    if (studioLights.overhead) studioLights.overhead.intensity = v;
-  });
-  
-  // Accent Light (left side)
-  document.getElementById('ctrl-accent').addEventListener('input', (e) => {
-    const v = parseFloat(e.target.value);
-    document.getElementById('val-accent').textContent = v.toFixed(1);
-    lightSettings.accentIntensity = v;
-    if (studioLights.accent) studioLights.accent.intensity = v;
-  });
   
   // Image Controls - Threshold
   document.getElementById('ctrl-threshold').addEventListener('input', (e) => {
@@ -1060,8 +807,11 @@ function onWindowResize() {
 // ============================================
 // Adjust Camera for Viewport Size
 // ============================================
+// Global camera distance that animate() uses
+let cameraDistance = 5;
+
 function adjustCameraForViewport(width, height) {
-  if (!camera || !controls) return;
+  if (!camera) return;
   
   // Calculate optimal camera distance based on viewport
   const minDimension = Math.min(width, height);
@@ -1072,26 +822,14 @@ function adjustCameraForViewport(width, height) {
   let scaleFactor = 1;
   
   if (minDimension < 400) {
-    scaleFactor = 0.8;
+    scaleFactor = 0.7;  // Much closer for small screens
   } else if (minDimension < 600) {
-    scaleFactor = 0.9;
-  } else if (minDimension > 900) {
-    scaleFactor = 1.1;
+    scaleFactor = 0.85;
+  } else if (minDimension > 1000) {
+    scaleFactor = 1.15;
   }
   
-  // Update camera position while maintaining direction
-  const direction = camera.position.clone().normalize();
-  const newDist = baseDist * scaleFactor;
-  
-  // Only adjust if not actively using orbit controls
-  if (!controls.enabled || controls.autoRotate) {
-    camera.position.copy(direction.multiplyScalar(newDist));
-  }
-  
-  // Update controls limits
-  controls.minDistance = newDist * 0.6;
-  controls.maxDistance = newDist * 2;
-  controls.update();
+  cameraDistance = baseDist * scaleFactor;
 }
 
 // ============================================
@@ -1100,40 +838,23 @@ function adjustCameraForViewport(width, height) {
 function animate() {
   requestAnimationFrame(animate);
   
-  // Cinematic pan mode
-  if (cinematicMode && controls) {
-    cinematicAngle += 0.002; // Slow rotation speed
-    const radius = 6;
-    const height = 0.8; // Slightly below center for downward angle
-    
-    camera.position.x = Math.sin(cinematicAngle) * radius;
-    camera.position.z = Math.cos(cinematicAngle) * radius;
-    camera.position.y = height;
-    
-    controls.target.set(0, 0.5, 0);
-    camera.lookAt(0, 0.5, 0);
-  }
+  // Auto pan: smooth left-to-right oscillation
+  panAngle += PAN_SPEED;
   
-  // Update controls
-  if (controls) {
-    controls.update();
-  }
+  // Oscillate between -PAN_RANGE and +PAN_RANGE using sine wave
+  const panOffset = Math.sin(panAngle) * PAN_RANGE;
+  
+  // Camera orbits slightly left/right, always staying in front
+  camera.position.x = 0.3 + panOffset;  // Center offset + pan
+  camera.position.z = cameraDistance;   // Responsive distance
+  camera.position.y = 0.5;
+  
+  // Always look at center of model
+  camera.lookAt(0.3, 0.5, 0);
   
   // Render scene
   renderer.render(scene, camera);
 }
-
-// Toggle cinematic mode
-window.toggleCinematic = function() {
-  cinematicMode = !cinematicMode;
-  if (cinematicMode) {
-    cinematicAngle = Math.atan2(camera.position.x, camera.position.z);
-    controls.enabled = false;
-  } else {
-    controls.enabled = true;
-  }
-  document.getElementById('btn-cinematic').textContent = cinematicMode ? '⏸ Stop' : '🎬 Cine';
-};
 
 // ============================================
 // Initialize on DOM Load
