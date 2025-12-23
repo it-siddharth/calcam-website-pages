@@ -396,69 +396,61 @@ function setupControls() {
 function setupGUI() {
   gui = new lil.GUI({ 
     title: 'Settings',
-    width: 240
+    width: 220
   });
   
-  // Acrylic Panel controls (primary - open by default)
-  const panelParams = {
+  // All parameters in one flat object
+  const params = {
     opacity: CONFIG.panel.opacity,
-    hSpacing: 0,
-    vSpacing: 0,
-    depth: 0
-  };
-  
-  gui.add(panelParams, 'opacity', 0.1, 1, 0.05)
-    .name('Opacity')
-    .onChange(updatePanelOpacity);
-  
-  gui.add(panelParams, 'hSpacing', -1, 1, 0.05)
-    .name('H-Spread')
-    .onChange((v) => updatePanelSpacing(v, panelParams.vSpacing, panelParams.depth));
-  
-  gui.add(panelParams, 'vSpacing', -1, 1, 0.05)
-    .name('V-Spread')
-    .onChange((v) => updatePanelSpacing(panelParams.hSpacing, v, panelParams.depth));
-  
-  gui.add(panelParams, 'depth', -0.5, 0.5, 0.02)
-    .name('Depth')
-    .onChange((v) => updatePanelSpacing(panelParams.hSpacing, panelParams.vSpacing, v));
-  
-  // Rotation folder (collapsed by default)
-  const rotationFolder = gui.addFolder('Rotation');
-  const rotationParams = { x: 0, y: 0, z: 0 };
-  
-  rotationFolder.add(rotationParams, 'x', -180, 180, 1).name('X')
-    .onChange((v) => { installationGroup.rotation.x = THREE.MathUtils.degToRad(v); });
-  rotationFolder.add(rotationParams, 'y', -180, 180, 1).name('Y')
-    .onChange((v) => { installationGroup.rotation.y = THREE.MathUtils.degToRad(v); });
-  rotationFolder.add(rotationParams, 'z', -180, 180, 1).name('Z')
-    .onChange((v) => { installationGroup.rotation.z = THREE.MathUtils.degToRad(v); });
-  rotationFolder.close();
-  
-  // View presets folder (collapsed by default)
-  const viewFolder = gui.addFolder('Views');
-  const views = {
-    front: () => { camera.position.set(0, 0.5, 5); controls.target.set(0, 0.5, 0); controls.update(); },
-    side: () => { camera.position.set(5, 0.5, 0); controls.target.set(0, 0.5, 0); controls.update(); },
-    top: () => { camera.position.set(0, 5, 0.1); controls.target.set(0, 0.5, 0); controls.update(); },
-    reset: () => {
-      rotationParams.x = rotationParams.y = rotationParams.z = 0;
-      installationGroup.rotation.set(0, 0, 0);
-      panelParams.hSpacing = panelParams.vSpacing = panelParams.depth = 0;
-      panelParams.opacity = CONFIG.panel.opacity;
-      updatePanelSpacing(0, 0, 0);
+    hSpread: 0,
+    vSpread: 0,
+    depth: 0,
+    rotateX: 0,
+    rotateY: 0,
+    rotateZ: 0,
+    resetAll: () => {
+      params.opacity = CONFIG.panel.opacity;
+      params.hSpread = 0;
+      params.vSpread = 0;
+      params.depth = 0;
+      params.rotateX = 0;
+      params.rotateY = 0;
+      params.rotateZ = 0;
       updatePanelOpacity(CONFIG.panel.opacity);
+      updatePanelSpacing(0, 0, 0);
+      installationGroup.rotation.set(0, 0, 0);
       camera.position.set(0, 0.5, 5);
       controls.target.set(0, 0.5, 0);
       controls.update();
       gui.controllersRecursive().forEach(c => c.updateDisplay());
     }
   };
-  viewFolder.add(views, 'front').name('Front');
-  viewFolder.add(views, 'side').name('Side');
-  viewFolder.add(views, 'top').name('Top');
-  viewFolder.add(views, 'reset').name('Reset All');
-  viewFolder.close();
+  
+  // Panel controls
+  gui.add(params, 'opacity', 0.1, 1, 0.05).name('Opacity')
+    .onChange(updatePanelOpacity);
+  
+  gui.add(params, 'hSpread', -1, 1, 0.05).name('H-Spread')
+    .onChange((v) => updatePanelSpacing(v, params.vSpread, params.depth));
+  
+  gui.add(params, 'vSpread', -1, 1, 0.05).name('V-Spread')
+    .onChange((v) => updatePanelSpacing(params.hSpread, v, params.depth));
+  
+  gui.add(params, 'depth', -0.5, 0.5, 0.02).name('Depth')
+    .onChange((v) => updatePanelSpacing(params.hSpread, params.vSpread, v));
+  
+  // Rotation controls
+  gui.add(params, 'rotateX', -180, 180, 1).name('Rotate X')
+    .onChange((v) => { installationGroup.rotation.x = THREE.MathUtils.degToRad(v); });
+  
+  gui.add(params, 'rotateY', -180, 180, 1).name('Rotate Y')
+    .onChange((v) => { installationGroup.rotation.y = THREE.MathUtils.degToRad(v); });
+  
+  gui.add(params, 'rotateZ', -180, 180, 1).name('Rotate Z')
+    .onChange((v) => { installationGroup.rotation.z = THREE.MathUtils.degToRad(v); });
+  
+  // Reset button
+  gui.add(params, 'resetAll').name('Reset All');
 }
 
 // ============================================
