@@ -58,8 +58,8 @@ let silhouetteCanvas, silhouetteCtx;
 
 // Auto-pan animation
 let panAngle = 0;
-const PAN_SPEED = 0.003;  // Slow pan speed
-const PAN_RANGE = 0.4;    // How far left/right to pan (radians)
+const PAN_SPEED = 0.0036;  // Pan speed (+20%)
+const PAN_RANGE = 0.4;     // How far left/right to pan (radians)
 
 // TV appearance settings
 const tvSettings = {
@@ -804,28 +804,27 @@ function onWindowResize() {
 // Adjust Camera for Viewport Size
 // ============================================
 // Global camera distance that animate() uses
-let cameraDistance = 5;
+let cameraDistance = 6;
 
 function adjustCameraForViewport(width, height) {
   if (!camera) return;
   
-  // Model should SCALE with available space
-  // Bigger window = closer camera = bigger model
-  // Smaller window = further camera = smaller model
+  // Model scales with available space, but stays fully visible
+  // Further camera = smaller model to prevent cutoff
   
-  const baseDist = 5;
+  const baseDist = 6;  // Further back to prevent cutoff
   let scaleFactor;
   
   if (width >= 1200) {
-    scaleFactor = 0.85;   // Large screens: closer = bigger model
+    scaleFactor = 0.9;    // Large screens: slightly closer
   } else if (width >= 900) {
-    scaleFactor = 0.95;   // Medium-large
+    scaleFactor = 1.0;    // Medium-large: base
   } else if (width >= 700) {
-    scaleFactor = 1.0;    // Medium: base size
+    scaleFactor = 1.1;    // Medium: slightly further
   } else if (width >= 500) {
-    scaleFactor = 1.15;   // Small: further = smaller model
+    scaleFactor = 1.25;   // Small: further
   } else {
-    scaleFactor = 1.3;    // Very small: even further
+    scaleFactor = 1.5;    // Phone: much further to fit
   }
   
   cameraDistance = baseDist * scaleFactor;
