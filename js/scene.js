@@ -368,8 +368,8 @@ function setupControls() {
 // ============================================
 function setupGUI() {
   gui = new lil.GUI({ 
-    title: '3D Controls',
-    width: 250
+    title: 'Controls',
+    width: 220
   });
   
   // Position GUI in bottom-right
@@ -377,6 +377,7 @@ function setupGUI() {
   gui.domElement.style.bottom = '20px';
   gui.domElement.style.right = '20px';
   gui.domElement.style.top = 'auto';
+  gui.domElement.style.opacity = '0.9';
   
   // Rotation controls
   const rotationFolder = gui.addFolder('Rotation');
