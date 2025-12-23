@@ -17,8 +17,18 @@ const CONFIG = {
   panel: {
     width: 1.2,
     height: 1.5,
-    depth: 0.02,
-    opacity: 0.7
+    depth: 0.01,
+    opacity: 0.45
+  },
+  
+  // Default spacing values
+  defaults: {
+    hSpread: 0.35,
+    vSpread: 1,
+    zOffset: 0.22,
+    rotateX: 5,
+    rotateY: 0,
+    rotateZ: 0
   },
   
   // TV dimensions
@@ -413,16 +423,18 @@ function setupGUI() {
     width: 220
   });
   
-  // All parameters in one flat object
+  const { defaults } = CONFIG;
+  
+  // All parameters in one flat object with default values
   const params = {
     opacity: CONFIG.panel.opacity,
     thickness: CONFIG.panel.depth,
-    hSpread: 0,
-    vSpread: 0,
-    zOffset: 0,
-    rotateX: 0,
-    rotateY: 0,
-    rotateZ: 0,
+    hSpread: defaults.hSpread,
+    vSpread: defaults.vSpread,
+    zOffset: defaults.zOffset,
+    rotateX: defaults.rotateX,
+    rotateY: defaults.rotateY,
+    rotateZ: defaults.rotateZ,
     // View presets
     viewFront: () => {
       camera.position.set(0, 0.5, 5);
@@ -441,23 +453,35 @@ function setupGUI() {
     },
     resetAll: () => {
       params.opacity = CONFIG.panel.opacity;
-      params.thickness = 0.02;
-      params.hSpread = 0;
-      params.vSpread = 0;
-      params.zOffset = 0;
-      params.rotateX = 0;
-      params.rotateY = 0;
-      params.rotateZ = 0;
+      params.thickness = CONFIG.panel.depth;
+      params.hSpread = defaults.hSpread;
+      params.vSpread = defaults.vSpread;
+      params.zOffset = defaults.zOffset;
+      params.rotateX = defaults.rotateX;
+      params.rotateY = defaults.rotateY;
+      params.rotateZ = defaults.rotateZ;
       updatePanelOpacity(CONFIG.panel.opacity);
-      updatePanelThickness(0.02);
-      updatePanelSpacing(0, 0, 0);
-      installationGroup.rotation.set(0, 0, 0);
+      updatePanelThickness(CONFIG.panel.depth);
+      updatePanelSpacing(defaults.hSpread, defaults.vSpread, defaults.zOffset);
+      installationGroup.rotation.set(
+        THREE.MathUtils.degToRad(defaults.rotateX),
+        THREE.MathUtils.degToRad(defaults.rotateY),
+        THREE.MathUtils.degToRad(defaults.rotateZ)
+      );
       camera.position.set(0, 0.5, 5);
       controls.target.set(0, 0.5, 0);
       controls.update();
       gui.controllersRecursive().forEach(c => c.updateDisplay());
     }
   };
+  
+  // Apply default values on init
+  updatePanelSpacing(defaults.hSpread, defaults.vSpread, defaults.zOffset);
+  installationGroup.rotation.set(
+    THREE.MathUtils.degToRad(defaults.rotateX),
+    THREE.MathUtils.degToRad(defaults.rotateY),
+    THREE.MathUtils.degToRad(defaults.rotateZ)
+  );
   
   // Panel controls
   gui.add(params, 'opacity', 0.1, 1, 0.05).name('Opacity')
