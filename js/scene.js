@@ -437,6 +437,16 @@ function setupControls() {
 // ============================================
 // Setup GUI Controls - Simple flat list
 // ============================================
+// Image settings for WORD SILHOUETTE
+const imageSettings = {
+  threshold: 83,
+  invert: false,
+  flip: false,
+  contour: true,
+  glitch: true,
+  glitchIntensity: 20
+};
+
 function setupGUI() {
   const { defaults } = CONFIG;
   
@@ -496,6 +506,34 @@ function setupGUI() {
         <span class="value" id="val-leftlight">0.6</span>
       </div>
       
+      <div class="setting-section">Image / Video</div>
+      <div class="setting-row">
+        <label>Threshold</label>
+        <input type="range" id="ctrl-threshold" min="0" max="255" step="1" value="${imageSettings.threshold}">
+        <span class="value" id="val-threshold">${imageSettings.threshold}</span>
+      </div>
+      <div class="setting-row">
+        <label>Invert</label>
+        <input type="checkbox" id="ctrl-invert" ${imageSettings.invert ? 'checked' : ''}>
+      </div>
+      <div class="setting-row">
+        <label>Flip</label>
+        <input type="checkbox" id="ctrl-flip" ${imageSettings.flip ? 'checked' : ''}>
+      </div>
+      <div class="setting-row">
+        <label>Contour</label>
+        <input type="checkbox" id="ctrl-contour" ${imageSettings.contour ? 'checked' : ''}>
+      </div>
+      <div class="setting-row">
+        <label>Glitch</label>
+        <input type="checkbox" id="ctrl-glitch" ${imageSettings.glitch ? 'checked' : ''}>
+      </div>
+      <div class="setting-row">
+        <label>Glitch %</label>
+        <input type="range" id="ctrl-glitchamt" min="0" max="100" step="5" value="${imageSettings.glitchIntensity}">
+        <span class="value" id="val-glitchamt">${imageSettings.glitchIntensity}</span>
+      </div>
+      
       <div class="setting-section">Rotation</div>
       <div class="setting-row">
         <label>Rotate X</label>
@@ -513,6 +551,7 @@ function setupGUI() {
         <span class="value" id="val-rotz">${defaults.rotateZ}°</span>
       </div>
       
+      <div class="setting-section">Camera</div>
       <div class="setting-buttons">
         <button onclick="setView('front')">Front</button>
         <button onclick="setView('side')">Side</button>
@@ -696,6 +735,100 @@ function setupSettingsListeners() {
       leftLight.intensity = v;
     }
   });
+  
+  // Image Controls - Threshold
+  document.getElementById('ctrl-threshold').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    document.getElementById('val-threshold').textContent = v;
+    imageSettings.threshold = v;
+    updateIframeSettings();
+  });
+  
+  // Image Controls - Invert
+  document.getElementById('ctrl-invert').addEventListener('change', (e) => {
+    imageSettings.invert = e.target.checked;
+    updateIframeSettings();
+  });
+  
+  // Image Controls - Flip
+  document.getElementById('ctrl-flip').addEventListener('change', (e) => {
+    imageSettings.flip = e.target.checked;
+    updateIframeSettings();
+  });
+  
+  // Image Controls - Contour
+  document.getElementById('ctrl-contour').addEventListener('change', (e) => {
+    imageSettings.contour = e.target.checked;
+    updateIframeSettings();
+  });
+  
+  // Image Controls - Glitch
+  document.getElementById('ctrl-glitch').addEventListener('change', (e) => {
+    imageSettings.glitch = e.target.checked;
+    updateIframeSettings();
+  });
+  
+  // Image Controls - Glitch Intensity
+  document.getElementById('ctrl-glitchamt').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    document.getElementById('val-glitchamt').textContent = v;
+    imageSettings.glitchIntensity = v;
+    updateIframeSettings();
+  });
+}
+
+// Update iframe settings
+function updateIframeSettings() {
+  const iframe = document.getElementById('silhouette-iframe');
+  if (!iframe || !iframe.contentWindow) return;
+  
+  try {
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    
+    // Threshold
+    const thresholdEl = iframeDoc.getElementById('threshold');
+    if (thresholdEl) {
+      thresholdEl.value = imageSettings.threshold;
+      thresholdEl.dispatchEvent(new Event('input'));
+    }
+    
+    // Invert
+    const invertEl = iframeDoc.getElementById('invertColors');
+    if (invertEl) {
+      invertEl.checked = imageSettings.invert;
+      invertEl.dispatchEvent(new Event('change'));
+    }
+    
+    // Flip
+    const flipEl = iframeDoc.getElementById('flipVideo');
+    if (flipEl) {
+      flipEl.checked = imageSettings.flip;
+      flipEl.dispatchEvent(new Event('change'));
+    }
+    
+    // Contour
+    const contourEl = iframeDoc.getElementById('showContour');
+    if (contourEl) {
+      contourEl.checked = imageSettings.contour;
+      contourEl.dispatchEvent(new Event('change'));
+    }
+    
+    // Glitch
+    const glitchEl = iframeDoc.getElementById('enableGlitch');
+    if (glitchEl) {
+      glitchEl.checked = imageSettings.glitch;
+      glitchEl.dispatchEvent(new Event('change'));
+    }
+    
+    // Glitch Intensity
+    const glitchAmtEl = iframeDoc.getElementById('glitchIntensity');
+    if (glitchAmtEl) {
+      glitchAmtEl.value = imageSettings.glitchIntensity;
+      glitchAmtEl.dispatchEvent(new Event('input'));
+    }
+  } catch (e) {
+    // Cross-origin - silently fail
+  }
 }
 
 // ============================================

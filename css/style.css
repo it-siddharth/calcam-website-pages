@@ -314,19 +314,22 @@ body {
   position: fixed;
   bottom: 80px;
   right: 20px;
-  width: 260px;
-  background: rgba(20, 20, 22, 0.95);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  width: 280px;
+  max-height: calc(100vh - 120px);
+  background: rgba(18, 18, 20, 0.96);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   z-index: 999;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   transform: translateY(20px);
   opacity: 0;
   visibility: hidden;
   transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .settings-panel.open {
@@ -339,15 +342,16 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
 }
 
 .settings-header span {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   color: rgba(255, 255, 255, 0.5);
 }
 
@@ -355,29 +359,45 @@ body {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.4);
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
   padding: 0;
   line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.15s ease;
 }
 
 .settings-close:hover {
   color: #fff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .settings-content {
-  padding: 12px 16px;
-  max-height: 400px;
+  padding: 16px 18px 20px;
   overflow-y: auto;
+  flex: 1;
 }
 
 .settings-content::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
+}
+
+.settings-content::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .settings-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.settings-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Section Headers */
@@ -385,12 +405,12 @@ body {
   font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.4);
-  margin-top: 16px;
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  letter-spacing: 1.2px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 20px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .setting-section:first-child {
@@ -401,22 +421,23 @@ body {
 .setting-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 0 2px;
 }
 
 .setting-row label {
-  flex: 0 0 70px;
-  font-size: 11px;
+  flex: 0 0 75px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
 }
 
 /* Color picker */
 .setting-row input[type="color"] {
-  width: 32px;
-  height: 24px;
+  width: 36px;
+  height: 28px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   background: none;
   padding: 0;
@@ -427,68 +448,85 @@ body {
 }
 
 .setting-row input[type="color"]::-webkit-color-swatch {
-  border-radius: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* Checkbox */
 .setting-row input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
   accent-color: #64d2ff;
+  border-radius: 4px;
 }
 
 .setting-row input[type="range"] {
   flex: 1;
-  height: 4px;
+  height: 5px;
   -webkit-appearance: none;
   appearance: none;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
   cursor: pointer;
 }
 
 .setting-row input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: #fff;
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease;
+}
+
+.setting-row input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.setting-row input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(0.95);
 }
 
 .setting-row .value {
-  flex: 0 0 40px;
-  font-size: 10px;
+  flex: 0 0 38px;
+  font-size: 11px;
   color: #64d2ff;
   text-align: right;
-  font-family: monospace;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-weight: 500;
 }
 
 /* Buttons */
 .setting-buttons {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 8px;
 }
 
 .setting-buttons button {
-  flex: 1;
-  padding: 8px 0;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: #fff;
+  padding: 10px 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
   font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .setting-buttons button:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.setting-buttons button:active {
+  transform: scale(0.97);
 }
 
 /* Mobile adjustments */
