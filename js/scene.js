@@ -75,6 +75,7 @@ const lightSettings = {
   keyIntensity: 1.2,
   fillIntensity: 0.5,
   backIntensity: 0.6,
+  overheadIntensity: 1.5,
   accentIntensity: 0.8,
   shadowSoftness: 0.5
 };
@@ -209,6 +210,25 @@ function setupLighting() {
   studioLights.back.target.position.set(0, 0.5, 0);
   scene.add(studioLights.back);
   scene.add(studioLights.back.target);
+  
+  // ═══════════════════════════════════════════
+  // OVERHEAD LIGHT - Top-down dramatic spotlight
+  // ═══════════════════════════════════════════
+  studioLights.overhead = new THREE.SpotLight(0xffffff, lightSettings.overheadIntensity);
+  studioLights.overhead.position.set(0, 8, 0);
+  studioLights.overhead.angle = Math.PI / 6; // Focused cone
+  studioLights.overhead.penumbra = 0.5;
+  studioLights.overhead.decay = 1.2;
+  studioLights.overhead.distance = 15;
+  studioLights.overhead.target.position.set(0, 0, 0);
+  studioLights.overhead.castShadow = true;
+  studioLights.overhead.shadow.mapSize.width = PERF.shadowMapSize;
+  studioLights.overhead.shadow.mapSize.height = PERF.shadowMapSize;
+  studioLights.overhead.shadow.camera.near = 1;
+  studioLights.overhead.shadow.camera.far = 15;
+  studioLights.overhead.shadow.bias = -0.0001;
+  scene.add(studioLights.overhead);
+  scene.add(studioLights.overhead.target);
   
   // ═══════════════════════════════════════════
   // ACCENT LIGHT - Left side dramatic lighting
@@ -607,6 +627,11 @@ function setupGUI() {
         <span class="value" id="val-back">${lightSettings.backIntensity}</span>
       </div>
       <div class="setting-row">
+        <label>Overhead</label>
+        <input type="range" id="ctrl-overhead" min="0" max="5" step="0.1" value="${lightSettings.overheadIntensity}">
+        <span class="value" id="val-overhead">${lightSettings.overheadIntensity}</span>
+      </div>
+      <div class="setting-row">
         <label>Accent</label>
         <input type="range" id="ctrl-accent" min="0" max="3" step="0.1" value="${lightSettings.accentIntensity}">
         <span class="value" id="val-accent">${lightSettings.accentIntensity}</span>
@@ -881,6 +906,14 @@ function setupSettingsListeners() {
     document.getElementById('val-back').textContent = v.toFixed(1);
     lightSettings.backIntensity = v;
     if (studioLights.back) studioLights.back.intensity = v;
+  });
+  
+  // Overhead Light (top-down)
+  document.getElementById('ctrl-overhead').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-overhead').textContent = v.toFixed(1);
+    lightSettings.overheadIntensity = v;
+    if (studioLights.overhead) studioLights.overhead.intensity = v;
   });
   
   // Accent Light (left side)
