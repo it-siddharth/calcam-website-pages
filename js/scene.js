@@ -83,7 +83,7 @@ let resizeTimeout;
 // ============================================
 let mouseX = 0, mouseY = 0;           // Current interpolated values
 let targetMouseX = 0, targetMouseY = 0; // Target values from mouse position
-const MOUSE_SENSITIVITY = 0.5;         // How much mouse affects camera
+const MOUSE_SENSITIVITY = 0.8;         // How much mouse affects camera
 const MOUSE_LERP = 0.05;               // Smoothing factor (lower = smoother)
 
 // ============================================
