@@ -209,7 +209,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 14px;
+  padding: 6px 16px;
   border-radius: 30px;
   text-decoration: none;
   overflow: hidden;
@@ -246,7 +246,7 @@ body {
 }
 
 .nav-links .btn {
-  padding: 6px 14px;
+  padding: 6px 16px;
 }
 
 /* ============================================
