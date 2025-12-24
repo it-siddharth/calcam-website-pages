@@ -24,9 +24,9 @@
   --font-mono: 'JetBrains Mono', monospace;
   --font-arrow: 'Alegreya', serif;
   
-  --title-size: 97px;
-  --title-line-height: 97px;
-  --title-letter-spacing: -2.91px;
+  --title-size: 136px;
+  --title-line-height: 130px;
+  --title-letter-spacing: -4px;
   
   --body-size: 20px;
   --body-line-height: 26px;
@@ -209,7 +209,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 0 10px;
+  padding: 6px 14px;
   border-radius: 30px;
   text-decoration: none;
   overflow: hidden;
@@ -357,9 +357,9 @@ body {
    ============================================ */
 @media screen and (max-width: 768px) {
   :root {
-    --title-size: 52px;
+    --title-size: 56px;
     --title-line-height: 52px;
-    --title-letter-spacing: -1.56px;
+    --title-letter-spacing: -2px;
     
     --body-size: 14px;
     --body-line-height: 22px;
@@ -497,8 +497,9 @@ body {
 /* Extra small screens */
 @media screen and (max-width: 390px) {
   :root {
-    --title-size: 44px;
+    --title-size: 48px;
     --title-line-height: 44px;
+    --title-letter-spacing: -1.5px;
     --carousel-height: 480px;
   }
   
