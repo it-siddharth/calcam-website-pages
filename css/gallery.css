@@ -241,6 +241,12 @@ body {
   background-color: transparent;
   color: var(--color-text);
   border: 1px solid var(--color-text);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.nav-links .btn {
+  padding: 6px 14px;
 }
 
 /* ============================================
