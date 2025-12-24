@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="Calculated Camouflage - An interactive installation of light and space">
+  <meta name="description" content="Calculated Camouflage - Viewer Journal">
   <meta name="theme-color" content="#000000">
-  <title>Calculated Camouflage</title>
+  <title>Viewer Journal | Calculated Camouflage</title>
   
   <!-- Preload critical resources -->
   <link rel="preload" href="fonts/403-super-vega-regular.woff" as="font" type="font/woff" crossorigin>
-  <link rel="preload" href="css/style.css" as="style">
+  <link rel="preload" href="css/journal.css" as="style">
   
   <!-- DNS prefetch for external resources -->
   <link rel="dns-prefetch" href="https://unpkg.com">
@@ -21,7 +21,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
   
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/journal.css">
   
   <!-- Critical inline styles to prevent white flash -->
   <style>
@@ -55,48 +55,33 @@
   <div class="corner-accent bottom-left"></div>
   <div class="corner-accent bottom-right"></div>
 
+  <!-- Back Button -->
+  <a href="index.html" class="back-button">
+    <span class="back-arrow">←</span>
+    <span class="back-text">BACK</span>
+  </a>
+
   <!-- Main Content Container -->
-  <main class="landing-page">
+  <main class="journal-page">
     <!-- Left Content Section -->
-    <section class="content-section">
-      <!-- Title -->
-      <h1 class="title">
-        <span>CALCULATED</span>
-        <span>CAMOUFLAGE</span>
-      </h1>
+    <section class="journal-content">
+      <h1 class="journal-title">VIEWER<br>JOURNAL</h1>
       
-      <!-- Description -->
-      <p class="description">
-        Through an interactive installation of light and space, viewers explore how their authentic identity flows through every version of themselves.
+      <!-- Description - visible on desktop -->
+      <p class="journal-description desktop-only">
+        While the installation ran, a journal sat open, inviting visitors to leave their mark.
       </p>
       
-      <!-- Meta Information -->
-      <div class="meta-info">
-        <div class="meta-item">
-          <span class="meta-label">on display from</span>
-          <span class="meta-value">23 Apr '25–31st Mar '25</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label">Installed at</span>
-          <span class="meta-value">Fox 3 building, Baltimore</span>
-        </div>
-      </div>
-      
-      <!-- CTA Section -->
-      <div class="cta-section">
-        <p class="cta-text">Curious? See the 3d installation for yourself</p>
+      <!-- Info Section - Positioned at bottom on desktop -->
+      <div class="journal-info">
+        <p class="learn-more">Know more about how this came to being.</p>
         
-        <a href="installation.html" class="btn btn-primary">
-          <span class="btn-text">EXPERIENCE IT YOURSELF</span>
-          <span class="btn-arrow"> →</span>
-        </a>
-        
-        <div class="nav-links">
+        <nav class="nav-links">
           <a href="#process" class="btn btn-secondary">
             <span class="btn-text">process</span>
             <span class="btn-arrow"> →</span>
           </a>
-          <a href="journal.html" class="btn btn-secondary">
+          <a href="journal.html" class="btn btn-secondary active">
             <span class="btn-text">viewer journal</span>
             <span class="btn-arrow"> →</span>
           </a>
@@ -104,23 +89,43 @@
             <span class="btn-text">gallery</span>
             <span class="btn-arrow"> →</span>
           </a>
-        </div>
+        </nav>
       </div>
     </section>
 
-    <!-- 3D Scene Section -->
-    <section class="scene-section" id="experience">
+    <!-- 3D Flipbook Section -->
+    <section class="flipbook-section">
       <div id="three-container"></div>
-      <!-- Gradient overlay at bottom -->
-      <div class="scene-gradient"></div>
+      
+      <!-- Instruction hint -->
+      <p class="flipbook-hint">Tap to flip the pages. Scroll or drag to zoom into the details.</p>
     </section>
     
-    <!-- Credit -->
-    <footer class="credit">Made by Siddharth. ©itsiddharth 2026</footer>
+    <!-- Mobile Description (below title on mobile) -->
+    <p class="journal-description mobile-only">
+      While the installation ran, a journal sat open, inviting visitors to leave their mark.
+    </p>
+    
+    <!-- Mobile Footer -->
+    <footer class="journal-footer-mobile">
+      <p class="learn-more">Know more about how this came to being.</p>
+      
+      <nav class="nav-links">
+        <a href="#process" class="btn btn-secondary">
+          <span class="btn-text">process</span>
+          <span class="btn-arrow"> →</span>
+        </a>
+        <a href="journal.html" class="btn btn-secondary active">
+          <span class="btn-text">viewer journal</span>
+          <span class="btn-arrow"> →</span>
+        </a>
+        <a href="gallery.html" class="btn btn-secondary">
+          <span class="btn-text">gallery</span>
+          <span class="btn-arrow"> →</span>
+        </a>
+      </nav>
+    </footer>
   </main>
-
-  <!-- Hidden iframe for WORD SILHOUETTE (lazy loaded) -->
-  <iframe id="silhouette-iframe" src="WORD SILHOUETTE.html" loading="lazy" style="position: absolute; left: -9999px; width: 640px; height: 480px;"></iframe>
 
   <!-- Three.js and dependencies -->
   <script type="importmap">
@@ -131,7 +136,8 @@
       }
     }
   </script>
-  <script type="module" src="js/scene.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script type="module" src="js/journal-flipbook.js"></script>
   
   <!-- Fade out page transition overlay -->
   <script>

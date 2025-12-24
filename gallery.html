@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Calculated Camouflage - Gallery">
+  <meta name="theme-color" content="#000000">
+  <title>Gallery | Calculated Camouflage</title>
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="fonts/403-super-vega-regular.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="css/gallery.css" as="style">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/gallery.css">
+  
+  <!-- Critical inline styles to prevent white flash -->
+  <style>
+    html, body {
+      background-color: #000000 !important;
+    }
+    .page-transition-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.3s ease-out;
+      pointer-events: none;
+    }
+    .page-transition-overlay.hidden {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body style="background-color: #000000;">
+  <!-- Page Transition Overlay -->
+  <div class="page-transition-overlay"></div>
+  
+  <!-- Corner Accents -->
+  <div class="corner-accent top-left"></div>
+  <div class="corner-accent top-right"></div>
+  <div class="corner-accent bottom-left"></div>
+  <div class="corner-accent bottom-right"></div>
+
+  <!-- Back Button -->
+  <a href="index.html" class="back-button">
+    <span class="back-arrow">←</span>
+    <span class="back-text">BACK</span>
+  </a>
+
+  <!-- Main Gallery Container -->
+  <main class="gallery-page">
+    <!-- Left Content Section -->
+    <section class="gallery-content">
+      <h1 class="gallery-title">GALLERY</h1>
+      
+      <!-- Info Section - Positioned at bottom on desktop, after carousel on mobile -->
+      <div class="gallery-info">
+        <p class="instruction-text">Use your arrow keys and mouse to move around and explore in the room.</p>
+        <p class="learn-more">Know more about how this came to being.</p>
+        
+        <nav class="nav-links">
+          <a href="#process" class="btn btn-secondary">
+            <span class="btn-text">process</span>
+            <span class="btn-arrow"> →</span>
+          </a>
+          <a href="journal.html" class="btn btn-secondary">
+            <span class="btn-text">viewer journal</span>
+            <span class="btn-arrow"> →</span>
+          </a>
+          <a href="gallery.html" class="btn btn-secondary">
+            <span class="btn-text">gallery</span>
+            <span class="btn-arrow"> →</span>
+          </a>
+        </nav>
+      </div>
+    </section>
+
+    <!-- Carousel Section -->
+    <div class="carousel-wrapper">
+      <div class="carousel-track" id="carousel-track">
+        <!-- Item 01 -->
+        <article class="carousel-item" data-aspect-ratio="0.81">
+          <span class="item-index">01</span>
+          <div class="item-media placeholder" style="width: 670px;">
+            <!-- Replace with actual image/video -->
+            <!-- <img src="assets/gallery-01.jpg" alt="Gallery image 1"> -->
+          </div>
+        </article>
+        
+        <!-- Item 02 -->
+        <article class="carousel-item" data-aspect-ratio="0.98">
+          <span class="item-index">02</span>
+          <div class="item-media placeholder" style="width: 813px;">
+            <!-- Replace with actual image/video -->
+            <!-- <img src="assets/gallery-02.jpg" alt="Gallery image 2"> -->
+          </div>
+        </article>
+        
+        <!-- Item 03 -->
+        <article class="carousel-item" data-aspect-ratio="0.98">
+          <span class="item-index">03</span>
+          <div class="item-media placeholder" style="width: 813px;">
+            <!-- Replace with actual image/video -->
+            <!-- <img src="assets/gallery-03.jpg" alt="Gallery image 3"> -->
+          </div>
+        </article>
+        
+        <!-- Item 04 - Example Video -->
+        <article class="carousel-item video-item" data-aspect-ratio="1.78">
+          <span class="item-index">04</span>
+          <div class="item-media placeholder" style="width: 1471px;">
+            <!-- Replace with actual video -->
+            <!-- <video src="assets/gallery-04.mp4" muted loop playsinline></video> -->
+          </div>
+        </article>
+        
+        <!-- Item 05 -->
+        <article class="carousel-item" data-aspect-ratio="0.75">
+          <span class="item-index">05</span>
+          <div class="item-media placeholder" style="width: 621px;">
+            <!-- Replace with actual image/video -->
+            <!-- <img src="assets/gallery-05.jpg" alt="Gallery image 5"> -->
+          </div>
+        </article>
+        
+        <!-- Item 06 -->
+        <article class="carousel-item" data-aspect-ratio="1.33">
+          <span class="item-index">06</span>
+          <div class="item-media placeholder" style="width: 1100px;">
+            <!-- Replace with actual image/video -->
+            <!-- <img src="assets/gallery-06.jpg" alt="Gallery image 6"> -->
+          </div>
+        </article>
+      </div>
+    </div>
+    
+    <!-- Scroll Hint -->
+    <div class="scroll-hint" id="scroll-hint">Scroll →</div>
+    
+    <!-- Mobile Footer (visible only on mobile) -->
+    <footer class="gallery-footer-mobile">
+      <p class="learn-more">Know more about how this came to being.</p>
+      
+      <nav class="nav-links">
+        <a href="#process" class="btn btn-secondary">
+          <span class="btn-text">process</span>
+          <span class="btn-arrow"> →</span>
+        </a>
+        <a href="journal.html" class="btn btn-secondary">
+          <span class="btn-text">viewer journal</span>
+          <span class="btn-arrow"> →</span>
+        </a>
+        <a href="gallery.html" class="btn btn-secondary">
+          <span class="btn-text">gallery</span>
+          <span class="btn-arrow"> →</span>
+        </a>
+      </nav>
+    </footer>
+  </main>
+
+  <!-- Gallery JS for smooth horizontal scrolling -->
+  <script src="js/gallery.js"></script>
+  
+  <!-- Fade out page transition overlay -->
+  <script>
+    window.addEventListener('load', function() {
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          var overlay = document.querySelector('.page-transition-overlay');
+          if (overlay) {
+            overlay.classList.add('hidden');
+            overlay.addEventListener('transitionend', function() {
+              overlay.remove();
+            }, { once: true });
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
+

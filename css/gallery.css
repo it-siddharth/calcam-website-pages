@@ -1,0 +1,524 @@
+/* ============================================
+   403 Super Vega Custom Font
+   ============================================ */
+@font-face {
+  font-family: '403 Super Vega';
+  src: url('../fonts/403-super-vega-regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================
+   CSS Custom Properties
+   ============================================ */
+:root {
+  /* Colors */
+  --color-bg: #000000;
+  --color-text: #FFFFFF;
+  --color-placeholder: #d9d9d9;
+  
+  /* Typography - Desktop */
+  --font-title: '403 Super Vega', sans-serif;
+  --font-body: 'Nanum Myeongjo', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-arrow: 'Alegreya', serif;
+  
+  --title-size: 97px;
+  --title-line-height: 97px;
+  --title-letter-spacing: -2.91px;
+  
+  --body-size: 20px;
+  --body-line-height: 26px;
+  
+  --label-size: 14px;
+  --label-line-height: 14px;
+  
+  --arrow-size: 18px;
+  --arrow-line-height: 21.6px;
+  
+  --index-size: 27px;
+  --index-line-height: 35.4px;
+  
+  /* Spacing */
+  --page-padding: 30px;
+  --corner-size: 25px;
+  
+  /* Carousel */
+  --carousel-height: 828px;
+  --carousel-gap: 44px;
+  --carousel-top: 96px;
+  --carousel-left: 495px;
+}
+
+/* ============================================
+   Reset & Base Styles
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   Corner Accents
+   ============================================ */
+.corner-accent {
+  position: fixed;
+  width: var(--corner-size);
+  height: var(--corner-size);
+  background-color: var(--color-text);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.corner-accent.top-left {
+  top: 0;
+  left: 0;
+}
+
+.corner-accent.top-right {
+  top: 0;
+  right: 0;
+}
+
+.corner-accent.bottom-left {
+  bottom: 0;
+  left: 0;
+}
+
+.corner-accent.bottom-right {
+  bottom: 0;
+  right: 0;
+}
+
+/* ============================================
+   Back Button
+   ============================================ */
+.back-button {
+  position: fixed;
+  top: var(--page-padding);
+  right: var(--page-padding);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 30px;
+  color: var(--color-text);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.back-arrow {
+  font-family: var(--font-arrow);
+  font-size: 16px;
+  font-style: italic;
+}
+
+/* ============================================
+   Gallery Page Layout
+   ============================================ */
+.gallery-page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ============================================
+   Left Content Section
+   ============================================ */
+.gallery-content {
+  position: absolute;
+  top: 35px;
+  left: var(--page-padding);
+  width: 430px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 35px - var(--page-padding));
+  z-index: 1;
+}
+
+.gallery-title {
+  font-family: var(--font-title);
+  font-size: var(--title-size);
+  font-weight: normal;
+  line-height: var(--title-line-height);
+  letter-spacing: var(--title-letter-spacing);
+  white-space: nowrap;
+  margin-bottom: auto;
+}
+
+/* Instructions & Learn More */
+.gallery-info {
+  margin-top: auto;
+  max-width: 375px;
+}
+
+.instruction-text {
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  font-weight: 700;
+  line-height: var(--body-line-height);
+  margin-bottom: 26px;
+}
+
+.learn-more {
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  font-weight: 700;
+  line-height: var(--body-line-height);
+  margin-bottom: 22px;
+}
+
+/* Navigation Buttons */
+.nav-links {
+  display: flex;
+  gap: 10px;
+  padding-bottom: var(--page-padding);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 10px;
+  border-radius: 30px;
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+.btn-text {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  font-weight: 500;
+  line-height: var(--label-line-height);
+  text-transform: uppercase;
+}
+
+.btn-arrow {
+  font-family: var(--font-arrow);
+  font-size: var(--arrow-size);
+  font-style: italic;
+  line-height: var(--arrow-line-height);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+}
+
+/* ============================================
+   Carousel Section
+   ============================================ */
+.carousel-wrapper {
+  position: absolute;
+  top: var(--carousel-top);
+  left: var(--carousel-left);
+  right: 0;
+  height: var(--carousel-height);
+  overflow: visible;
+  z-index: 5;
+}
+
+.carousel-track {
+  display: flex;
+  gap: var(--carousel-gap);
+  height: 100%;
+  padding-right: 100px;
+  cursor: grab;
+  user-select: none;
+  will-change: transform;
+  transition: transform 0.05s ease-out;
+}
+
+.carousel-track:active {
+  cursor: grabbing;
+}
+
+/* Carousel Item */
+.carousel-item {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  height: 100%;
+}
+
+/* Index number aligned at start (top) */
+.carousel-item:nth-child(odd) {
+  align-items: flex-start;
+}
+
+/* Index number aligned at end (bottom) for even items */
+.carousel-item:nth-child(even) {
+  align-items: flex-end;
+}
+
+.item-index {
+  font-family: var(--font-body);
+  font-size: var(--index-size);
+  font-weight: 700;
+  line-height: var(--index-line-height);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Media container - height locked, width calculated from aspect ratio */
+.item-media {
+  height: 100%;
+  background-color: var(--color-placeholder);
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-media img,
+.item-media video {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Placeholder styling when no media loaded */
+.item-media.placeholder {
+  background-color: var(--color-placeholder);
+}
+
+/* ============================================
+   Scroll Indicators (optional subtle hint)
+   ============================================ */
+.scroll-hint {
+  position: absolute;
+  right: var(--page-padding);
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.3);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.scroll-hint.hidden {
+  opacity: 0;
+}
+
+/* Desktop - hide mobile footer */
+.gallery-footer-mobile {
+  display: none;
+}
+
+/* ============================================
+   Mobile Responsive Styles
+   ============================================ */
+@media screen and (max-width: 768px) {
+  :root {
+    --title-size: 52px;
+    --title-line-height: 52px;
+    --title-letter-spacing: -1.56px;
+    
+    --body-size: 14px;
+    --body-line-height: 22px;
+    
+    --label-size: 14px;
+    --arrow-size: 18px;
+    
+    --index-size: 20px;
+    --index-line-height: 26px;
+    
+    --page-padding: 20px;
+    --corner-size: 15px;
+    
+    --carousel-height: 571px;
+    --carousel-gap: 30px;
+  }
+  
+  /* Stacked layout for mobile */
+  .gallery-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  
+  /* Title section at top - only contains title on mobile */
+  .gallery-content {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    padding: 25px var(--page-padding) 0;
+    height: auto;
+    flex-shrink: 0;
+    display: block;
+  }
+  
+  .gallery-title {
+    margin-bottom: 0;
+  }
+  
+  /* Hide info section inside gallery-content on mobile - it moves to bottom */
+  .gallery-content .gallery-info {
+    display: none;
+  }
+  
+  /* Carousel in middle - fills available space */
+  .carousel-wrapper {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    height: var(--carousel-height);
+    flex: 0 0 auto;
+    margin-top: 24px;
+    order: 1;
+  }
+  
+  .carousel-track {
+    padding-left: var(--page-padding);
+    padding-right: 50px;
+    gap: var(--carousel-gap);
+  }
+  
+  /* On mobile, first item has index at top */
+  .carousel-item:first-child {
+    align-items: flex-start;
+  }
+  
+  /* Mobile uses smaller image widths based on aspect ratio */
+  .carousel-item .item-media {
+    width: auto;
+    max-width: calc(100vw - 70px);
+  }
+  
+  /* Footer at bottom - shows as separate section on mobile */
+  .gallery-footer-mobile {
+    display: block;
+    position: relative;
+    margin-top: auto;
+    padding: 20px var(--page-padding) var(--page-padding);
+    max-width: 100%;
+    order: 2;
+  }
+  
+  .gallery-footer-mobile .learn-more {
+    font-family: var(--font-body);
+    font-size: var(--body-size);
+    font-weight: 700;
+    line-height: var(--body-line-height);
+    margin-bottom: 16px;
+  }
+  
+  .gallery-footer-mobile .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 0;
+  }
+  
+  .btn {
+    padding: 0 10px;
+  }
+  
+  /* Hide scroll hint on mobile */
+  .scroll-hint {
+    display: none;
+  }
+  
+  /* Back button mobile sizing */
+  .back-button {
+    top: var(--page-padding);
+    right: var(--page-padding);
+    padding: 6px 12px;
+    font-size: 10px;
+  }
+  
+  .back-arrow {
+    font-size: 14px;
+  }
+  
+  /* Videos on mobile take full width */
+  .carousel-item.video-item .item-media {
+    width: calc(100vw - 70px);
+    height: auto;
+  }
+  
+  .carousel-item.video-item .item-media video {
+    width: 100%;
+    height: auto;
+  }
+}
+
+/* Extra small screens */
+@media screen and (max-width: 390px) {
+  :root {
+    --title-size: 44px;
+    --title-line-height: 44px;
+    --carousel-height: 480px;
+  }
+  
+  .gallery-footer-mobile .nav-links {
+    gap: 6px;
+  }
+  
+  .btn {
+    padding: 0 8px;
+  }
+  
+  .btn-text {
+    font-size: 12px;
+  }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+.hidden {
+  display: none !important;
+}
+

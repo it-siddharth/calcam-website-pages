@@ -79,6 +79,24 @@ const PERF = {
 let resizeTimeout;
 
 // ============================================
+// Mouse Tracking for Subtle Camera Movement
+// ============================================
+let mouseX = 0, mouseY = 0;           // Current interpolated values
+let targetMouseX = 0, targetMouseY = 0; // Target values from mouse position
+const MOUSE_SENSITIVITY = 0.2;         // How much mouse affects camera (subtle)
+const MOUSE_LERP = 0.05;               // Smoothing factor (lower = smoother)
+
+// ============================================
+// Zoom Controls
+// ============================================
+let zoomFactor = 1.0;                  // Current zoom level
+let targetZoom = 1.0;                  // Target zoom level
+const ZOOM_MIN = 0.85;                 // Max zoom in (closer to model)
+const ZOOM_MAX = 1.1;                  // Max zoom out
+const ZOOM_SPEED = 0.0008;             // How fast scroll affects zoom
+const ZOOM_LERP = 0.08;                // Zoom smoothing factor
+
+// ============================================
 // Initialize Scene
 // ============================================
 function init() {
@@ -134,6 +152,9 @@ function init() {
   
   // Initial viewport adjustment
   adjustCameraForViewport(width, height);
+  
+  // Setup mouse tracking for subtle camera movement
+  setupMouseTracking(container);
   
   // Start animation loop
   animate();
@@ -298,6 +319,37 @@ function createStand() {
   standPole.position.y = -stand.poleHeight / 2 - 0.4;
   
   installationGroup.add(standPole);
+}
+
+// ============================================
+// Setup Mouse Tracking
+// ============================================
+function setupMouseTracking(container) {
+  // Track mouse movement over the entire page for subtle camera response
+  document.addEventListener('mousemove', (e) => {
+    // Normalize mouse position to -1 to 1 range based on window
+    targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
+    targetMouseY = -((e.clientY / window.innerHeight) * 2 - 1); // Inverted for natural feel
+  });
+  
+  // Reset to center when mouse leaves the window
+  document.addEventListener('mouseleave', () => {
+    targetMouseX = 0;
+    targetMouseY = 0;
+  });
+  
+  // Wheel zoom on the 3D container
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    
+    // Adjust target zoom based on scroll direction
+    // Scroll up (negative deltaY) = zoom in (smaller factor = closer)
+    // Scroll down (positive deltaY) = zoom out (larger factor = further)
+    targetZoom += e.deltaY * ZOOM_SPEED;
+    
+    // Clamp zoom to limits
+    targetZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, targetZoom));
+  }, { passive: false });
 }
 
 // ============================================
@@ -575,8 +627,12 @@ window.resetAll = function() {
     THREE.MathUtils.degToRad(defaults.rotateY),
     THREE.MathUtils.degToRad(defaults.rotateZ)
   );
-  // Camera is auto-controlled, just reset pan angle
+  // Camera is auto-controlled, reset pan angle and zoom
   panAngle = 0;
+  targetZoom = 1.0;
+  zoomFactor = 1.0;
+  targetMouseX = 0;
+  targetMouseY = 0;
 };
 
 // Setup settings input listeners
@@ -862,16 +918,31 @@ function adjustCameraForViewport(width, height) {
 function animate() {
   requestAnimationFrame(animate);
   
+  // Smooth mouse following with lerp (linear interpolation)
+  mouseX += (targetMouseX - mouseX) * MOUSE_LERP;
+  mouseY += (targetMouseY - mouseY) * MOUSE_LERP;
+  
+  // Smooth zoom with lerp
+  zoomFactor += (targetZoom - zoomFactor) * ZOOM_LERP;
+  
   // Auto pan: smooth left-to-right oscillation
   panAngle += PAN_SPEED;
   
   // Oscillate between -PAN_RANGE and +PAN_RANGE using sine wave
   const panOffset = Math.sin(panAngle) * PAN_RANGE;
   
-  // Camera orbits slightly left/right, always staying in front
-  camera.position.x = cameraOffsetX + panOffset;  // Center offset + pan
-  camera.position.z = cameraDistance;   // Responsive distance
-  camera.position.y = cameraY;
+  // Camera position with mouse influence (subtle)
+  // Mouse X affects horizontal position, mouse Y affects vertical slightly
+  const mouseOffsetX = mouseX * MOUSE_SENSITIVITY;
+  const mouseOffsetY = mouseY * MOUSE_SENSITIVITY * 0.5; // Less vertical movement
+  
+  // Apply zoom to camera distance
+  const zoomedDistance = cameraDistance * zoomFactor;
+  
+  // Camera orbits slightly left/right, responds to mouse, and zooms
+  camera.position.x = cameraOffsetX + panOffset + mouseOffsetX;
+  camera.position.z = zoomedDistance;
+  camera.position.y = cameraY + mouseOffsetY;
   
   // Always look at center of model
   camera.lookAt(cameraOffsetX, cameraTargetY, 0);
