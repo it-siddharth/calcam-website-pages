@@ -262,7 +262,7 @@ body::after {
 }
 
 .nav-links .btn {
-  padding: 6px 16px;
+  padding: 6px 16px !important;
 }
 
 .btn-secondary.active {
