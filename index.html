@@ -38,9 +38,9 @@
       opacity: 0 !important;
       transition: none !important;
     }
-    /* Hide gradient mask during zoom animation */
-    .scene-gradient {
-      opacity: 0 !important;
+    /* Hide gradient mask during zoom animation - visible class overrides */
+    .scene-gradient:not(.visible) {
+      opacity: 0;
     }
     .page-transition-overlay {
       position: fixed;
