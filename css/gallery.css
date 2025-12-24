@@ -208,7 +208,7 @@ body {
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 0;
+  gap: 4px;
   padding: 0 10px;
   border-radius: 30px;
   text-decoration: none;

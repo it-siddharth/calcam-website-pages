@@ -202,16 +202,18 @@ body {
 .btn {
   display: inline-flex;
   align-items: center;
-  padding: 0 10px;
+  gap: 4px;
+  padding: 6px 14px;
   border-radius: 30px;
   text-decoration: none;
   overflow: hidden;
   white-space: nowrap;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .btn:hover {
   opacity: 0.8;
+  transform: translateY(-1px);
 }
 
 .btn-text {
