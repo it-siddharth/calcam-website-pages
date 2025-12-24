@@ -431,7 +431,7 @@ body::after {
   }
   
   .btn {
-    padding: 0 10px;
+    padding: 6px 12px;
   }
   
   /* Back button mobile sizing */
@@ -460,11 +460,11 @@ body::after {
   }
   
   .btn {
-    padding: 0 8px;
+    padding: 5px 10px;
   }
   
   .btn-text {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 
