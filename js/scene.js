@@ -102,7 +102,7 @@ const ZOOM_LERP = 0.08;                // Zoom smoothing factor
 let isCinematicIntro = true;           // Start in cinematic mode
 let cinematicStartTime = 0;            // When the animation started
 const CINEMATIC_DURATION = 1400;       // 1.4 seconds for zoom out (faster)
-const CINEMATIC_START_ZOOM = 0.45;     // Start more zoomed in (closer)
+const CINEMATIC_START_ZOOM = 0.7;      // Start slightly zoomed in
 const CINEMATIC_END_ZOOM = 1.0;        // End at normal zoom
 
 // Easing function for smooth cinematic animation
