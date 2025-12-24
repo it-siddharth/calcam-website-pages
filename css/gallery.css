@@ -48,7 +48,7 @@
   --carousel-height: 828px;
   --carousel-gap: 44px;
   --carousel-top: 96px;
-  --carousel-left: 495px;
+  --carousel-left: 580px;
 }
 
 /* ============================================
@@ -159,7 +159,7 @@ body {
   position: absolute;
   top: 35px;
   left: var(--page-padding);
-  width: 430px;
+  width: 520px;
   display: flex;
   flex-direction: column;
   height: calc(100vh - 35px - var(--page-padding));
