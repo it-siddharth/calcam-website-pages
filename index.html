@@ -34,10 +34,13 @@
     body.cinematic-intro .meta-info,
     body.cinematic-intro .cta-section,
     body.cinematic-intro .credit,
-    body.cinematic-intro .corner-accent,
-    body.cinematic-intro .scene-gradient {
+    body.cinematic-intro .corner-accent {
       opacity: 0 !important;
       transition: none !important;
+    }
+    /* Hide gradient mask during zoom animation */
+    .scene-gradient {
+      opacity: 0 !important;
     }
     .page-transition-overlay {
       position: fixed;

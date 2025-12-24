@@ -116,6 +116,10 @@ function startCinematicIntro() {
   cinematicStartTime = performance.now();
   zoomFactor = CINEMATIC_START_ZOOM;
   targetZoom = CINEMATIC_START_ZOOM;
+  
+  // Start text animations immediately (same time as zoom)
+  document.body.classList.remove('cinematic-intro');
+  document.body.classList.add('cinematic-revealed');
 }
 
 // Finish cinematic intro and reveal UI
@@ -124,9 +128,11 @@ function finishCinematicIntro() {
   zoomFactor = CINEMATIC_END_ZOOM;
   targetZoom = CINEMATIC_END_ZOOM;
   
-  // Remove intro class and add revealed class for text animations
-  document.body.classList.remove('cinematic-intro');
-  document.body.classList.add('cinematic-revealed');
+  // Show the scene gradient after zoom completes
+  const sceneGradient = document.querySelector('.scene-gradient');
+  if (sceneGradient) {
+    sceneGradient.classList.add('visible');
+  }
 }
 
 // Update cinematic zoom animation

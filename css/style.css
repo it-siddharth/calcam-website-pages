@@ -747,8 +747,7 @@ body.cinematic-intro .description,
 body.cinematic-intro .meta-info,
 body.cinematic-intro .cta-section,
 body.cinematic-intro .credit,
-body.cinematic-intro .corner-accent,
-body.cinematic-intro .scene-gradient {
+body.cinematic-intro .corner-accent {
   opacity: 0 !important;
   transform: translateY(20px);
   transition: none !important;
@@ -760,8 +759,7 @@ body.cinematic-revealed .description,
 body.cinematic-revealed .meta-info,
 body.cinematic-revealed .cta-section,
 body.cinematic-revealed .credit,
-body.cinematic-revealed .corner-accent,
-body.cinematic-revealed .scene-gradient {
+body.cinematic-revealed .corner-accent {
   opacity: 1;
   transform: translateY(0);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
@@ -788,8 +786,14 @@ body.cinematic-revealed .cta-section {
   transition-delay: 0.4s;
 }
 
-body.cinematic-revealed .scene-gradient {
-  transition-delay: 0.5s;
+/* Scene gradient hidden during zoom, fades in after */
+.scene-gradient {
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+
+.scene-gradient.visible {
+  opacity: 1;
 }
 
 body.cinematic-revealed .credit {
