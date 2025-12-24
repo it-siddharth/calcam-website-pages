@@ -97,6 +97,57 @@ const ZOOM_SPEED = 0.0008;             // How fast scroll affects zoom
 const ZOOM_LERP = 0.08;                // Zoom smoothing factor
 
 // ============================================
+// Cinematic Intro Animation
+// ============================================
+let isCinematicIntro = true;           // Start in cinematic mode
+let cinematicStartTime = 0;            // When the animation started
+const CINEMATIC_DURATION = 2500;       // 2.5 seconds for zoom out
+const CINEMATIC_START_ZOOM = 0.6;      // Start zoomed in (closer)
+const CINEMATIC_END_ZOOM = 1.0;        // End at normal zoom
+
+// Easing function for smooth cinematic animation
+function easeOutQuart(t) {
+  return 1 - Math.pow(1 - t, 4);
+}
+
+// Start the cinematic intro
+function startCinematicIntro() {
+  isCinematicIntro = true;
+  cinematicStartTime = performance.now();
+  zoomFactor = CINEMATIC_START_ZOOM;
+  targetZoom = CINEMATIC_START_ZOOM;
+}
+
+// Finish cinematic intro and reveal UI
+function finishCinematicIntro() {
+  isCinematicIntro = false;
+  zoomFactor = CINEMATIC_END_ZOOM;
+  targetZoom = CINEMATIC_END_ZOOM;
+  
+  // Remove intro class and add revealed class for text animations
+  document.body.classList.remove('cinematic-intro');
+  document.body.classList.add('cinematic-revealed');
+}
+
+// Update cinematic zoom animation
+function updateCinematicZoom() {
+  if (!isCinematicIntro) return;
+  
+  const elapsed = performance.now() - cinematicStartTime;
+  const progress = Math.min(elapsed / CINEMATIC_DURATION, 1);
+  const eased = easeOutQuart(progress);
+  
+  // Interpolate zoom from start to end
+  zoomFactor = CINEMATIC_START_ZOOM + (CINEMATIC_END_ZOOM - CINEMATIC_START_ZOOM) * eased;
+  targetZoom = zoomFactor;
+  
+  // Check if animation is complete
+  if (progress >= 1) {
+    finishCinematicIntro();
+  }
+}
+
+// ============================================
 // Initialize Scene
 // ============================================
 function init() {
@@ -155,6 +206,9 @@ function init() {
   
   // Setup mouse tracking for subtle camera movement
   setupMouseTracking(container);
+  
+  // Start cinematic intro zoom-out animation
+  startCinematicIntro();
   
   // Start animation loop
   animate();
@@ -918,12 +972,17 @@ function adjustCameraForViewport(width, height) {
 function animate() {
   requestAnimationFrame(animate);
   
+  // Update cinematic zoom animation if active
+  if (isCinematicIntro) {
+    updateCinematicZoom();
+  } else {
+    // Only apply user zoom when not in cinematic mode
+    zoomFactor += (targetZoom - zoomFactor) * ZOOM_LERP;
+  }
+  
   // Smooth mouse following with lerp (linear interpolation)
   mouseX += (targetMouseX - mouseX) * MOUSE_LERP;
   mouseY += (targetMouseY - mouseY) * MOUSE_LERP;
-  
-  // Smooth zoom with lerp
-  zoomFactor += (targetZoom - zoomFactor) * ZOOM_LERP;
   
   // Auto pan: smooth left-to-right oscillation
   panAngle += PAN_SPEED;

@@ -738,6 +738,65 @@ body {
 }
 
 /* ============================================
+   Cinematic Intro Animation
+   ============================================ */
+
+/* Hide all content elements during cinematic intro */
+body.cinematic-intro .title,
+body.cinematic-intro .description,
+body.cinematic-intro .meta-info,
+body.cinematic-intro .cta-section,
+body.cinematic-intro .credit,
+body.cinematic-intro .corner-accent,
+body.cinematic-intro .scene-gradient {
+  opacity: 0 !important;
+  transform: translateY(20px);
+  transition: none !important;
+}
+
+/* Reveal animations with staggered timing */
+body.cinematic-revealed .title,
+body.cinematic-revealed .description,
+body.cinematic-revealed .meta-info,
+body.cinematic-revealed .cta-section,
+body.cinematic-revealed .credit,
+body.cinematic-revealed .corner-accent,
+body.cinematic-revealed .scene-gradient {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+/* Staggered reveal delays */
+body.cinematic-revealed .corner-accent {
+  transition-delay: 0s;
+}
+
+body.cinematic-revealed .title {
+  transition-delay: 0.1s;
+}
+
+body.cinematic-revealed .description {
+  transition-delay: 0.2s;
+}
+
+body.cinematic-revealed .meta-info {
+  transition-delay: 0.3s;
+}
+
+body.cinematic-revealed .cta-section {
+  transition-delay: 0.4s;
+}
+
+body.cinematic-revealed .scene-gradient {
+  transition-delay: 0.5s;
+}
+
+body.cinematic-revealed .credit {
+  transition-delay: 0.6s;
+}
+
+/* ============================================
    Utility Classes
    ============================================ */
 .hidden {
