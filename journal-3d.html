@@ -279,11 +279,11 @@
     }
 
     #book-container {
-      width: 150%;
+      width: 200%;
       height: 150%;
       position: absolute;
       top: -25%;
-      left: -25%;
+      left: -50%;
       cursor: pointer;
       overflow: visible;
       pointer-events: auto;
@@ -1045,11 +1045,11 @@
     const ambientLight = new THREE.AmbientLight(0xffffff, 2);
     scene.add(ambientLight);
 
-    // Camera (balanced view)
-    const MAXFOV = 45;
+    // Camera (balanced view - zoomed out to fit open book)
+    const MAXFOV = 38;
     const camera = new THREE.PerspectiveCamera(0, width / height, 0.1, 1000);
     camera.setFocalLength(MAXFOV);
-    camera.position.set(0, 2.8, 0.9);
+    camera.position.set(0, 3.2, 1);
     camera.lookAt(0, 0, 0);
 
     // Renderer
@@ -1068,7 +1068,7 @@
     });
 
     book.scale.x = 0.8;
-    book.position.x = -0.3; // Shift left so open book fits better
+    book.position.x = 0; // Centered
     scene.add(book);
 
     book.setPages(pageImages);
@@ -1208,7 +1208,6 @@
       
       // Apply combined rotations: base levitation + mouse tracking
       book.position.y = floatY;
-      book.position.x = -0.3; // Keep book shifted left
       book.rotation.x = baseTiltX + currentRotationX;
       book.rotation.y = baseRotationY + currentRotationY;
       book.rotation.z = baseTiltZ;
