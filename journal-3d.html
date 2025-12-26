@@ -1060,9 +1060,23 @@
 
     // Levitation animation
     let levitationTime = 0;
-    const LEVITATION_SPEED = 1.5;
-    const LEVITATION_HEIGHT = 0.08;
-    const LEVITATION_ROTATION = 0.02;
+    const LEVITATION_HEIGHT = 0.06;
+    const LEVITATION_TILT = 0.025;
+    
+    // Random seeds for organic movement
+    const randomSeed1 = Math.random() * 100;
+    const randomSeed2 = Math.random() * 100;
+    const randomSeed3 = Math.random() * 100;
+
+    // Mouse tracking
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetRotationX = 0;
+    let targetRotationY = 0;
+    let currentRotationX = 0;
+    let currentRotationY = 0;
+    const MOUSE_SENSITIVITY = 0.15;
+    const MOUSE_SMOOTHING = 0.08;
 
     // ============================================
     // Event Handlers
@@ -1131,8 +1145,19 @@
       }
     });
 
+    function onMouseMove(event) {
+      // Get mouse position relative to the center of the screen
+      mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+      mouseY = (event.clientY / window.innerHeight) * 2 - 1;
+      
+      // Set target rotation based on mouse position
+      targetRotationY = mouseX * MOUSE_SENSITIVITY;
+      targetRotationX = mouseY * MOUSE_SENSITIVITY * 0.5;
+    }
+
     window.addEventListener('resize', onWindowResize);
     renderer.domElement.addEventListener('click', onMouseClick);
+    window.addEventListener('mousemove', onMouseMove);
 
     // ============================================
     // Animation Loop
@@ -1143,15 +1168,31 @@
       const delta = clock.getDelta();
       book.animate(delta);
       
-      // Levitation animation - gentle floating motion
-      levitationTime += delta * LEVITATION_SPEED;
-      const floatY = Math.sin(levitationTime) * LEVITATION_HEIGHT;
-      const tiltX = Math.sin(levitationTime * 0.7) * LEVITATION_ROTATION;
-      const tiltZ = Math.cos(levitationTime * 0.5) * LEVITATION_ROTATION * 0.5;
+      // Update time
+      levitationTime += delta;
       
+      // Random organic levitation using multiple sine waves at different frequencies
+      const floatY = 
+        Math.sin(levitationTime * 1.2 + randomSeed1) * LEVITATION_HEIGHT * 0.6 +
+        Math.sin(levitationTime * 0.7 + randomSeed2) * LEVITATION_HEIGHT * 0.3 +
+        Math.sin(levitationTime * 2.1 + randomSeed3) * LEVITATION_HEIGHT * 0.1;
+      
+      // Organic tilt variations
+      const baseTiltX = Math.sin(levitationTime * 0.8 + randomSeed1) * LEVITATION_TILT;
+      const baseTiltZ = Math.cos(levitationTime * 0.6 + randomSeed2) * LEVITATION_TILT * 0.7;
+      
+      // Left/right rotation (Y-axis) - subtle swaying
+      const baseRotationY = Math.sin(levitationTime * 0.4 + randomSeed3) * 0.03;
+      
+      // Smooth mouse tracking interpolation
+      currentRotationX += (targetRotationX - currentRotationX) * MOUSE_SMOOTHING;
+      currentRotationY += (targetRotationY - currentRotationY) * MOUSE_SMOOTHING;
+      
+      // Apply combined rotations: base levitation + mouse tracking
       book.position.y = floatY;
-      book.rotation.x = tiltX;
-      book.rotation.z = tiltZ;
+      book.rotation.x = baseTiltX + currentRotationX;
+      book.rotation.y = baseRotationY + currentRotationY;
+      book.rotation.z = baseTiltZ;
       
       renderer.render(scene, camera);
     }
