@@ -1058,9 +1058,11 @@
     // Clock for animation
     const clock = new THREE.Clock();
 
-    // Camera movement
-    let cameraPosition = camera.position.clone();
-    let zoom = 0;
+    // Levitation animation
+    let levitationTime = 0;
+    const LEVITATION_SPEED = 1.5;
+    const LEVITATION_HEIGHT = 0.08;
+    const LEVITATION_ROTATION = 0.02;
 
     // ============================================
     // Event Handlers
@@ -1096,27 +1098,6 @@
       }
     }
 
-    function onMouseMove(event) {
-      const rect = renderer.domElement.getBoundingClientRect();
-      const mouse = new THREE.Vector2();
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-      if (zoom > 0) {
-        cameraPosition.x = mouse.x / 3;
-        cameraPosition.z = 1 + -mouse.y / 3;
-      }
-    }
-
-    function onMouseWheel(event) {
-      zoom += event.deltaY < 0 ? 1 : -1;
-
-      if (zoom <= 0) {
-        cameraPosition.x = 0;
-        cameraPosition.z = 1;
-      }
-      camera.setFocalLength(MAXFOV + zoom);
-    }
 
     function updatePageIndicator() {
       const currentPageNum = book.currentPage + 1;
@@ -1152,8 +1133,6 @@
 
     window.addEventListener('resize', onWindowResize);
     renderer.domElement.addEventListener('click', onMouseClick);
-    renderer.domElement.addEventListener('mousemove', onMouseMove);
-    renderer.domElement.addEventListener('wheel', onMouseWheel);
 
     // ============================================
     // Animation Loop
@@ -1161,10 +1140,18 @@
     function animate() {
       requestAnimationFrame(animate);
       
-      book.animate(clock.getDelta());
+      const delta = clock.getDelta();
+      book.animate(delta);
       
-      // Smooth camera movement
-      camera.position.add(cameraPosition.clone().sub(camera.position).divideScalar(5));
+      // Levitation animation - gentle floating motion
+      levitationTime += delta * LEVITATION_SPEED;
+      const floatY = Math.sin(levitationTime) * LEVITATION_HEIGHT;
+      const tiltX = Math.sin(levitationTime * 0.7) * LEVITATION_ROTATION;
+      const tiltZ = Math.cos(levitationTime * 0.5) * LEVITATION_ROTATION * 0.5;
+      
+      book.position.y = floatY;
+      book.rotation.x = tiltX;
+      book.rotation.z = tiltZ;
       
       renderer.render(scene, camera);
     }
