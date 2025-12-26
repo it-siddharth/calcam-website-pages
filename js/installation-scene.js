@@ -129,6 +129,13 @@ let zOffset = CONFIG.defaults.zOffset;
 let isCinematicIntro = false;
 let cinematicAnimationId = null;
 
+// Anchor point system
+let anchorPoints = {};
+let activeAnchor = null;
+let isAnchorFocused = false;
+let anchorAnimationId = null;
+let savedCameraState = null;
+
 // ============================================
 // Easing Functions
 // ============================================
@@ -140,8 +147,20 @@ function easeOutQuart(t) {
   return 1 - Math.pow(1 - t, 4);
 }
 
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
 function lerp(start, end, t) {
   return start + (end - start) * t;
+}
+
+function lerpVector3(start, end, t) {
+  return new THREE.Vector3(
+    lerp(start.x, end.x, t),
+    lerp(start.y, end.y, t),
+    lerp(start.z, end.z, t)
+  );
 }
 
 // ============================================
@@ -283,6 +302,10 @@ function setupCinematicSkipListeners() {
     if (e.key === 'Escape' && isCinematicIntro) {
       skipCinematicIntro();
     }
+    // Also close anchor panel on Escape
+    if (e.key === 'Escape' && isAnchorFocused) {
+      closeAnchorPanel();
+    }
   });
   
   // Skip on click (but not on UI elements)
@@ -292,6 +315,285 @@ function setupCinematicSkipListeners() {
     }
   });
 }
+
+// ============================================
+// Anchor Point System
+// ============================================
+function setupAnchorPoints() {
+  // Define anchor point 3D positions and camera targets
+  anchorPoints = {
+    center: {
+      // Position of the anchor indicator in 3D space
+      position: new THREE.Vector3(0, roomSettings.tvHeight, -CONFIG.room.depth / 2 + 0.5),
+      // Where the camera should move to when focused
+      cameraPosition: new THREE.Vector3(0, roomSettings.cameraHeight, 1.5),
+      // Where the camera should look at
+      lookAt: new THREE.Vector3(0, roomSettings.tvHeight, -CONFIG.room.depth / 2),
+      // DOM elements
+      indicator: document.getElementById('anchor-center'),
+      panel: document.getElementById('info-center'),
+      // Panel offset from projected position
+      panelOffset: { x: 120, y: -80 }
+    },
+    left: {
+      position: new THREE.Vector3(-CONFIG.room.width / 2 + 0.3, 2, -1),
+      cameraPosition: new THREE.Vector3(-0.5, roomSettings.cameraHeight, 1),
+      lookAt: new THREE.Vector3(-CONFIG.room.width / 2, 2, -1),
+      indicator: document.getElementById('anchor-left'),
+      panel: document.getElementById('info-left'),
+      panelOffset: { x: 80, y: -60 }
+    },
+    right: {
+      position: new THREE.Vector3(CONFIG.room.width / 2 - 0.3, 2, -1),
+      cameraPosition: new THREE.Vector3(0.5, roomSettings.cameraHeight, 1),
+      lookAt: new THREE.Vector3(CONFIG.room.width / 2, 2, -1),
+      indicator: document.getElementById('anchor-right'),
+      panel: document.getElementById('info-right'),
+      panelOffset: { x: -350, y: -60 }
+    }
+  };
+  
+  // Add click handlers to anchor indicators
+  Object.keys(anchorPoints).forEach(key => {
+    const anchor = anchorPoints[key];
+    if (anchor.indicator) {
+      anchor.indicator.addEventListener('click', (e) => {
+        e.stopPropagation();
+        focusOnAnchor(key);
+      });
+    }
+  });
+  
+  // Click anywhere on the scene to unfocus (when not in pointer lock)
+  document.getElementById('three-container').addEventListener('click', (e) => {
+    // Don't trigger if clicking an anchor, panel, or if pointer lock is active
+    if (isAnchorFocused && 
+        !e.target.closest('.anchor-indicator') && 
+        !e.target.closest('.anchor-info-panel') &&
+        !controls.isLocked) {
+      closeAnchorPanel();
+    }
+  });
+  
+  // Ensure anchors are initially visible
+  Object.keys(anchorPoints).forEach(key => {
+    const anchor = anchorPoints[key];
+    if (anchor.indicator) {
+      anchor.indicator.style.display = 'block';
+      anchor.indicator.style.opacity = '1';
+    }
+  });
+}
+
+function updateAnchorIndicators() {
+  // Don't update during cinematic intro
+  if (isCinematicIntro) return;
+  
+  // Don't update if anchorPoints not yet initialized
+  if (!anchorPoints || Object.keys(anchorPoints).length === 0) return;
+  
+  const screenWidth = window.innerWidth;
+  const screenHeight = window.innerHeight;
+  const screenCenterX = screenWidth / 2;
+  const screenCenterY = screenHeight / 2;
+  
+  // Responsive padding - smaller on mobile
+  const isMobileView = screenWidth <= 768;
+  const paddingX = isMobileView ? 40 : 60;
+  // Vertical padding keeps edge anchors more centered (not too high or low)
+  const paddingTop = isMobileView ? 120 : 150;
+  const paddingBottom = isMobileView ? 180 : 220;
+  
+  Object.keys(anchorPoints).forEach(key => {
+    const anchor = anchorPoints[key];
+    if (!anchor.indicator) return;
+    
+    // Project 3D position to screen coordinates
+    const vector = anchor.position.clone();
+    vector.project(camera);
+    
+    // Check if behind camera (z > 1 after projection)
+    const isBehindCamera = vector.z > 1;
+    
+    // Convert to screen coordinates (before clamping)
+    let x = (vector.x * 0.5 + 0.5) * screenWidth;
+    let y = (-vector.y * 0.5 + 0.5) * screenHeight;
+    
+    // If behind camera, project from center toward the flipped direction
+    if (isBehindCamera) {
+      // Calculate direction from center to the projected point, then flip
+      const dirX = screenCenterX - x;
+      const dirY = screenCenterY - y;
+      // Project far in that direction
+      const scale = Math.max(screenWidth, screenHeight);
+      x = screenCenterX + dirX * scale;
+      y = screenCenterY + dirY * scale;
+    }
+    
+    // Check if on screen (before clamping)
+    const isOnScreen = x >= paddingX && x <= screenWidth - paddingX && 
+                       y >= paddingTop && y <= screenHeight - paddingBottom && 
+                       !isBehindCamera;
+    
+    // Clamp to screen edges with appropriate padding
+    // When clamped to left/right edges, keep Y more centered
+    let clampedX = Math.max(paddingX, Math.min(screenWidth - paddingX, x));
+    let clampedY;
+    
+    // If X is being clamped to an edge, center Y more
+    const isAtHorizontalEdge = x < paddingX || x > screenWidth - paddingX || isBehindCamera;
+    if (isAtHorizontalEdge) {
+      // Keep vertical position more centered when at horizontal edge
+      const centerZoneTop = screenHeight * 0.25;
+      const centerZoneBottom = screenHeight * 0.65;
+      clampedY = Math.max(centerZoneTop, Math.min(centerZoneBottom, y));
+    } else {
+      clampedY = Math.max(paddingTop, Math.min(screenHeight - paddingBottom, y));
+    }
+    
+    // Check if indicator is at edge (off-screen element)
+    const isAtEdge = !isOnScreen;
+    
+    // Update indicator position - always visible
+    anchor.indicator.style.left = `${clampedX}px`;
+    anchor.indicator.style.top = `${clampedY}px`;
+    anchor.indicator.style.display = 'block';
+    anchor.indicator.style.opacity = '1';
+    
+    // Add/remove edge class for visual feedback
+    anchor.indicator.classList.toggle('at-edge', isAtEdge);
+    
+    // Update panel position if this is the active anchor
+    if (activeAnchor === key && anchor.panel) {
+      const panelMaxWidth = isMobileView ? screenWidth - 32 : 340;
+      const panelX = isMobileView ? 16 : Math.min(Math.max(20, clampedX + anchor.panelOffset.x), screenWidth - panelMaxWidth - 20);
+      const panelY = isMobileView ? screenHeight - 250 : Math.min(Math.max(20, clampedY + anchor.panelOffset.y), screenHeight - 200);
+      anchor.panel.style.left = `${panelX}px`;
+      anchor.panel.style.top = `${panelY}px`;
+    }
+  });
+}
+
+function focusOnAnchor(anchorKey) {
+  const anchor = anchorPoints[anchorKey];
+  if (!anchor) return;
+  
+  // If already focused on this anchor, do nothing
+  if (activeAnchor === anchorKey && isAnchorFocused) return;
+  
+  // Cancel any existing animation
+  if (anchorAnimationId) {
+    cancelAnimationFrame(anchorAnimationId);
+    anchorAnimationId = null;
+  }
+  
+  // Save current camera state for potential return
+  savedCameraState = {
+    position: camera.position.clone(),
+    quaternion: camera.quaternion.clone()
+  };
+  
+  // Remove active class from all indicators
+  Object.keys(anchorPoints).forEach(key => {
+    anchorPoints[key].indicator?.classList.remove('active');
+    anchorPoints[key].panel?.classList.remove('visible');
+  });
+  
+  // Set this anchor as active
+  activeAnchor = anchorKey;
+  isAnchorFocused = true;
+  anchor.indicator?.classList.add('active');
+  document.body.classList.add('anchor-focused');
+  
+  // Unlock pointer if locked
+  if (controls.isLocked) {
+    controls.unlock();
+  }
+  
+  // Animate camera to focus position
+  const startPos = camera.position.clone();
+  const endPos = anchor.cameraPosition;
+  const lookTarget = anchor.lookAt;
+  
+  const duration = 1200; // ms
+  const startTime = performance.now();
+  
+  function animateFocus(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = easeInOutCubic(progress);
+    
+    // Interpolate camera position
+    camera.position.lerpVectors(startPos, endPos, eased);
+    
+    // Smoothly look at target
+    camera.lookAt(lookTarget);
+    
+    if (progress < 1) {
+      anchorAnimationId = requestAnimationFrame(animateFocus);
+    } else {
+      // Animation complete - show info panel
+      anchorAnimationId = null;
+      if (anchor.panel) {
+        // Position panel near the projected point
+        const vector = anchor.position.clone();
+        vector.project(camera);
+        const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+        
+        const panelX = Math.min(Math.max(20, x + anchor.panelOffset.x), window.innerWidth - 340);
+        const panelY = Math.min(Math.max(20, y + anchor.panelOffset.y), window.innerHeight - 200);
+        
+        anchor.panel.style.left = `${panelX}px`;
+        anchor.panel.style.top = `${panelY}px`;
+        anchor.panel.classList.add('visible');
+      }
+      
+      // Sync camera euler for mobile touch controls
+      if (isMobile) {
+        const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+        cameraEuler.yaw = euler.y;
+        cameraEuler.pitch = euler.x;
+      }
+    }
+  }
+  
+  anchorAnimationId = requestAnimationFrame(animateFocus);
+}
+
+function closeAnchorPanel() {
+  if (!isAnchorFocused) return;
+  
+  // Cancel any ongoing animation
+  if (anchorAnimationId) {
+    cancelAnimationFrame(anchorAnimationId);
+    anchorAnimationId = null;
+  }
+  
+  // Hide all panels and remove active states
+  Object.keys(anchorPoints).forEach(key => {
+    anchorPoints[key].indicator?.classList.remove('active');
+    anchorPoints[key].panel?.classList.remove('visible');
+  });
+  
+  // Reset state
+  activeAnchor = null;
+  isAnchorFocused = false;
+  document.body.classList.remove('anchor-focused');
+  
+  // Optionally animate back to saved position (or just let user continue from current position)
+  // For now, we let user continue from the focused position - feels more natural
+  
+  // Sync camera euler for mobile touch controls
+  if (isMobile) {
+    const euler = new THREE.Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+    cameraEuler.yaw = euler.y;
+    cameraEuler.pitch = euler.x;
+  }
+}
+
+// Expose closeAnchorPanel globally for the HTML onclick handler
+window.closeAnchorPanel = closeAnchorPanel;
 
 // ============================================
 // Initialize Scene
@@ -374,6 +676,9 @@ function init() {
   setupKeyboardControls();
   setupRoomControls();
   setupModelControls();
+  
+  // Setup anchor point system
+  setupAnchorPoints();
   
   // Handle resize
   window.addEventListener('resize', onWindowResize);
@@ -1393,10 +1698,16 @@ function animate() {
   const time = performance.now();
   const delta = (time - prevTime) / 1000;
   
-  updateMovement(delta);
+  // Only allow movement when not focused on an anchor
+  if (!isAnchorFocused) {
+    updateMovement(delta);
+  }
   
   projectionTime += delta;
   updateProjection(projectionTime);
+  
+  // Update anchor indicator positions
+  updateAnchorIndicators();
   
   renderer.render(scene, camera);
   

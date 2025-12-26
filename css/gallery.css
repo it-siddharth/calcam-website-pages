@@ -45,7 +45,6 @@
   --corner-size: 25px;
   
   /* Carousel */
-  --carousel-height: 828px;
   --carousel-gap: 44px;
   --carousel-top: 96px;
   --carousel-left: 580px;
@@ -257,7 +256,9 @@ body {
   top: var(--carousel-top);
   left: var(--carousel-left);
   right: 0;
-  height: var(--carousel-height);
+  /* Responsive height: fills from top offset to bottom with padding */
+  height: calc(100vh - var(--carousel-top) - var(--page-padding));
+  height: calc(100dvh - var(--carousel-top) - var(--page-padding));
   overflow: visible;
   z-index: 5;
 }
@@ -304,12 +305,12 @@ body {
   flex-shrink: 0;
 }
 
-/* Media container - height locked, width calculated from aspect ratio */
+/* Media container - responsive sizing */
 .item-media {
   height: 100%;
-  background-color: var(--color-placeholder);
+  background-color: transparent;
   flex-shrink: 0;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -379,7 +380,6 @@ body {
     --page-padding: 20px;
     --corner-size: 15px;
     
-    --carousel-height: 571px;
     --carousel-gap: 30px;
   }
   
@@ -419,16 +419,27 @@ body {
     top: auto;
     left: auto;
     right: auto;
-    height: var(--carousel-height);
-    flex: 0 0 auto;
+    /* Flex to fill available space between title and footer */
+    flex: 1 1 auto;
+    min-height: 0;
     margin-top: 24px;
     order: 1;
+    overflow: hidden;
   }
   
   .carousel-track {
     padding-left: var(--page-padding);
     padding-right: 50px;
     gap: var(--carousel-gap);
+    align-items: center;
+    height: 100%;
+  }
+  
+  /* On mobile, carousel items should fit within container */
+  .carousel-item {
+    height: 100%;
+    flex-shrink: 0;
+    align-items: center;
   }
   
   /* On mobile, first item has index at top */
@@ -436,10 +447,22 @@ body {
     align-items: flex-start;
   }
   
-  /* Mobile uses smaller image widths based on aspect ratio */
+  /* Mobile: constrain images to fit within viewport width */
   .carousel-item .item-media {
+    height: auto;
+    max-height: 100%;
     width: auto;
     max-width: calc(100vw - 70px);
+    background-color: transparent;
+  }
+  
+  .carousel-item .item-media img,
+  .carousel-item .item-media video {
+    height: auto;
+    width: auto;
+    max-height: 100%;
+    max-width: calc(100vw - 70px);
+    object-fit: contain;
   }
   
   /* Footer at bottom - shows as separate section on mobile */
@@ -506,7 +529,6 @@ body {
     --title-size: 48px;
     --title-line-height: 44px;
     --title-letter-spacing: -1.5px;
-    --carousel-height: 480px;
   }
   
   .gallery-footer-mobile .nav-links {

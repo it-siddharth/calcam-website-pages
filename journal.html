@@ -11,14 +11,14 @@
   <link rel="preload" href="fonts/403-super-vega-regular.woff" as="font" type="font/woff" crossorigin>
   <link rel="preload" href="css/journal.css" as="style">
   
-  <!-- DNS prefetch for external resources -->
-  <link rel="dns-prefetch" href="https://unpkg.com">
-  <link rel="preconnect" href="https://unpkg.com" crossorigin>
-  
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- 3D FlipBook CSS - Dark theme -->
+  <link rel="stylesheet" href="vendor/3dflipbook/css/font-awesome.min.css">
+  <link rel="stylesheet" href="vendor/3dflipbook/css/short-black-book-view.css">
   
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="css/journal.css">
@@ -95,10 +95,10 @@
 
     <!-- 3D Flipbook Section -->
     <section class="flipbook-section">
-      <div id="three-container"></div>
+      <div id="flipbook-container"></div>
       
       <!-- Instruction hint -->
-      <p class="flipbook-hint">Tap to flip the pages. Scroll or drag to zoom into the details.</p>
+      <p class="flipbook-hint">Click page corners to flip. Use arrow keys or toolbar buttons.</p>
     </section>
     
     <!-- Mobile Description (below title on mobile) -->
@@ -127,21 +127,76 @@
     </footer>
   </main>
 
-  <!-- Three.js and dependencies -->
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-      }
-    }
-  </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script type="module" src="js/journal-flipbook.js"></script>
+  <!-- 3D FlipBook Dependencies (must be loaded in order) -->
+  <script src="vendor/3dflipbook/js/jquery.min.js"></script>
+  <script src="vendor/3dflipbook/js/html2canvas.min.js"></script>
+  <script src="vendor/3dflipbook/js/three.min.js"></script>
+  <script src="vendor/3dflipbook/js/pdf.min.js"></script>
   
-  <!-- Fade out page transition overlay -->
+  <!-- 3D FlipBook Plugin -->
+  <script src="vendor/3dflipbook/dist/flip-book.min.js"></script>
+  
+  <!-- Initialize Flipbook -->
   <script>
-    window.addEventListener('load', function() {
+    // Set PDF.js worker location (required by the plugin)
+    window.PDFJS_LOCALE = {
+      pdfJsWorker: 'vendor/3dflipbook/js/pdf.worker.js'
+    };
+    
+    $(document).ready(function() {
+      // Page images for the journal
+      var images = [
+        'assets/R0002034.png',
+        'assets/R0002068 2.png',
+        'assets/R0002097 1.png',
+        'assets/R0002355 1.png',
+        'assets/R0002358 1.png',
+        'assets/DSC_4949 1.png',
+        'assets/IMG_4179 2.png',
+        'assets/IMG_4216 1.png',
+        'assets/IMG_4223 1.png',
+        'assets/IMG_4227 2.png',
+        'assets/Frame 11.png'
+      ];
+
+      // Page callback function - returns page configuration for each page
+      function pageCallback(n) {
+        return {
+          type: 'image',
+          src: images[n],
+          interactive: false
+        };
+      }
+
+      // Initialize 3D FlipBook
+      $('#flipbook-container').FlipBook({
+        pageCallback: pageCallback,
+        pages: images.length,
+        propertiesCallback: function(props) {
+          props.cover.color = 0x1a1a1a;
+          props.sheet.color = 0xfaf8f5;
+          return props;
+        },
+        template: {
+          html: 'vendor/3dflipbook/templates/default-book-view.html',
+          links: [
+            {
+              rel: 'stylesheet',
+              href: 'vendor/3dflipbook/css/font-awesome.min.css'
+            }
+          ],
+          styles: [
+            'vendor/3dflipbook/css/short-black-book-view.css'
+          ],
+          script: 'vendor/3dflipbook/js/default-book-view.js',
+          sounds: {
+            startFlip: 'vendor/3dflipbook/sounds/start-flip.mp3',
+            endFlip: 'vendor/3dflipbook/sounds/end-flip.mp3'
+          }
+        }
+      });
+
+      // Fade out page transition overlay
       requestAnimationFrame(function() {
         requestAnimationFrame(function() {
           var overlay = document.querySelector('.page-transition-overlay');
@@ -157,4 +212,3 @@
   </script>
 </body>
 </html>
-

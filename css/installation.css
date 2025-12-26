@@ -705,7 +705,9 @@ body.cinematic-intro .gradient-bottom,
 body.cinematic-intro .back-button,
 body.cinematic-intro .controls-toggle,
 body.cinematic-intro .room-controls,
-body.cinematic-intro .navigation-hint {
+body.cinematic-intro .navigation-hint,
+body.cinematic-intro .anchor-indicator,
+body.cinematic-intro .anchor-info-panel {
   opacity: 0 !important;
   pointer-events: none;
   transition: none !important; /* Prevent flash on load */
@@ -725,6 +727,13 @@ body.cinematic-revealed .controls-toggle {
   opacity: 1;
   pointer-events: auto;
   transition: opacity 0.35s ease-out;
+}
+
+body.cinematic-revealed .anchor-indicator {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.35s ease-out;
+  transition-delay: 0.25s;
 }
 
 /* Staggered reveal using transition-delay */
@@ -789,6 +798,12 @@ body:not(.cinematic-intro) .skip-hint {
   /* Hide keyboard controls hint on mobile */
   .controls-hint {
     display: none !important;
+  }
+  
+  /* Always show pointer on mobile for anchor points */
+  body:not(.pointer-locked) .anchor-indicator {
+    opacity: 1;
+    pointer-events: auto;
   }
   
   .installation-overlay {
@@ -902,6 +917,335 @@ body:not(.cinematic-intro) .skip-hint {
   
   .btn-text {
     font-size: 11px;
+  }
+}
+
+/* ============================================
+   Anchor Points & Info Panels
+   ============================================ */
+
+/* Info panel container */
+.anchor-info-panel {
+  position: fixed;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 20px 24px;
+  max-width: 320px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.anchor-info-panel.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.anchor-info-panel .panel-title {
+  font-family: var(--font-title);
+  font-size: 24px;
+  line-height: 1.1;
+  margin-bottom: 12px;
+  color: var(--color-text);
+  letter-spacing: -0.5px;
+}
+
+.anchor-info-panel .panel-description {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 0;
+}
+
+.anchor-info-panel .panel-description p {
+  margin: 0 0 10px 0;
+}
+
+.anchor-info-panel .panel-description p:last-child {
+  margin-bottom: 0;
+}
+
+/* Close button for info panel */
+.anchor-info-panel .panel-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.anchor-info-panel .panel-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+/* Anchor point indicator (2D overlay) */
+.anchor-indicator {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  z-index: 50;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  opacity: 1;
+  display: block;
+}
+
+.anchor-indicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.anchor-indicator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: anchor-pulse 2s ease-out infinite;
+}
+
+@keyframes anchor-pulse {
+  0% {
+    width: 32px;
+    height: 32px;
+    opacity: 1;
+  }
+  100% {
+    width: 60px;
+    height: 60px;
+    opacity: 0;
+  }
+}
+
+.anchor-indicator:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #fff;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.anchor-indicator.active {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: #fff;
+}
+
+.anchor-indicator.active::after {
+  animation: none;
+}
+
+/* Edge-clamped state - when element is off-screen */
+.anchor-indicator.at-edge {
+  transform: translate(-50%, -50%) scale(0.85);
+  background: rgba(255, 255, 255, 0.15);
+  border-style: dashed;
+}
+
+.anchor-indicator.at-edge::after {
+  animation: none;
+  opacity: 0;
+}
+
+.anchor-indicator.at-edge:hover {
+  transform: translate(-50%, -50%) scale(0.95);
+}
+
+/* Hide anchor indicators when pointer locked (moving around) */
+body.pointer-locked .anchor-indicator {
+  opacity: 0.15;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* Ensure anchors are visible when not pointer locked */
+body:not(.pointer-locked):not(.cinematic-intro) .anchor-indicator {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Anchor label on hover */
+.anchor-indicator .anchor-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.anchor-indicator:hover .anchor-label {
+  opacity: 1;
+}
+
+/* Focus mode - dim everything except the info panel */
+body.anchor-focused .installation-overlay,
+body.anchor-focused .back-button,
+body.anchor-focused .controls-toggle,
+body.anchor-focused .gradient-top,
+body.anchor-focused .gradient-bottom {
+  opacity: 0.3 !important;
+  pointer-events: none;
+}
+
+body.anchor-focused .anchor-indicator:not(.active) {
+  opacity: 0.4;
+  pointer-events: auto;
+}
+
+/* Mobile adjustments for anchor points */
+@media screen and (max-width: 768px) {
+  .anchor-indicator {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .anchor-indicator::before {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .anchor-indicator::after {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .anchor-indicator.at-edge {
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  
+  @keyframes anchor-pulse {
+    0% {
+      width: 36px;
+      height: 36px;
+      opacity: 1;
+    }
+    100% {
+      width: 60px;
+      height: 60px;
+      opacity: 0;
+    }
+  }
+  
+  /* Mobile info panel - bottom sheet style */
+  .anchor-info-panel {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 80px !important;
+    top: auto !important;
+    max-width: none;
+    width: calc(100% - 24px);
+    padding: 16px 20px;
+    border-radius: 16px;
+  }
+  
+  .anchor-info-panel .panel-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+    padding-right: 30px;
+  }
+  
+  .anchor-info-panel .panel-description {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  
+  .anchor-info-panel .panel-description p {
+    margin: 0 0 8px 0;
+  }
+  
+  .anchor-info-panel .panel-close {
+    width: 32px;
+    height: 32px;
+    top: 10px;
+    right: 10px;
+  }
+  
+  /* Anchor labels - hide on mobile, tap to see info */
+  .anchor-indicator .anchor-label {
+    display: none;
+  }
+  
+  /* Focus mode adjustments for mobile */
+  body.anchor-focused .installation-overlay {
+    opacity: 0.2 !important;
+  }
+  
+  body.anchor-focused .gradient-top,
+  body.anchor-focused .gradient-bottom {
+    opacity: 0.15 !important;
+  }
+}
+
+/* Extra small screens */
+@media screen and (max-width: 390px) {
+  .anchor-indicator {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .anchor-indicator::after {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .anchor-info-panel {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: 70px !important;
+    width: calc(100% - 16px);
+    padding: 14px 16px;
+  }
+  
+  .anchor-info-panel .panel-title {
+    font-size: 16px;
+  }
+  
+  .anchor-info-panel .panel-description {
+    font-size: 12px;
   }
 }
 

@@ -228,6 +228,45 @@
     <span class="back-text">BACK</span>
   </a>
 
+  <!-- Anchor Point Indicators (positioned via JS) -->
+  <div class="anchor-indicator" id="anchor-center" data-anchor="center">
+    <span class="anchor-label">Centre Piece</span>
+  </div>
+  <div class="anchor-indicator" id="anchor-left" data-anchor="left">
+    <span class="anchor-label">Left Wall</span>
+  </div>
+  <div class="anchor-indicator" id="anchor-right" data-anchor="right">
+    <span class="anchor-label">Right Wall</span>
+  </div>
+
+  <!-- Info Panels for Anchor Points -->
+  <div class="anchor-info-panel" id="info-center">
+    <button class="panel-close" onclick="closeAnchorPanel()">×</button>
+    <h3 class="panel-title">THE CENTRE PIECE</h3>
+    <div class="panel-description">
+      <p>The TV screen displays a real-time silhouette made of words—words that describe identity, perception, and the self we present to the world.</p>
+      <p>The acrylic panels in front filter and fragment your view, creating layers of color and meaning.</p>
+    </div>
+  </div>
+  
+  <div class="anchor-info-panel" id="info-left">
+    <button class="panel-close" onclick="closeAnchorPanel()">×</button>
+    <h3 class="panel-title">LEFT WALL</h3>
+    <div class="panel-description">
+      <p>A particle projection dances on this wall, forming a human silhouette from thousands of points of light.</p>
+      <p>It represents the fragmented nature of digital identity—how we exist as data points in the modern world.</p>
+    </div>
+  </div>
+  
+  <div class="anchor-info-panel" id="info-right">
+    <button class="panel-close" onclick="closeAnchorPanel()">×</button>
+    <h3 class="panel-title">RIGHT WALL</h3>
+    <div class="panel-description">
+      <p>The opposite perspective. A mirror to the projection, this wall holds the space where your shadow would fall.</p>
+      <p>In the contrast between light and dark, we find the boundaries of self.</p>
+    </div>
+  </div>
+
   <!-- Controls Hint (shown initially) -->
   <div id="controls-hint" class="controls-hint">
     <div class="hint-content">
