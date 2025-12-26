@@ -270,35 +270,51 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      overflow: visible;
     }
 
     #book-container {
-      width: 100%;
-      height: 100%;
+      width: 120%;
+      height: 120%;
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: -10%;
+      left: -10%;
       cursor: pointer;
+      overflow: visible;
     }
 
     /* Book Controls */
     .book-controls {
-      position: absolute;
-      bottom: 40px;
+      position: fixed;
+      bottom: 30px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 20px;
-      z-index: 20;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 12px 24px;
-      border-radius: 40px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      gap: 8px;
+      z-index: 100;
+    }
+
+    .book-hint {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 20px;
+      border-radius: 50px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
 
     .book-controls button {
@@ -306,47 +322,34 @@
       border: none;
       color: white;
       cursor: pointer;
-      padding: 8px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0.7;
+      opacity: 0.6;
       transition: all 0.2s ease;
-      font-size: 20px;
+      font-size: 16px;
+      border-radius: 50%;
     }
 
     .book-controls button:hover {
       opacity: 1;
-      transform: scale(1.1);
+      background: rgba(255, 255, 255, 0.1);
     }
 
     .book-controls button:disabled {
-      opacity: 0.3;
+      opacity: 0.2;
       cursor: not-allowed;
-      transform: none;
     }
 
     .page-indicator {
       font-family: var(--font-mono);
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.7);
-      min-width: 60px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.8);
+      min-width: 50px;
       text-align: center;
       letter-spacing: 1px;
-    }
-
-    .book-hint {
-      position: absolute;
-      bottom: 110px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: var(--font-body);
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.4);
-      text-align: center;
-      z-index: 10;
-      pointer-events: none;
-      white-space: nowrap;
     }
 
     /* Loading state */
@@ -436,14 +439,17 @@
       }
       
       .book-controls {
-        bottom: 20px;
-        padding: 10px 18px;
-        gap: 15px;
+        bottom: 15px;
+        gap: 6px;
+      }
+      
+      .controls-row {
+        padding: 8px 16px;
+        gap: 12px;
       }
       
       .book-hint {
-        bottom: 85px;
-        font-size: 12px;
+        font-size: 10px;
       }
       
       .journal-footer-mobile {
@@ -554,12 +560,13 @@
       
       <div id="book-container"></div>
       
-      <p class="book-hint">Click on pages to flip</p>
-      
       <div class="book-controls">
-        <button id="btn-prev" title="Previous page">◀</button>
-        <span class="page-indicator"><span id="current-page">1</span> / <span id="total-pages">12</span></span>
-        <button id="btn-next" title="Next page">▶</button>
+        <p class="book-hint">Click on pages to flip</p>
+        <div class="controls-row">
+          <button id="btn-prev" title="Previous page">◀</button>
+          <span class="page-indicator"><span id="current-page">1</span> / <span id="total-pages">12</span></span>
+          <button id="btn-next" title="Next page">▶</button>
+        </div>
       </div>
     </section>
     
@@ -1028,11 +1035,11 @@
     const ambientLight = new THREE.AmbientLight(0xffffff, 2);
     scene.add(ambientLight);
 
-    // Camera (matching demo: top-down view)
-    const MAXFOV = 40;
+    // Camera (zoomed in for better view)
+    const MAXFOV = 55;
     const camera = new THREE.PerspectiveCamera(0, width / height, 0.1, 1000);
     camera.setFocalLength(MAXFOV);
-    camera.position.set(0, 3, 1);
+    camera.position.set(0, 2.2, 0.8);
     camera.lookAt(0, 0, 0);
 
     // Renderer
