@@ -1087,6 +1087,17 @@
     // Clock for animation
     const clock = new THREE.Clock();
 
+    // ============================================
+    // Page Flip Sound
+    // ============================================
+    const flipSound = new Audio('vendor/3dflipbook/sounds/start-flip.mp3');
+    flipSound.volume = 0.4;
+    
+    function playFlipSound() {
+      flipSound.currentTime = 0;
+      flipSound.play().catch(() => {}); // Catch autoplay restrictions
+    }
+
     // Levitation animation
     let levitationTime = 0;
     const LEVITATION_HEIGHT = 0.06;
@@ -1158,6 +1169,7 @@
         }
         if (obj && obj instanceof FlipPage) {
           book.flipPage(obj);
+          playFlipSound();
           updatePageIndicator();
         }
       }
@@ -1177,22 +1189,34 @@
     // Controls
     // ============================================
     document.getElementById('btn-prev').addEventListener('click', () => {
-      book.previousPage();
-      updatePageIndicator();
+      if (book.currentPage > 0) {
+        book.previousPage();
+        playFlipSound();
+        updatePageIndicator();
+      }
     });
 
     document.getElementById('btn-next').addEventListener('click', () => {
-      book.nextPage();
-      updatePageIndicator();
+      if (book.currentPage < book.totalPages) {
+        book.nextPage();
+        playFlipSound();
+        updatePageIndicator();
+      }
     });
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === ' ') {
-        book.nextPage();
-        updatePageIndicator();
+        if (book.currentPage < book.totalPages) {
+          book.nextPage();
+          playFlipSound();
+          updatePageIndicator();
+        }
       } else if (e.key === 'ArrowLeft') {
-        book.previousPage();
-        updatePageIndicator();
+        if (book.currentPage > 0) {
+          book.previousPage();
+          playFlipSound();
+          updatePageIndicator();
+        }
       }
     });
 
