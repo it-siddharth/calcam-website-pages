@@ -272,25 +272,24 @@
     setTimeout(updateBounds, 1500);
   }
   
-  // Initialize videos - play on hover
+  // Initialize videos - autoplay all videos
   function initVideos() {
     const videos = track.querySelectorAll('video');
     videos.forEach(video => {
-      video.addEventListener('mouseenter', () => {
-        video.play().catch(() => {});
-      });
-      video.addEventListener('mouseleave', () => {
-        video.pause();
+      // Ensure autoplay works
+      video.muted = true;
+      video.play().catch(() => {
+        // Autoplay might be blocked, try again on user interaction
+        document.addEventListener('click', () => {
+          video.play().catch(() => {});
+        }, { once: true });
       });
       
-      // Also handle touch for mobile
-      video.addEventListener('touchstart', () => {
-        if (video.paused) {
-          video.play().catch(() => {});
-        } else {
-          video.pause();
-        }
-      }, { passive: true });
+      // Re-play if video ends (backup for loop attribute)
+      video.addEventListener('ended', () => {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      });
     });
   }
   
