@@ -8,43 +8,55 @@
   
   const track = document.getElementById('carousel-track');
   const scrollHint = document.getElementById('scroll-hint');
+  const wrapper = document.querySelector('.carousel-wrapper');
   
-  if (!track) return;
+  if (!track || !wrapper) return;
   
   // State
   let isDragging = false;
   let startX = 0;
   let scrollLeft = 0;
   let currentTranslate = 0;
+  let targetTranslate = 0;
   let velocity = 0;
   let lastX = 0;
   let lastTime = 0;
-  let animationId = null;
+  let rafId = null;
   let hasScrolled = false;
+  let isAnimating = false;
   
   // Configuration
   const config = {
-    friction: 0.92,
-    wheelMultiplier: 2.5,
-    minVelocity: 0.5,
+    friction: 0.85,
+    wheelMultiplier: 1.5,
+    minVelocity: 0.1,
     touchMultiplier: 1,
-    keyboardStep: 300,
+    keyboardStep: 400,
     maxTranslate: 0,
-    minTranslate: 0
+    minTranslate: 0,
+    smoothing: 0.12
   };
   
-  // Calculate bounds
+  // Calculate bounds - called after all media loads
   function updateBounds() {
     const trackWidth = track.scrollWidth;
-    const viewportWidth = track.parentElement.offsetWidth;
-    config.minTranslate = -(trackWidth - viewportWidth + 50);
+    const viewportWidth = wrapper.offsetWidth;
+    config.minTranslate = Math.min(0, -(trackWidth - viewportWidth + 100));
     config.maxTranslate = 0;
+    
+    // Clamp current position to bounds
+    targetTranslate = clamp(targetTranslate);
+    currentTranslate = clamp(currentTranslate);
   }
   
-  // Apply transform with bounds
-  function setTranslate(value) {
-    currentTranslate = Math.max(config.minTranslate, Math.min(config.maxTranslate, value));
-    track.style.transform = `translateX(${currentTranslate}px)`;
+  // Clamp value to bounds
+  function clamp(value) {
+    return Math.max(config.minTranslate, Math.min(config.maxTranslate, value));
+  }
+  
+  // Apply transform
+  function applyTransform() {
+    track.style.transform = `translate3d(${currentTranslate}px, 0, 0)`;
     
     // Hide scroll hint after first scroll
     if (!hasScrolled && Math.abs(currentTranslate) > 50) {
@@ -55,38 +67,57 @@
     }
   }
   
-  // Momentum animation
+  // Smooth animation loop
   function animate() {
-    if (Math.abs(velocity) > config.minVelocity) {
-      setTranslate(currentTranslate + velocity);
-      velocity *= config.friction;
-      animationId = requestAnimationFrame(animate);
+    if (!isDragging) {
+      // Apply momentum when not dragging
+      if (Math.abs(velocity) > config.minVelocity) {
+        targetTranslate = clamp(targetTranslate + velocity);
+        velocity *= config.friction;
+      } else {
+        velocity = 0;
+      }
+    }
+    
+    // Smooth interpolation to target
+    const diff = targetTranslate - currentTranslate;
+    
+    if (Math.abs(diff) > 0.5 || Math.abs(velocity) > config.minVelocity) {
+      currentTranslate += diff * config.smoothing;
+      applyTransform();
+      rafId = requestAnimationFrame(animate);
+      isAnimating = true;
     } else {
-      velocity = 0;
+      currentTranslate = targetTranslate;
+      applyTransform();
+      isAnimating = false;
+      rafId = null;
     }
   }
   
-  function stopAnimation() {
-    if (animationId) {
-      cancelAnimationFrame(animationId);
-      animationId = null;
+  // Start animation if not already running
+  function startAnimation() {
+    if (!rafId) {
+      rafId = requestAnimationFrame(animate);
     }
-    velocity = 0;
   }
   
   // Mouse events
   function onMouseDown(e) {
     if (e.button !== 0) return; // Left click only
     
+    // Don't start drag on video elements
+    if (e.target.tagName === 'VIDEO') return;
+    
     isDragging = true;
-    stopAnimation();
+    velocity = 0;
     startX = e.pageX;
     scrollLeft = currentTranslate;
     lastX = e.pageX;
-    lastTime = Date.now();
+    lastTime = performance.now();
     
     track.style.cursor = 'grabbing';
-    track.style.transition = 'none';
+    document.body.style.userSelect = 'none';
     
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
@@ -101,41 +132,38 @@
     const dx = x - startX;
     
     // Calculate velocity
-    const now = Date.now();
+    const now = performance.now();
     const dt = now - lastTime;
     if (dt > 0) {
-      velocity = (x - lastX) / dt * 16; // Normalize to ~60fps
+      velocity = ((x - lastX) / dt) * 16;
     }
     lastX = x;
     lastTime = now;
     
-    setTranslate(scrollLeft + dx);
+    targetTranslate = clamp(scrollLeft + dx);
+    startAnimation();
   }
   
   function onMouseUp() {
     isDragging = false;
     track.style.cursor = 'grab';
-    track.style.transition = 'transform 0.05s ease-out';
+    document.body.style.userSelect = '';
     
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
     
-    // Start momentum if there's velocity
-    if (Math.abs(velocity) > config.minVelocity) {
-      animate();
-    }
+    // Continue momentum
+    startAnimation();
   }
   
   // Touch events
   function onTouchStart(e) {
     isDragging = true;
-    stopAnimation();
+    velocity = 0;
     startX = e.touches[0].pageX;
     scrollLeft = currentTranslate;
     lastX = e.touches[0].pageX;
-    lastTime = Date.now();
-    
-    track.style.transition = 'none';
+    lastTime = performance.now();
   }
   
   function onTouchMove(e) {
@@ -145,94 +173,173 @@
     const dx = x - startX;
     
     // Calculate velocity
-    const now = Date.now();
+    const now = performance.now();
     const dt = now - lastTime;
     if (dt > 0) {
-      velocity = (x - lastX) / dt * 16 * config.touchMultiplier;
+      velocity = ((x - lastX) / dt) * 16 * config.touchMultiplier;
     }
     lastX = x;
     lastTime = now;
     
-    setTranslate(scrollLeft + dx);
+    targetTranslate = clamp(scrollLeft + dx);
+    startAnimation();
+    
+    // Prevent vertical scroll when swiping horizontally
+    if (Math.abs(dx) > 10) {
+      e.preventDefault();
+    }
   }
   
   function onTouchEnd() {
     isDragging = false;
-    track.style.transition = 'transform 0.05s ease-out';
-    
-    // Start momentum if there's velocity
-    if (Math.abs(velocity) > config.minVelocity) {
-      animate();
-    }
+    startAnimation();
   }
   
-  // Wheel event
+  // Wheel event - handle both vertical and horizontal wheel
   function onWheel(e) {
-    // Prevent default vertical scroll
     e.preventDefault();
     
-    stopAnimation();
+    // Use both deltaX and deltaY for flexibility
+    let delta = e.deltaY;
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      delta = e.deltaX;
+    }
     
-    // Use deltaY for horizontal scrolling (natural scroll direction)
-    const delta = -e.deltaY * config.wheelMultiplier;
+    // Apply wheel movement directly to target
+    targetTranslate = clamp(targetTranslate - delta * config.wheelMultiplier);
     
-    // Smooth transition for wheel
-    track.style.transition = 'transform 0.15s ease-out';
-    setTranslate(currentTranslate + delta);
+    // Add a bit of immediate velocity for smoothness
+    velocity = 0;
     
-    // Reset transition after animation
-    setTimeout(() => {
-      track.style.transition = 'transform 0.05s ease-out';
-    }, 150);
+    startAnimation();
   }
   
   // Keyboard navigation
   function onKeyDown(e) {
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
       e.preventDefault();
-      stopAnimation();
-      track.style.transition = 'transform 0.3s ease-out';
-      setTranslate(currentTranslate - config.keyboardStep);
+      velocity = 0;
+      targetTranslate = clamp(targetTranslate - config.keyboardStep);
+      startAnimation();
     } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
       e.preventDefault();
-      stopAnimation();
-      track.style.transition = 'transform 0.3s ease-out';
-      setTranslate(currentTranslate + config.keyboardStep);
+      velocity = 0;
+      targetTranslate = clamp(targetTranslate + config.keyboardStep);
+      startAnimation();
     }
+  }
+  
+  // Wait for all images and videos to load before calculating bounds
+  function waitForMedia() {
+    const images = track.querySelectorAll('img');
+    const videos = track.querySelectorAll('video');
+    
+    let loadedCount = 0;
+    const totalCount = images.length + videos.length;
+    
+    function onMediaLoad() {
+      loadedCount++;
+      if (loadedCount >= totalCount) {
+        updateBounds();
+      }
+    }
+    
+    images.forEach(img => {
+      if (img.complete) {
+        onMediaLoad();
+      } else {
+        img.addEventListener('load', onMediaLoad);
+        img.addEventListener('error', onMediaLoad);
+      }
+    });
+    
+    videos.forEach(video => {
+      if (video.readyState >= 1) {
+        onMediaLoad();
+      } else {
+        video.addEventListener('loadedmetadata', onMediaLoad);
+        video.addEventListener('error', onMediaLoad);
+      }
+    });
+    
+    // Fallback if no media
+    if (totalCount === 0) {
+      updateBounds();
+    }
+    
+    // Also update bounds after a delay as fallback
+    setTimeout(updateBounds, 500);
+    setTimeout(updateBounds, 1500);
+  }
+  
+  // Initialize videos - play on hover
+  function initVideos() {
+    const videos = track.querySelectorAll('video');
+    videos.forEach(video => {
+      video.addEventListener('mouseenter', () => {
+        video.play().catch(() => {});
+      });
+      video.addEventListener('mouseleave', () => {
+        video.pause();
+      });
+      
+      // Also handle touch for mobile
+      video.addEventListener('touchstart', () => {
+        if (video.paused) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      }, { passive: true });
+    });
   }
   
   // Initialize
   function init() {
-    updateBounds();
+    // Set initial styles
+    track.style.cursor = 'grab';
+    track.style.willChange = 'transform';
     
     // Mouse events
     track.addEventListener('mousedown', onMouseDown);
     
-    // Touch events
+    // Touch events - use passive: false for touchmove to allow preventDefault
     track.addEventListener('touchstart', onTouchStart, { passive: true });
-    track.addEventListener('touchmove', onTouchMove, { passive: true });
+    track.addEventListener('touchmove', onTouchMove, { passive: false });
     track.addEventListener('touchend', onTouchEnd);
+    track.addEventListener('touchcancel', onTouchEnd);
     
     // Wheel event
-    track.parentElement.addEventListener('wheel', onWheel, { passive: false });
+    wrapper.addEventListener('wheel', onWheel, { passive: false });
     
     // Keyboard
     document.addEventListener('keydown', onKeyDown);
     
     // Resize
-    window.addEventListener('resize', updateBounds);
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(updateBounds, 100);
+    });
     
     // Prevent context menu during drag
     track.addEventListener('contextmenu', (e) => {
       if (isDragging) e.preventDefault();
     });
     
-    // Initialize videos - play on hover
-    const videos = track.querySelectorAll('video');
-    videos.forEach(video => {
-      video.addEventListener('mouseenter', () => video.play());
-      video.addEventListener('mouseleave', () => video.pause());
+    // Prevent image drag
+    track.addEventListener('dragstart', (e) => {
+      e.preventDefault();
     });
+    
+    // Initialize videos
+    initVideos();
+    
+    // Wait for media to load
+    waitForMedia();
+    
+    // Initial bounds calculation
+    updateBounds();
   }
   
   // Run on DOM ready
@@ -241,8 +348,4 @@
   } else {
     init();
   }
-  
-  // Recalculate bounds after images load
-  window.addEventListener('load', updateBounds);
 })();
-

@@ -329,6 +329,35 @@ body {
   background-color: var(--color-placeholder);
 }
 
+/* Video items - desktop */
+.carousel-item.video-item .item-media video {
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+/* Video play indicator overlay */
+.carousel-item.video-item .item-media {
+  position: relative;
+}
+
+.carousel-item.video-item .item-media::after {
+  content: '▶';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.carousel-item.video-item:hover .item-media::after {
+  opacity: 0;
+}
+
 /* ============================================
    Scroll Indicators (optional subtle hint)
    ============================================ */
