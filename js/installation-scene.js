@@ -66,10 +66,10 @@ const CONFIG = {
 // Room Settings (controllable) - much darker
 // ============================================
 const roomSettings = {
-  ambient: 0.02,
-  wallColor: '#1a1a1a',
-  floorColor: '#0a0a0a',
-  ceilingColor: '#0d0d0d',
+  ambient: 0.00,
+  wallColor: '#545454',
+  floorColor: '#3d3d3d',
+  ceilingColor: '#3d3d3d',
   projectionOn: true,
   projectionIntensity: 0.8,
   panelOpacity: 0.45,
@@ -1505,10 +1505,10 @@ window.toggleRoomControls = function() {
 
 window.resetRoomSettings = function() {
   const defaults = {
-    ambient: 0.02,
-    wallColor: '#1a1a1a',
-    floorColor: '#0a0a0a',
-    ceilingColor: '#0d0d0d',
+    ambient: 0.00,
+    wallColor: '#545454',
+    floorColor: '#3d3d3d',
+    ceilingColor: '#3d3d3d',
     projectionOn: true,
     projectionIntensity: 0.8,
     panelOpacity: 0.45,
@@ -1697,8 +1697,13 @@ function updateMovement(delta) {
   const halfWidth = CONFIG.room.width / 2 - 0.4;
   const halfDepth = CONFIG.room.depth / 2 - 0.4;
   
+  // Calculate the forward limit based on acrylic panel positions
+  // Panels are at installation z + panel z offset, camera should stay behind them
+  const installationZ = -CONFIG.room.depth / 2 + CONFIG.tv.depth / 2 + 0.01;
+  const maxPanelZ = installationZ + zOffset + 0.8; // Add buffer so camera stays behind panels
+  
   camera.position.x = Math.max(-halfWidth, Math.min(halfWidth, camera.position.x));
-  camera.position.z = Math.max(-halfDepth, Math.min(halfDepth, camera.position.z));
+  camera.position.z = Math.max(maxPanelZ, Math.min(halfDepth, camera.position.z));
   camera.position.y = roomSettings.cameraHeight;
 }
 
