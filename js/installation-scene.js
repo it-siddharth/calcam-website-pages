@@ -97,7 +97,7 @@ let standPole;
 let acrylicPanels = [];
 let projectionPlane, projectionMaterial;
 let ambientLight, tvGlow;
-let walls = [], floor, ceiling;
+let walls = [], floor, ceiling, backWall;
 let speakers = [];
 let silhouetteCanvas, silhouetteCtx;
 
@@ -753,9 +753,15 @@ function createRoom() {
     color: new THREE.Color(roomSettings.wallColor)
   });
   
-  // Back wall (where TV is mounted)
+  // Back wall material (15% darker than side walls)
+  const backWallColor = new THREE.Color(roomSettings.wallColor).multiplyScalar(0.85);
+  const backWallMat = new THREE.MeshBasicMaterial({
+    color: backWallColor
+  });
+  
+  // Back wall (where TV is mounted) - 15% darker
   const backWallGeom = new THREE.PlaneGeometry(width, height);
-  const backWall = new THREE.Mesh(backWallGeom, wallMat.clone());
+  backWall = new THREE.Mesh(backWallGeom, backWallMat);
   backWall.position.set(0, height / 2, -depth / 2);
   walls.push(backWall);
   scene.add(backWall);
@@ -1341,7 +1347,15 @@ function setupRoomControls() {
     wallCtrl.value = roomSettings.wallColor;
     wallCtrl.addEventListener('input', (e) => {
       roomSettings.wallColor = e.target.value;
-      walls.forEach(wall => wall.material.color.set(e.target.value));
+      const baseColor = new THREE.Color(e.target.value);
+      const darkColor = baseColor.clone().multiplyScalar(0.85); // 15% darker for back wall
+      walls.forEach(wall => {
+        if (wall === backWall) {
+          wall.material.color.copy(darkColor);
+        } else {
+          wall.material.color.copy(baseColor);
+        }
+      });
     });
   }
   
@@ -1556,7 +1570,15 @@ window.resetRoomSettings = function() {
   zOffset = defaults.zOffset;
   
   ambientLight.intensity = defaults.ambient;
-  walls.forEach(wall => wall.material.color.set(defaults.wallColor));
+  const baseWallColor = new THREE.Color(defaults.wallColor);
+  const darkWallColor = baseWallColor.clone().multiplyScalar(0.85);
+  walls.forEach(wall => {
+    if (wall === backWall) {
+      wall.material.color.copy(darkWallColor);
+    } else {
+      wall.material.color.copy(baseWallColor);
+    }
+  });
   floor.material.color.set(defaults.floorColor);
   ceiling.material.color.set(defaults.ceilingColor);
   projectionPlane.visible = defaults.projectionOn;
