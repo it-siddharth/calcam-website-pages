@@ -1,6 +1,7 @@
 /**
  * Gallery Carousel - Smooth Horizontal Scroll
  * Supports mouse drag, touch, wheel, and keyboard navigation
+ * With lazy loading for videos
  */
 
 (function() {
@@ -24,6 +25,9 @@
   let rafId = null;
   let hasScrolled = false;
   let isAnimating = false;
+  
+  // Track loaded videos
+  const loadedVideos = new Set();
   
   // Configuration
   const config = {
@@ -65,6 +69,9 @@
         scrollHint.classList.add('hidden');
       }
     }
+    
+    // Check for videos that need to be loaded
+    checkLazyVideos();
   }
   
   // Smooth animation loop
@@ -229,13 +236,52 @@
     }
   }
   
-  // Wait for all images and videos to load before calculating bounds
+  // Lazy load videos when they come into view
+  function checkLazyVideos() {
+    const videos = track.querySelectorAll('video[data-src]');
+    const wrapperRect = wrapper.getBoundingClientRect();
+    
+    videos.forEach(video => {
+      if (loadedVideos.has(video)) return;
+      
+      const videoRect = video.getBoundingClientRect();
+      // Load video when it's within 500px of the viewport
+      const isNearViewport = (
+        videoRect.right > wrapperRect.left - 500 &&
+        videoRect.left < wrapperRect.right + 500
+      );
+      
+      if (isNearViewport) {
+        loadVideo(video);
+      }
+    });
+  }
+  
+  // Load a lazy video
+  function loadVideo(video) {
+    const src = video.dataset.src;
+    if (!src || loadedVideos.has(video)) return;
+    
+    loadedVideos.add(video);
+    video.src = src;
+    video.removeAttribute('data-src');
+    video.load();
+    
+    // Play when loaded
+    video.addEventListener('loadeddata', () => {
+      video.muted = true;
+      video.play().catch(() => {});
+      // Update bounds after video loads
+      setTimeout(updateBounds, 100);
+    }, { once: true });
+  }
+  
+  // Wait for all images to load before calculating bounds
   function waitForMedia() {
     const images = track.querySelectorAll('img');
-    const videos = track.querySelectorAll('video');
     
     let loadedCount = 0;
-    const totalCount = images.length + videos.length;
+    const totalCount = images.length;
     
     function onMediaLoad() {
       loadedCount++;
@@ -253,16 +299,7 @@
       }
     });
     
-    videos.forEach(video => {
-      if (video.readyState >= 1) {
-        onMediaLoad();
-      } else {
-        video.addEventListener('loadedmetadata', onMediaLoad);
-        video.addEventListener('error', onMediaLoad);
-      }
-    });
-    
-    // Fallback if no media
+    // Fallback if no images
     if (totalCount === 0) {
       updateBounds();
     }
@@ -270,27 +307,6 @@
     // Also update bounds after a delay as fallback
     setTimeout(updateBounds, 500);
     setTimeout(updateBounds, 1500);
-  }
-  
-  // Initialize videos - autoplay all videos
-  function initVideos() {
-    const videos = track.querySelectorAll('video');
-    videos.forEach(video => {
-      // Ensure autoplay works
-      video.muted = true;
-      video.play().catch(() => {
-        // Autoplay might be blocked, try again on user interaction
-        document.addEventListener('click', () => {
-          video.play().catch(() => {});
-        }, { once: true });
-      });
-      
-      // Re-play if video ends (backup for loop attribute)
-      video.addEventListener('ended', () => {
-        video.currentTime = 0;
-        video.play().catch(() => {});
-      });
-    });
   }
   
   // Initialize
@@ -331,14 +347,14 @@
       e.preventDefault();
     });
     
-    // Initialize videos
-    initVideos();
-    
     // Wait for media to load
     waitForMedia();
     
     // Initial bounds calculation
     updateBounds();
+    
+    // Initial check for lazy videos (in case some are already visible)
+    checkLazyVideos();
   }
   
   // Run on DOM ready
