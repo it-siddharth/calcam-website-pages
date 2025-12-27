@@ -73,9 +73,9 @@ const roomSettings = {
   projectionOn: true,
   projectionIntensity: 0.8,
   panelOpacity: 0.45,
-  tvFrameColor: '#8f8f8f',
-  tvBorderVisible: true,
-  tvBorderColor: '#ffffff',
+  tvFrameColor: '#1c1c1c',
+  tvBorderVisible: false,
+  tvBorderColor: '#1c1c1c',
   cameraHeight: 2.25,  // Eye level height
   tvHeight: 2.25       // TV center height from floor
 };
@@ -1512,7 +1512,7 @@ window.resetRoomSettings = function() {
     projectionOn: true,
     projectionIntensity: 0.8,
     panelOpacity: 0.45,
-    tvFrameColor: '#8f8f8f',
+    tvFrameColor: '#1c1c1c',
     hSpread: 0.35,
     vSpread: 1,
     zOffset: 0.50,
