@@ -221,8 +221,8 @@
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 6px 16px;
+      gap: 5px;
+      padding: 8px 14px;
       border-radius: 30px;
       text-decoration: none;
       overflow: hidden;
@@ -247,7 +247,8 @@
       font-family: var(--font-arrow);
       font-size: var(--arrow-size);
       font-style: italic;
-      line-height: var(--arrow-line-height);
+      line-height: 1;
+      margin-right: -2px;
     }
 
     .btn-secondary {
@@ -494,6 +495,18 @@
         display: none;
       }
       
+      .btn {
+        padding: 6px 12px;
+      }
+      
+      .btn-text {
+        font-size: 12px;
+      }
+      
+      .btn-arrow {
+        font-size: 14px;
+      }
+      
       .back-button {
         padding: 6px 12px;
         font-size: 10px;
@@ -506,6 +519,22 @@
       :root {
         --title-size: 48px;
         --title-line-height: 44px;
+      }
+      
+      .nav-links {
+        gap: 6px;
+      }
+      
+      .btn {
+        padding: 5px 10px;
+      }
+      
+      .btn-text {
+        font-size: 11px;
+      }
+      
+      .btn-arrow {
+        font-size: 13px;
       }
     }
 
@@ -632,6 +661,23 @@
   }
   </script>
 
+  <!-- Debug instrumentation -->
+  <script>
+    // #region agent log
+    window.addEventListener('DOMContentLoaded', function() {
+      const btn = document.querySelector('.btn');
+      if (btn) {
+        const cs = getComputedStyle(btn);
+        const text = btn.querySelector('.btn-text');
+        const arrow = btn.querySelector('.btn-arrow');
+        const textCs = text ? getComputedStyle(text) : null;
+        const arrowCs = arrow ? getComputedStyle(arrow) : null;
+        fetch('http://127.0.0.1:7243/ingest/b2a87bc5-0f45-4c1a-95fa-5aa2d366c868',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'journal.html',message:'CTA computed styles',data:{page:'journal',viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,btnPadding:cs.padding,btnGap:cs.gap,textFontSize:textCs?.fontSize,arrowFontSize:arrowCs?.fontSize},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C'})}).catch(()=>{});
+      }
+    });
+    // #endregion
+  </script>
+  
   <script type="module">
     import * as THREE from 'three';
     import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';

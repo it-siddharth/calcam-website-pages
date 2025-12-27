@@ -8,7 +8,7 @@ const CONFIG = {
   // Room dimensions (meters) - narrower gallery
   room: {
     width: 5,
-    height: 4.5,
+    height: 7,
     depth: 10
   },
   

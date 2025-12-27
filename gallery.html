@@ -281,6 +281,19 @@
   
   <!-- Fade out page transition overlay -->
   <script>
+    // #region agent log
+    window.addEventListener('DOMContentLoaded', function() {
+      const btn = document.querySelector('.btn');
+      if (btn) {
+        const cs = getComputedStyle(btn);
+        const text = btn.querySelector('.btn-text');
+        const arrow = btn.querySelector('.btn-arrow');
+        const textCs = text ? getComputedStyle(text) : null;
+        const arrowCs = arrow ? getComputedStyle(arrow) : null;
+        fetch('http://127.0.0.1:7243/ingest/b2a87bc5-0f45-4c1a-95fa-5aa2d366c868',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'gallery.html',message:'CTA computed styles',data:{page:'gallery',viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,btnPadding:cs.padding,btnGap:cs.gap,textFontSize:textCs?.fontSize,arrowFontSize:arrowCs?.fontSize},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C'})}).catch(()=>{});
+      }
+    });
+    // #endregion
     window.addEventListener('load', function() {
       requestAnimationFrame(function() {
         requestAnimationFrame(function() {

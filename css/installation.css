@@ -220,8 +220,8 @@ body {
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 14px;
+  gap: 5px;
+  padding: 8px 14px;
   border-radius: 30px;
   text-decoration: none;
   overflow: hidden;
@@ -247,7 +247,8 @@ body {
   font-family: var(--font-arrow);
   font-size: var(--arrow-size);
   font-style: italic;
-  line-height: var(--arrow-line-height);
+  line-height: 1;
+  margin-right: -2px;
 }
 
 .btn-secondary {
@@ -843,11 +844,11 @@ body:not(.cinematic-intro) .skip-hint {
   }
   
   .btn-text {
-    font-size: var(--label-size);
+    font-size: 12px;
   }
   
   .btn-arrow {
-    font-size: var(--arrow-size);
+    font-size: 14px;
   }
   
   .back-button {
@@ -917,6 +918,10 @@ body:not(.cinematic-intro) .skip-hint {
   
   .btn-text {
     font-size: 11px;
+  }
+  
+  .btn-arrow {
+    font-size: 13px;
   }
 }
 
@@ -1003,8 +1008,8 @@ body:not(.cinematic-intro) .skip-hint {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.9);
   cursor: pointer;
   z-index: 50;
   transform: translate(-50%, -50%);
@@ -1012,6 +1017,11 @@ body:not(.cinematic-intro) .skip-hint {
   pointer-events: auto;
   opacity: 1;
   display: block;
+  /* Dark shadow for visibility on light backgrounds */
+  box-shadow: 
+    0 0 0 2px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 .anchor-indicator::before {
@@ -1024,6 +1034,8 @@ body:not(.cinematic-intro) .skip-hint {
   background: #fff;
   border-radius: 50%;
   transform: translate(-50%, -50%);
+  /* Dark outline on center dot */
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
 }
 
 .anchor-indicator::after {
@@ -1033,10 +1045,12 @@ body:not(.cinematic-intro) .skip-hint {
   left: 50%;
   width: 32px;
   height: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   transform: translate(-50%, -50%);
   animation: anchor-pulse 2s ease-out infinite;
+  /* Dark outer glow for pulse ring visibility */
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes anchor-pulse {
@@ -1053,14 +1067,22 @@ body:not(.cinematic-intro) .skip-hint {
 }
 
 .anchor-indicator:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.4);
   border-color: #fff;
   transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 
+    0 0 0 2px rgba(0, 0, 0, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
 .anchor-indicator.active {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.5);
   border-color: #fff;
+  box-shadow: 
+    0 0 0 2px rgba(0, 0, 0, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
 .anchor-indicator.active::after {
@@ -1070,8 +1092,12 @@ body:not(.cinematic-intro) .skip-hint {
 /* Edge-clamped state - when element is off-screen */
 .anchor-indicator.at-edge {
   transform: translate(-50%, -50%) scale(0.85);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.25);
   border-style: dashed;
+  box-shadow: 
+    0 0 0 2px rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
 
 .anchor-indicator.at-edge::after {
