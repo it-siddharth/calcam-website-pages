@@ -586,8 +586,8 @@
         <p class="learn-more">Know more about how this came to being.</p>
         
         <nav class="nav-links">
-          <a href="#process" class="btn btn-secondary">
-            <span class="btn-text">process</span>
+          <a href="index.html" class="btn btn-secondary">
+            <span class="btn-text">WHAT IS THIS?</span>
             <span class="btn-arrow">→</span>
           </a>
           <a href="journal.html" class="btn btn-secondary active">
@@ -631,7 +631,7 @@
       
       <nav class="nav-links">
         <a href="#process" class="btn btn-secondary">
-          <span class="btn-text">process</span>
+          <span class="btn-text">WHAT IS THIS?</span>
           <span class="btn-arrow">→</span>
         </a>
         <a href="journal.html" class="btn btn-secondary active">
@@ -1165,21 +1165,47 @@
     const MOUSE_SMOOTHING = 0.08;
 
     // ============================================
-    // Mobile Detection & Camera Adjustment
+    // Responsive Camera Adjustment
     // ============================================
     function isMobile() {
       return window.innerWidth <= 768;
     }
     
     function adjustCameraForDevice() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
       if (isMobile()) {
-        // Mobile: zoom in significantly for larger book
+        // Mobile: zoom in for larger book
         camera.setFocalLength(45);
         camera.position.set(0, 2.8, 0.9);
       } else {
-        // Desktop
-        camera.setFocalLength(MAXFOV);
-        camera.position.set(0, 4, 1.2);
+        // Desktop - responsive scaling based on window size
+        // Use the smaller dimension to ensure book fits well
+        const minDimension = Math.min(width, height);
+        
+        // Zoom in more for smaller windows, keep original for large windows
+        if (minDimension < 500) {
+          // Very small windows - zoom in significantly
+          camera.setFocalLength(52);
+          camera.position.set(0, 2.6, 0.8);
+        } else if (minDimension < 600) {
+          // Small windows - zoom in more
+          camera.setFocalLength(46);
+          camera.position.set(0, 2.9, 0.9);
+        } else if (minDimension < 700) {
+          // Medium-small windows
+          camera.setFocalLength(42);
+          camera.position.set(0, 3.2, 1.0);
+        } else if (minDimension < 850) {
+          // Medium windows
+          camera.setFocalLength(38);
+          camera.position.set(0, 3.6, 1.1);
+        } else {
+          // Large windows - original desktop view
+          camera.setFocalLength(MAXFOV);
+          camera.position.set(0, 4, 1.2);
+        }
       }
       camera.lookAt(0, 0, 0);
       camera.updateProjectionMatrix();

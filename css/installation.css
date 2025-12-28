@@ -326,6 +326,89 @@ body {
 }
 
 /* ============================================
+   Music Toggle Button
+   ============================================ */
+.music-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.music-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+/* Music icon states */
+.music-toggle .music-icon {
+  position: absolute;
+  transition: opacity 0.2s ease;
+}
+
+.music-toggle .music-on {
+  opacity: 0;
+}
+
+.music-toggle .music-off {
+  opacity: 1;
+}
+
+.music-toggle.playing {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.music-toggle.playing .music-on {
+  opacity: 1;
+}
+
+.music-toggle.playing .music-off {
+  opacity: 0;
+}
+
+/* Hide music toggle during cinematic intro */
+body.cinematic-intro .music-toggle {
+  opacity: 0 !important;
+  pointer-events: none;
+  transition: none !important;
+}
+
+body.cinematic-revealed .music-toggle {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.35s ease-out;
+  transition-delay: 0.25s;
+}
+
+/* Hide music toggle in pointer lock mode */
+body.pointer-locked .music-toggle {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+body.pointer-locked:hover .music-toggle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ============================================
    Room Controls Panel
    ============================================ */
 .room-controls {
@@ -863,6 +946,13 @@ body:not(.cinematic-intro) .skip-hint {
   }
   
   .controls-toggle {
+    bottom: 15px;
+    right: 15px;
+    width: 44px;
+    height: 44px;
+  }
+  
+  .music-toggle {
     bottom: 15px;
     right: 15px;
     width: 44px;

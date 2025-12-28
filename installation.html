@@ -87,8 +87,8 @@
       <p class="learn-more">Know more about how this came to being.</p>
       
       <nav class="nav-links">
-        <a href="#process" class="btn btn-secondary">
-          <span class="btn-text">process</span>
+        <a href="index.html" class="btn btn-secondary">
+          <span class="btn-text">WHAT IS THIS?</span>
           <span class="btn-arrow">→</span>
         </a>
         <a href="journal.html" class="btn btn-secondary">
@@ -102,125 +102,6 @@
       </nav>
     </footer>
   </main>
-
-  <!-- Room Controls Panel -->
-  <div id="room-controls" class="room-controls">
-    <div class="controls-header">
-      <span>Settings</span>
-      <button class="controls-close" onclick="toggleRoomControls()">×</button>
-    </div>
-    <div class="controls-content">
-      <!-- Acrylic Panels Section -->
-      <div class="control-section">Acrylic Panels</div>
-      <div class="control-row">
-        <label>Opacity</label>
-        <input type="range" id="ctrl-panelopacity" min="0.1" max="1" step="0.05" value="0.45">
-        <span class="value" id="val-panelopacity">0.45</span>
-      </div>
-        <div class="control-row">
-          <label>Thickness</label>
-          <input type="range" id="ctrl-thickness" min="0.01" max="0.2" step="0.01" value="0.02">
-          <span class="value" id="val-thickness">0.02</span>
-        </div>
-      <div class="control-row">
-        <label>H-Spread</label>
-        <input type="range" id="ctrl-hspread" min="-1" max="1" step="0.05" value="0.35">
-        <span class="value" id="val-hspread">0.35</span>
-      </div>
-      <div class="control-row">
-        <label>V-Spread</label>
-        <input type="range" id="ctrl-vspread" min="-2" max="2" step="0.05" value="1">
-        <span class="value" id="val-vspread">1.00</span>
-      </div>
-        <div class="control-row">
-          <label>Z-Offset</label>
-          <input type="range" id="ctrl-zoffset" min="-0.5" max="0.5" step="0.02" value="0.50">
-          <span class="value" id="val-zoffset">0.50</span>
-        </div>
-
-      <!-- TV Section -->
-      <div class="control-section">TV Appearance</div>
-      <div class="control-row">
-        <label>Frame Color</label>
-        <input type="color" id="ctrl-tvframe" value="#1c1c1c">
-      </div>
-
-      <!-- Rotation Section -->
-      <div class="control-section">Rotation</div>
-        <div class="control-row">
-          <label>Rotate X</label>
-          <input type="range" id="ctrl-rotx" min="-180" max="180" step="1" value="0">
-          <span class="value" id="val-rotx">0°</span>
-        </div>
-      <div class="control-row">
-        <label>Rotate Y</label>
-        <input type="range" id="ctrl-roty" min="-180" max="180" step="1" value="0">
-        <span class="value" id="val-roty">0°</span>
-      </div>
-      <div class="control-row">
-        <label>Rotate Z</label>
-        <input type="range" id="ctrl-rotz" min="-180" max="180" step="1" value="0">
-        <span class="value" id="val-rotz">0°</span>
-      </div>
-
-        <!-- View Section -->
-        <div class="control-section">View</div>
-        <div class="control-row">
-          <label>Eye Level</label>
-          <input type="range" id="ctrl-cameraheight" min="0.8" max="3.0" step="0.05" value="2.25">
-          <span class="value" id="val-cameraheight">2.25</span>
-        </div>
-        <div class="control-row">
-          <label>TV Height</label>
-          <input type="range" id="ctrl-tvheight" min="0.8" max="3.5" step="0.05" value="2.25">
-          <span class="value" id="val-tvheight">2.25</span>
-        </div>
-
-      <!-- Room Section -->
-      <div class="control-section">Room</div>
-      <div class="control-row">
-        <label>Ambient</label>
-        <input type="range" id="ctrl-ambient" min="0" max="0.2" step="0.01" value="0.00">
-        <span class="value" id="val-ambient">0.00</span>
-      </div>
-      <div class="control-row">
-        <label>Wall Color</label>
-        <input type="color" id="ctrl-wallcolor" value="#545454">
-      </div>
-      <div class="control-row">
-        <label>Floor Color</label>
-        <input type="color" id="ctrl-floorcolor" value="#3d3d3d">
-      </div>
-      <div class="control-row">
-        <label>Ceiling Color</label>
-        <input type="color" id="ctrl-ceilingcolor" value="#3d3d3d">
-      </div>
-
-      <!-- Wall Projection Section -->
-      <div class="control-section">Wall Projection</div>
-      <div class="control-row">
-        <label>Projection</label>
-        <input type="checkbox" id="ctrl-projection" checked>
-      </div>
-      <div class="control-row">
-        <label>Intensity</label>
-        <input type="range" id="ctrl-projintensity" min="0.1" max="1.5" step="0.1" value="0.8">
-        <span class="value" id="val-projintensity">0.8</span>
-      </div>
-
-      <div class="control-buttons">
-        <button onclick="resetRoomSettings()">Reset All</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Controls Toggle Button -->
-  <button id="controls-toggle" class="controls-toggle" onclick="toggleRoomControls()">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="3"></circle>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-    </svg>
-  </button>
 
   <!-- Back Button -->
   <a href="index.html" class="back-button">
@@ -301,6 +182,120 @@
     if (localStorage.getItem('installationHintDismissed')) {
       document.getElementById('controls-hint').classList.add('hidden');
     }
+  </script>
+
+  <!-- Background Music -->
+  <audio id="bg-music" loop preload="auto">
+    <source src="assets/Ambient Synth Pad E Minor 140 BPM.wav" type="audio/wav">
+  </audio>
+
+  <!-- Music Toggle Button -->
+  <button id="music-toggle" class="music-toggle" aria-label="Toggle background music">
+    <svg class="music-icon music-on" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 18V5l12-2v13"></path>
+      <circle cx="6" cy="18" r="3"></circle>
+      <circle cx="18" cy="16" r="3"></circle>
+    </svg>
+    <svg class="music-icon music-off" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 18V5l12-2v13"></path>
+      <circle cx="6" cy="18" r="3"></circle>
+      <circle cx="18" cy="16" r="3"></circle>
+      <line x1="1" y1="1" x2="23" y2="23" stroke-width="2.5"></line>
+    </svg>
+  </button>
+
+  <!-- Background Music Controller -->
+  <script>
+    (function() {
+      const audio = document.getElementById('bg-music');
+      const toggleBtn = document.getElementById('music-toggle');
+      
+      if (!audio || !toggleBtn) {
+        console.error('Music elements not found!');
+        return;
+      }
+      
+      // Set volume
+      audio.volume = 0.35;
+      
+      // Check stored preference - default is to play (not muted)
+      const isMuted = localStorage.getItem('musicMuted') === 'true';
+      
+      // Update button appearance based on audio state
+      function updateButton() {
+        if (!audio.paused) {
+          toggleBtn.classList.add('playing');
+        } else {
+          toggleBtn.classList.remove('playing');
+        }
+      }
+      
+      // Play music function
+      function playMusic() {
+        audio.play().then(function() {
+          console.log('Music playing');
+          updateButton();
+        }).catch(function(e) {
+          console.log('Waiting for user interaction to play audio');
+        });
+      }
+      
+      // Pause music function  
+      function pauseMusic() {
+        audio.pause();
+        console.log('Music paused');
+        updateButton();
+      }
+      
+      // Toggle button click handler
+      toggleBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        if (audio.paused) {
+          localStorage.setItem('musicMuted', 'false');
+          playMusic();
+        } else {
+          localStorage.setItem('musicMuted', 'true');
+          pauseMusic();
+        }
+      });
+      
+      // Start music on first user interaction (required by browsers)
+      let musicStarted = false;
+      function startMusicOnInteraction() {
+        if (musicStarted) return;
+        musicStarted = true;
+        
+        // Only play if user hasn't muted
+        if (!isMuted) {
+          playMusic();
+        }
+        
+        // Remove listeners after first interaction
+        document.removeEventListener('click', startMusicOnInteraction);
+        document.removeEventListener('keydown', startMusicOnInteraction);
+        document.removeEventListener('touchstart', startMusicOnInteraction);
+      }
+      
+      // Listen for first user interaction
+      document.addEventListener('click', startMusicOnInteraction);
+      document.addEventListener('keydown', startMusicOnInteraction);
+      document.addEventListener('touchstart', startMusicOnInteraction);
+      
+      // Set initial button state (show as "playing" unless muted)
+      if (!isMuted) {
+        toggleBtn.classList.add('playing');
+      }
+      
+      // Sync UI when audio actually plays/pauses
+      audio.addEventListener('play', updateButton);
+      audio.addEventListener('pause', updateButton);
+      
+      // Try immediate play (works if user has interacted with page before)
+      if (!isMuted) {
+        playMusic();
+      }
+    })();
   </script>
 
   <!-- Hidden iframe for WORD SILHOUETTE (webcam-based) -->

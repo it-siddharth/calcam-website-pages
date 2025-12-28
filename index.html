@@ -81,6 +81,7 @@
       
       <!-- Description -->
       <p class="description">
+        This website is the digital documentation of my art installation titled "Calculated Camouflage". This installation was done as part of my grad thesis at MICA, Baltimore.<br>
         Through an interactive installation of light and space, viewers explore how their authentic identity flows through every version of themselves.
       </p>
       
@@ -100,14 +101,17 @@
       <div class="cta-section">
         <p class="cta-text">Curious? See the 3d installation for yourself</p>
         
-        <a href="installation.html" class="btn btn-primary">
-          <span class="btn-text">EXPERIENCE IT YOURSELF</span>
-          <span class="btn-arrow">→</span>
-        </a>
+        <div class="cta-primary-row">
+          <span class="cta-arrow">↳</span>
+          <a href="installation.html" class="btn btn-primary">
+            <span class="btn-text">EXPERIENCE IT YOURSELF</span>
+            <span class="btn-arrow">→</span>
+          </a>
+        </div>
         
         <div class="nav-links">
-          <a href="#process" class="btn btn-secondary">
-            <span class="btn-text">process</span>
+          <a href="index.html" class="btn btn-secondary">
+            <span class="btn-text">WHAT IS THIS?</span>
             <span class="btn-arrow">→</span>
           </a>
           <a href="journal.html" class="btn btn-secondary">
@@ -135,6 +139,11 @@
 
   <!-- Hidden iframe for WORD SILHOUETTE (lazy loaded) -->
   <iframe id="silhouette-iframe" src="WORD SILHOUETTE.html" loading="lazy" style="position: absolute; left: -9999px; width: 640px; height: 480px;"></iframe>
+  
+  <!-- TV Video (used by scene.js) - hidden, plays on TV screen in 3D scene -->
+  <video id="tv-video" loop muted playsinline preload="auto" autoplay style="display: none;">
+    <source src="assets/videos/tvvid2.mp4" type="video/mp4">
+  </video>
 
   <!-- Three.js and dependencies -->
   <script type="importmap">

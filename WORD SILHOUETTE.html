@@ -103,6 +103,14 @@
       border: 1px solid #555;
       border-radius: 4px;
     }
+    .checkbox-label {
+      display: block;
+      margin: 8px 0;
+      cursor: pointer;
+    }
+    .checkbox-label input[type="checkbox"] {
+      margin-right: 8px;
+    }
   </style>
 </head>
 <body>
@@ -127,6 +135,10 @@
       <label class="checkbox-label">
         <input type="checkbox" id="flipVideo">
         Flip Video
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="portraitMode">
+        Portrait Mode
       </label>
       <label>
         Threshold: <span id="thresholdValue">83</span>
@@ -294,6 +306,7 @@
     let textColumns, textRows;
     let invertColors = false;
     let flipVideo = false;
+    let portraitMode = false;
     let threshold = 83;
     let cellWidthMultiplier = 0.7;
     let fontSize = 10;
@@ -451,19 +464,41 @@
       const videoRatio = video.width / video.height;
       const canvasRatio = width / height;
       
-      // Always fit height and allow cropping from sides if needed
-      displayHeight = height;
-      displayWidth = displayHeight * videoRatio;
-      
-      // If video width is too narrow, scale up to fill width
-      if (displayWidth < width) {
-        displayWidth = width;
-        displayHeight = displayWidth / videoRatio;
+      if (portraitMode) {
+        // Portrait mode: create a vertical/portrait composition
+        // Use a portrait aspect ratio (9:16)
+        const portraitRatio = 9 / 16;
+        
+        // Calculate portrait display area that fits within the canvas
+        if (width / height > portraitRatio) {
+          // Canvas is wider than portrait ratio - fit to height
+          displayHeight = height;
+          displayWidth = displayHeight * portraitRatio;
+        } else {
+          // Canvas is narrower - fit to width
+          displayWidth = width;
+          displayHeight = displayWidth / portraitRatio;
+        }
+        
+        // Center the portrait display area
+        displayX = (width - displayWidth) / 2;
+        displayY = (height - displayHeight) / 2;
+      } else {
+        // Landscape mode (default): fill the screen
+        // Always fit height and allow cropping from sides if needed
+        displayHeight = height;
+        displayWidth = displayHeight * videoRatio;
+        
+        // If video width is too narrow, scale up to fill width
+        if (displayWidth < width) {
+          displayWidth = width;
+          displayHeight = displayWidth / videoRatio;
+        }
+        
+        // Center the video
+        displayX = (width - displayWidth) / 2;
+        displayY = (height - displayHeight) / 2;
       }
-      
-      // Center the video
-      displayX = (width - displayWidth) / 2;
-      displayY = (height - displayHeight) / 2;
     }
     
     function handleFullscreenChange() {
@@ -1175,6 +1210,13 @@
       
       document.getElementById('flipVideo').addEventListener('change', function() {
         flipVideo = this.checked;
+      });
+      
+      document.getElementById('portraitMode').addEventListener('change', function() {
+        portraitMode = this.checked;
+        updateDisplayArea();
+        updateGridDimensions();
+        initializeGrid();
       });
       
       document.getElementById('threshold').addEventListener('input', function() {

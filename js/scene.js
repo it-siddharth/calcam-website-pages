@@ -55,6 +55,7 @@ let tvScreen, tvScreenTexture, tvFrame, screenBorder;
 let tvGroup, standPole;
 let installationGroup;
 let silhouetteCanvas, silhouetteCtx;
+let tvVideo; // Video element for TV screen
 
 // Auto-pan animation
 let panAngle = 0;
@@ -234,26 +235,80 @@ function createTV() {
   });
   tvFrame = new THREE.Mesh(frameGeometry, frameMaterial);
   
-  // TV screen (will display WORD SILHOUETTE)
+  // TV screen (will display video)
   const screenWidth = tv.width - tv.bezelWidth * 2;
   const screenHeight = tv.height - tv.bezelWidth * 2;
   const screenGeometry = new THREE.PlaneGeometry(screenWidth, screenHeight);
   
-  // Create canvas texture for the screen
+  // Get video element from DOM (defined in HTML)
+  tvVideo = document.getElementById('tv-video');
+  if (!tvVideo) {
+    console.error('TV video element not found!');
+    // Create fallback video element
+    tvVideo = document.createElement('video');
+    tvVideo.src = 'assets/videos/tvvid2.mp4';
+    tvVideo.loop = true;
+    tvVideo.muted = true;
+    tvVideo.playsInline = true;
+    tvVideo.preload = 'auto';
+    document.body.appendChild(tvVideo);
+  }
+  
+  // Create canvas for video frames (higher resolution for sharpness)
   silhouetteCanvas = document.createElement('canvas');
-  silhouetteCanvas.width = 640;
-  silhouetteCanvas.height = 480;
+  silhouetteCanvas.width = 1280;
+  silhouetteCanvas.height = 960;
   silhouetteCtx = silhouetteCanvas.getContext('2d');
   
+  // Create canvas texture with settings for vibrant colors
   tvScreenTexture = new THREE.CanvasTexture(silhouetteCanvas);
   tvScreenTexture.colorSpace = THREE.SRGBColorSpace;
+  tvScreenTexture.minFilter = THREE.LinearFilter;
+  tvScreenTexture.magFilter = THREE.LinearFilter;
+  tvScreenTexture.generateMipmaps = false;
   
+  // Screen material - fully opaque, no transparency
   const screenMaterial = new THREE.MeshBasicMaterial({ 
     map: tvScreenTexture,
-    side: THREE.FrontSide
+    side: THREE.FrontSide,
+    toneMapped: false  // Prevent tone mapping from washing out colors
   });
   tvScreen = new THREE.Mesh(screenGeometry, screenMaterial);
-  tvScreen.position.z = tv.depth / 2 + 0.001;
+  tvScreen.position.z = tv.depth / 2 + 0.002;  // Slightly more forward
+  tvScreen.renderOrder = 1;  // Render before transparent panels
+  
+  // Function to draw video frame to canvas - runs every frame
+  function updateVideoCanvas() {
+    try {
+      if (tvVideo && tvVideo.readyState >= tvVideo.HAVE_CURRENT_DATA) {
+        // Apply contrast/saturation filter for more vibrant colors
+        silhouetteCtx.filter = 'contrast(1.25) saturate(1.35) brightness(1.1)';
+        silhouetteCtx.drawImage(tvVideo, 0, 0, silhouetteCanvas.width, silhouetteCanvas.height);
+        silhouetteCtx.filter = 'none';
+        
+        tvScreenTexture.needsUpdate = true;
+      }
+    } catch (e) {
+      // Ignore drawing errors
+    }
+    requestAnimationFrame(updateVideoCanvas);
+  }
+  
+  // Start the video frame update loop immediately
+  updateVideoCanvas();
+  
+  // Start video when data is loaded
+  tvVideo.addEventListener('canplay', () => {
+    tvVideo.play().catch(() => {});
+  });
+  
+  // Also try to play immediately (works if muted and autoplay allowed)
+  tvVideo.play().catch(() => {
+    // Add click handler to start video on user interaction
+    document.addEventListener('click', () => {
+      tvVideo.play().catch(() => {});
+    }, { once: true });
+  });
   
   // White border around screen (matching Figma design)
   const borderGeometry = new THREE.EdgesGeometry(
@@ -413,39 +468,11 @@ function setupMouseTracking(container) {
 }
 
 // ============================================
-// Setup Silhouette Texture
+// Setup Silhouette Texture (no longer needed - video created in createTV)
 // ============================================
 function setupSilhouetteTexture() {
-  const iframe = document.getElementById('silhouette-iframe');
-  
-  if (iframe) {
-    // Initial black fill
-    silhouetteCtx.fillStyle = '#000000';
-    silhouetteCtx.fillRect(0, 0, silhouetteCanvas.width, silhouetteCanvas.height);
-    
-    // Try to capture iframe content periodically
-    setInterval(() => {
-      try {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const iframeCanvas = iframeDoc.querySelector('canvas');
-        
-        if (iframeCanvas) {
-          // Draw iframe canvas content to our texture canvas
-          silhouetteCtx.drawImage(
-            iframeCanvas, 
-            0, 0, 
-            silhouetteCanvas.width, 
-            silhouetteCanvas.height
-          );
-          tvScreenTexture.needsUpdate = true;
-        }
-      } catch (e) {
-        // Cross-origin restrictions may prevent access
-        // Fall back to a placeholder animation
-        drawPlaceholderAnimation();
-      }
-    }, 1000 / 30); // 30 FPS update
-  }
+  // Video is now created directly in createTV()
+  // This function is kept for compatibility but does nothing
 }
 
 // ============================================
@@ -938,9 +965,9 @@ function adjustCameraForViewport(width, height) {
   
   if (isMobileView) {
     // Mobile: center the model - CSS handles positioning the container
-    scaleFactor = 1.2;    // Slightly further back to fit container
-    cameraY = 0.5;        // Normal camera height
-    cameraTargetY = 0.5;  // Look at center of model
+    scaleFactor = 0.75;   // Even closer for larger model on mobile
+    cameraY = 0.8;        // Slightly higher for better framing
+    cameraTargetY = 0.55; // Look at model center
     cameraOffsetX = 0;    // Center horizontally
   } else if (width >= 1400) {
     scaleFactor = 0.9;
