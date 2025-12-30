@@ -14,6 +14,7 @@ body:has(.what-is-this-page) {
   width: 100%;
   background-color: var(--color-bg);
   position: relative;
+  min-height: 100%;
 }
 
 /* ============================================
@@ -27,31 +28,31 @@ body:has(.what-is-this-page) {
   overflow: hidden;
 }
 
-/* Corner accents for each fold */
-.fold .corner-accent {
-  position: absolute;
+/* Fixed corner accents (viewport-level, consistent across all folds) */
+.what-is-this-page > .corner-accent {
+  position: fixed;
   width: 25px;
   height: 25px;
   background-color: var(--color-text);
-  z-index: 10;
+  z-index: 100;
 }
 
-.fold .corner-accent.top-left {
+.what-is-this-page > .corner-accent.top-left {
   top: 0;
   left: 0;
 }
 
-.fold .corner-accent.top-right {
+.what-is-this-page > .corner-accent.top-right {
   top: 0;
   right: 0;
 }
 
-.fold .corner-accent.bottom-left {
+.what-is-this-page > .corner-accent.bottom-left {
   bottom: 0;
   left: 0;
 }
 
-.fold .corner-accent.bottom-right {
+.what-is-this-page > .corner-accent.bottom-right {
   bottom: 0;
   right: 0;
 }
@@ -236,11 +237,6 @@ body:has(.what-is-this-page) {
   padding: 0;
 }
 
-/* Override corner accents to black */
-.fold-backstory .corner-accent {
-  background-color: var(--color-bg);
-}
-
 /* Title - Figma: left:39px, top:85px */
 .fold-backstory .fold-title {
   position: absolute;
@@ -415,7 +411,7 @@ body:has(.what-is-this-page) {
     gap: 8px;
   }
   
-  .fold .corner-accent {
+  .what-is-this-page > .corner-accent {
     width: 15px;
     height: 15px;
   }
