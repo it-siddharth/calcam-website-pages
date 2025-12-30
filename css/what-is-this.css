@@ -112,7 +112,7 @@ body:has(.what-is-this-page) {
 .page-title {
   position: absolute;
   left: var(--page-padding);
-  top: 35px;
+  top: var(--page-padding);
   font-family: var(--font-title);
   font-size: var(--title-size);
   font-weight: normal;
@@ -120,14 +120,14 @@ body:has(.what-is-this-page) {
   letter-spacing: var(--title-letter-spacing);
   color: var(--color-text);
   margin: 0;
+  max-width: 55%;
 }
 
-/* Specs List */
+/* Specs List - positioned below title */
 .specs-list {
   position: absolute;
   left: var(--page-padding);
-  top: 50%;
-  transform: translateY(-50%);
+  top: 35%;
   font-family: var(--font-body);
   font-size: var(--body-size);
   font-weight: 700;
