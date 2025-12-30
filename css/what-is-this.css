@@ -108,33 +108,31 @@ body:has(.what-is-this-page) {
   height: 100dvh;
 }
 
-/* Page Title - Figma: left:30px, top:35px */
+/* Page Title - matches home page .title */
 .page-title {
   position: absolute;
-  left: 30px;
+  left: var(--page-padding);
   top: 35px;
   font-family: var(--font-title);
-  font-size: 97px;
+  font-size: var(--title-size);
   font-weight: normal;
-  line-height: 97px;
-  letter-spacing: -2.91px;
+  line-height: var(--title-line-height);
+  letter-spacing: var(--title-letter-spacing);
   color: var(--color-text);
   margin: 0;
-  width: 549px;
 }
 
-/* Specs List - Figma: left:30px, top:397px (39% of 1024), translateY(-50%) */
+/* Specs List */
 .specs-list {
   position: absolute;
-  left: 30px;
+  left: var(--page-padding);
   top: 39%;
   transform: translateY(-50%);
   font-family: var(--font-body);
-  font-size: 22px;
+  font-size: var(--body-size);
   font-weight: 700;
-  line-height: 1.64; /* 36/22 = 1.64 */
+  line-height: 1.64;
   color: var(--color-text);
-  width: 33%; /* 472/1440 = 33% */
   max-width: 472px;
 }
 
@@ -166,16 +164,14 @@ body:has(.what-is-this-page) {
   object-fit: contain;
 }
 
-/* Navigation Section - Figma: left:32px, top:865px (84.5%) */
+/* Navigation Section - matches home page .cta-section */
 .nav-section {
   position: absolute;
-  left: 32px;
-  bottom: 30px;
+  left: var(--page-padding);
+  bottom: var(--page-padding);
   display: flex;
   flex-direction: column;
   gap: 22px;
-  width: auto;
-  max-width: 450px;
 }
 
 .cta-block {
@@ -191,7 +187,6 @@ body:has(.what-is-this-page) {
   line-height: var(--body-line-height);
   color: var(--color-text);
   margin: 0;
-  white-space: nowrap;
 }
 
 .cta-row {
@@ -208,53 +203,8 @@ body:has(.what-is-this-page) {
   color: var(--color-text);
 }
 
-/* Buttons */
-.fold .btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0 10px;
-  border-radius: 30px;
-  text-decoration: none;
-  overflow: hidden;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-
-.fold .btn:hover {
-  opacity: 0.8;
-  transform: translateY(-1px);
-}
-
-.fold .btn-text {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 14px;
-  text-transform: uppercase;
-}
-
-.fold .btn-arrow {
-  font-family: var(--font-arrow);
-  font-size: 18px;
-  font-style: italic;
-  font-weight: normal;
-  line-height: 21.6px;
-}
-
-.fold .btn-primary {
-  background-color: var(--color-text);
-  color: var(--color-bg);
-}
-
-.fold .btn-secondary {
-  background-color: transparent;
-  color: var(--color-text);
-  border: 1px solid var(--color-text);
-}
-
-.fold .btn-secondary.active {
-  background-color: rgba(255, 255, 255, 0.1);
-}
+/* Buttons - inherits from style.css .btn classes */
+/* No need to override - using global styles */
 
 .nav-links {
   display: flex;
@@ -272,15 +222,15 @@ body:has(.what-is-this-page) {
   padding: 0;
 }
 
-/* Title - Figma: left:39px, top:85px */
+/* Title - matches home page .title */
 .fold-backstory .fold-title {
   position: absolute;
-  left: 39px;
-  top: 8.3%; /* 85/1024 = 8.3% */
+  left: var(--page-padding);
+  top: 8.3%;
   font-family: var(--font-title);
-  font-size: 97px;
+  font-size: var(--title-size);
   font-weight: normal;
-  line-height: 1;
+  line-height: var(--title-line-height);
   letter-spacing: var(--title-letter-spacing);
   color: var(--color-bg);
   margin: 0;
@@ -426,38 +376,18 @@ body:has(.what-is-this-page) {
   }
   
   .nav-section {
-    gap: 16px;
+    gap: 10px;
     margin-top: 24px;
   }
   
-  .cta-text {
-    font-size: 14px;
-  }
-  
-  .fold .btn {
-    padding: 0 8px;
-  }
-  
-  .fold .btn-text {
-    font-size: 12px;
-  }
-  
-  .fold .btn-arrow {
-    font-size: 16px;
-  }
-  
-  .nav-links {
-    gap: 8px;
-  }
-  
   .what-is-this-page > .corner-accent {
-    width: 15px;
-    height: 15px;
+    width: var(--corner-size);
+    height: var(--corner-size);
   }
   
   .back-button {
-    top: 20px;
-    right: 20px;
+    top: var(--page-padding);
+    right: var(--page-padding);
     padding: 6px 12px;
     font-size: 10px;
   }

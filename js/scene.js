@@ -965,9 +965,9 @@ function adjustCameraForViewport(width, height) {
   
   if (isMobileView) {
     // Mobile: center the model - CSS handles positioning the container
-    scaleFactor = 0.75;   // Even closer for larger model on mobile
-    cameraY = 0.8;        // Slightly higher for better framing
-    cameraTargetY = 0.55; // Look at model center
+    scaleFactor = 1.2;    // Slightly further back to fit container
+    cameraY = 0.5;        // Normal camera height
+    cameraTargetY = 0.5;  // Look at center of model
     cameraOffsetX = 0;    // Center horizontally
   } else if (width >= 1400) {
     scaleFactor = 0.9;
