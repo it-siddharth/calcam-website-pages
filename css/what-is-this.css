@@ -288,29 +288,30 @@ body:has(.what-is-this-page) {
   padding: 0;
 }
 
-/* Quote Block */
+/* Quote Block - left side, max 50% width */
 .quote-block {
   position: absolute;
   left: var(--page-padding);
   top: var(--page-padding);
-  max-width: 88%;
+  width: 50%;
+  max-width: 650px;
 }
 
 .quote-mark {
   font-family: var(--font-title);
   font-size: var(--title-size);
-  line-height: var(--title-line-height);
+  line-height: 0.8;
   letter-spacing: var(--title-letter-spacing);
   color: var(--color-bg);
   display: block;
 }
 
 .quote-mark.open {
-  margin-bottom: 0;
+  margin-bottom: 10px;
 }
 
 .quote-mark.close {
-  margin-top: 0;
+  margin-top: 10px;
 }
 
 .quote-text {
@@ -324,12 +325,13 @@ body:has(.what-is-this-page) {
   margin: 0;
 }
 
-/* Research Content */
+/* Research Content - right side */
 .research-content {
   position: absolute;
-  left: 57.6%;
-  top: 56%;
-  width: 34.7%;
+  right: var(--page-padding);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 35%;
   max-width: 500px;
 }
 
@@ -339,7 +341,7 @@ body:has(.what-is-this-page) {
   font-weight: 700;
   line-height: var(--body-line-height);
   color: var(--color-bg);
-  margin: 0 0 1em 0;
+  margin: 0 0 1.5em 0;
 }
 
 .research-content p:last-child {
@@ -430,20 +432,25 @@ body:has(.what-is-this-page) {
   .fold-quote {
     padding: 60px 25px;
     min-height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
   }
   
   .quote-block {
     position: relative;
     left: auto;
     top: auto;
+    width: 100%;
     max-width: 100%;
     margin-bottom: 40px;
   }
   
   .research-content {
     position: relative;
-    left: auto;
+    right: auto;
     top: auto;
+    transform: none;
     width: 100%;
     max-width: 600px;
   }
@@ -513,6 +520,30 @@ body:has(.what-is-this-page) {
   }
   
   .fold-backstory .text-block {
+    font-size: var(--body-size);
+    line-height: var(--body-line-height);
+  }
+  
+  /* Fold 3: Quote - Mobile */
+  .fold-quote {
+    padding: 40px var(--page-padding);
+  }
+  
+  .quote-block {
+    margin-bottom: 30px;
+  }
+  
+  .quote-mark {
+    font-size: calc(var(--title-size) * 0.6);
+    line-height: 0.8;
+  }
+  
+  .quote-text {
+    font-size: calc(var(--title-size) * 0.6);
+    line-height: 1.1;
+  }
+  
+  .research-content p {
     font-size: var(--body-size);
     line-height: var(--body-line-height);
   }
