@@ -28,8 +28,8 @@ body:has(.what-is-this-page) {
   overflow: hidden;
 }
 
-/* Fixed corner accents (viewport-level, consistent across all folds) */
-.what-is-this-page > .corner-accent {
+/* Fixed corner accents (body-level for true fixed positioning) */
+body:has(.what-is-this-page) > .corner-accent {
   position: fixed;
   width: var(--corner-size);
   height: var(--corner-size);
@@ -39,28 +39,28 @@ body:has(.what-is-this-page) {
   pointer-events: none;
 }
 
-.what-is-this-page > .corner-accent.top-left {
+body:has(.what-is-this-page) > .corner-accent.top-left {
   top: 0;
   left: 0;
 }
 
-.what-is-this-page > .corner-accent.top-right {
+body:has(.what-is-this-page) > .corner-accent.top-right {
   top: 0;
   right: 0;
 }
 
-.what-is-this-page > .corner-accent.bottom-left {
+body:has(.what-is-this-page) > .corner-accent.bottom-left {
   bottom: 0;
   left: 0;
 }
 
-.what-is-this-page > .corner-accent.bottom-right {
+body:has(.what-is-this-page) > .corner-accent.bottom-right {
   bottom: 0;
   right: 0;
 }
 
 /* Dark squares when over light (green) background */
-.what-is-this-page.on-light-bg > .corner-accent {
+body.on-light-bg > .corner-accent {
   background-color: var(--color-bg);
 }
 
@@ -488,7 +488,7 @@ body:has(.what-is-this-page) {
     margin-top: 24px;
   }
   
-  .what-is-this-page > .corner-accent {
+  body:has(.what-is-this-page) > .corner-accent {
     width: var(--corner-size);
     height: var(--corner-size);
   }
