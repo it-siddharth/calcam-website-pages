@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="What Is This - Behind Calculated Camouflage Installation">
+  <meta name="theme-color" content="#000000">
+  <title>What Is This | Calculated Camouflage</title>
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="fonts/403-super-vega-regular.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="css/what-is-this.css" as="style">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/what-is-this.css">
+  
+  <style>
+    html, body {
+      background-color: #000000 !important;
+    }
+    .page-transition-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.3s ease-out;
+      pointer-events: none;
+    }
+    .page-transition-overlay.hidden {
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Page Transition Overlay -->
+  <div class="page-transition-overlay"></div>
+
+  <!-- Main Content Container -->
+  <main class="what-is-this-page">
+    
+    <!-- Fold 1: Hero -->
+    <section class="fold fold-hero">
+      <!-- Corner Accents -->
+      <div class="corner-accent top-left"></div>
+      <div class="corner-accent top-right"></div>
+      <div class="corner-accent bottom-left"></div>
+      <div class="corner-accent bottom-right"></div>
+      
+      <!-- Left Content -->
+      <div class="left-content">
+        <!-- Title -->
+        <h1 class="page-title">THE WHAT &<br>THE HOW</h1>
+        
+        <!-- Specs List -->
+        <div class="specs-list">
+          <p>1 17ft by 15 ft room.</p>
+          <p>2 projectors.</p>
+          <p>3 cameras.</p>
+          <p>1 55 inch TV.</p>
+          <p>2 speakers.</p>
+          <p>4 mid air hanging acrylic sheets.</p>
+          <p>3 days to install.</p>
+          <p class="emphasis">& me.</p>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="nav-section">
+          <div class="cta-block">
+            <p class="cta-text">Curious? See the 3d installation for yourself</p>
+            <div class="cta-row">
+              <span class="cta-arrow">↳</span>
+              <a href="installation.html" class="btn btn-primary">
+                <span class="btn-text">EXPERIENCE IT YOURSELF</span>
+                <span class="btn-arrow"> →</span>
+              </a>
+            </div>
+          </div>
+          
+          <div class="nav-links">
+            <a href="what-is-this.html" class="btn btn-secondary active">
+              <span class="btn-text">what is this</span>
+              <span class="btn-arrow"> →</span>
+            </a>
+            <a href="journal.html" class="btn btn-secondary">
+              <span class="btn-text">viewer journal</span>
+              <span class="btn-arrow"> →</span>
+            </a>
+            <a href="gallery.html" class="btn btn-secondary">
+              <span class="btn-text">gallery</span>
+              <span class="btn-arrow"> →</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Hero Image -->
+      <div class="hero-image">
+        <img src="assets/IMG_6459 1.png" alt="Installation setup">
+      </div>
+    </section>
+    
+  </main>
+
+  <!-- Fade out page transition overlay -->
+  <script>
+    window.addEventListener('load', function() {
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          var overlay = document.querySelector('.page-transition-overlay');
+          if (overlay) {
+            overlay.classList.add('hidden');
+            overlay.addEventListener('transitionend', function() {
+              overlay.remove();
+            }, { once: true });
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
