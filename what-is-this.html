@@ -167,6 +167,35 @@
         });
       });
     });
+
+    // Corner accent color switching based on background
+    (function() {
+      const page = document.querySelector('.what-is-this-page');
+      const lightBgFolds = document.querySelectorAll('.fold-backstory, .fold-quote');
+      
+      function checkBackground() {
+        const viewportCenter = window.innerHeight / 2;
+        let onLightBg = false;
+        
+        lightBgFolds.forEach(fold => {
+          const rect = fold.getBoundingClientRect();
+          // Check if fold covers the center of viewport
+          if (rect.top < viewportCenter && rect.bottom > viewportCenter) {
+            onLightBg = true;
+          }
+        });
+        
+        if (onLightBg) {
+          page.classList.add('on-light-bg');
+        } else {
+          page.classList.remove('on-light-bg');
+        }
+      }
+      
+      window.addEventListener('scroll', checkBackground, { passive: true });
+      window.addEventListener('resize', checkBackground, { passive: true });
+      checkBackground(); // Initial check
+    })();
   </script>
 </body>
 </html>

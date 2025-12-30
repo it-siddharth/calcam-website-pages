@@ -31,10 +31,12 @@ body:has(.what-is-this-page) {
 /* Fixed corner accents (viewport-level, consistent across all folds) */
 .what-is-this-page > .corner-accent {
   position: fixed;
-  width: 25px;
-  height: 25px;
+  width: var(--corner-size);
+  height: var(--corner-size);
   background-color: var(--color-text);
-  z-index: 100;
+  z-index: 1000;
+  transition: background-color 0.3s ease;
+  pointer-events: none;
 }
 
 .what-is-this-page > .corner-accent.top-left {
@@ -55,6 +57,11 @@ body:has(.what-is-this-page) {
 .what-is-this-page > .corner-accent.bottom-right {
   bottom: 0;
   right: 0;
+}
+
+/* Dark squares when over light (green) background */
+.what-is-this-page.on-light-bg > .corner-accent {
+  background-color: var(--color-bg);
 }
 
 /* Back Button */
