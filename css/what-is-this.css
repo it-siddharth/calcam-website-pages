@@ -127,7 +127,11 @@ body:has(.what-is-this-page) {
   letter-spacing: var(--title-letter-spacing);
   color: var(--color-text);
   margin: 0;
-  max-width: 55%;
+}
+
+.page-title span {
+  display: block;
+  white-space: nowrap;
 }
 
 /* Specs List - positioned below title */
