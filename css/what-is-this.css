@@ -58,43 +58,47 @@ body:has(.what-is-this-page) {
 
 /* ============================================
    Fold 1: Hero
+   Figma: 1440x1024 viewport
    ============================================ */
 .fold-hero {
   position: relative;
-  padding: 35px 30px 30px;
+  padding: 0;
 }
 
-/* Left Content Area */
+/* Left Content Area - just a wrapper, doesn't affect positioning */
 .fold-hero .left-content {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 65px);
-  height: calc(100dvh - 65px);
-  max-width: 550px;
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
 }
 
-/* Page Title */
+/* Page Title - Figma: left:30px, top:35px */
 .page-title {
+  position: absolute;
+  left: 30px;
+  top: 35px;
   font-family: var(--font-title);
-  font-size: clamp(48px, 6.7vw, 97px);
+  font-size: clamp(48px, 6.74vw, 97px); /* 97/1440 = 6.74% */
   font-weight: normal;
   line-height: 1;
   letter-spacing: -0.03em;
   color: var(--color-text);
   margin: 0;
+  width: 38%; /* 549/1440 = 38% */
 }
 
-/* Specs List - vertically centered in the middle area */
+/* Specs List - Figma: left:30px, top:397px (39% of 1024), translateY(-50%) */
 .specs-list {
   position: absolute;
   left: 30px;
-  top: 40%;
+  top: 39%;
   transform: translateY(-50%);
   font-family: var(--font-body);
-  font-size: clamp(16px, 1.5vw, 22px);
+  font-size: clamp(16px, 1.53vw, 22px); /* 22/1440 = 1.53% */
   font-weight: 700;
-  line-height: 1.64;
+  line-height: 1.64; /* 36/22 = 1.64 */
   color: var(--color-text);
+  width: 33%; /* 472/1440 = 33% */
   max-width: 472px;
 }
 
@@ -106,13 +110,15 @@ body:has(.what-is-this-page) {
   margin-top: 0.5em;
 }
 
-/* Hero Image - Positioned based on Figma: left ~63%, vertically centered */
+/* Hero Image - Figma: left:915px (63.5%), top:331px (32%), 466x638 */
 .hero-image {
   position: absolute;
-  right: 30px;
-  top: 33%;
-  width: clamp(280px, 32vw, 466px);
-  height: clamp(350px, 63vh, 638px);
+  left: 63.5%;
+  top: 32%;
+  width: 32.4%; /* 466/1440 = 32.4% */
+  max-width: 466px;
+  height: 62.3%; /* 638/1024 = 62.3% */
+  max-height: 638px;
   overflow: hidden;
 }
 
@@ -124,7 +130,7 @@ body:has(.what-is-this-page) {
   margin-top: -15%;
 }
 
-/* Navigation Section - Fixed at bottom left */
+/* Navigation Section - Figma: left:32px, top:865px (84.5%) */
 .nav-section {
   position: absolute;
   left: 32px;
@@ -132,7 +138,8 @@ body:has(.what-is-this-page) {
   display: flex;
   flex-direction: column;
   gap: 22px;
-  max-width: 355px;
+  width: auto;
+  max-width: 450px;
 }
 
 .cta-block {
@@ -143,11 +150,12 @@ body:has(.what-is-this-page) {
 
 .cta-text {
   font-family: var(--font-body);
-  font-size: clamp(14px, 1.4vw, 20px);
+  font-size: clamp(14px, 1.39vw, 20px); /* 20/1440 = 1.39% */
   font-weight: 700;
   line-height: 1.3;
   color: var(--color-text);
   margin: 0;
+  white-space: nowrap;
 }
 
 .cta-row {
@@ -158,7 +166,7 @@ body:has(.what-is-this-page) {
 
 .cta-arrow {
   font-family: var(--font-body);
-  font-size: clamp(14px, 1.4vw, 20px);
+  font-size: clamp(14px, 1.39vw, 20px);
   font-weight: 700;
   line-height: 1.3;
   color: var(--color-text);
@@ -219,7 +227,7 @@ body:has(.what-is-this-page) {
 }
 
 /* ============================================
-   Responsive - Tablet
+   Responsive - Tablet (stack layout)
    ============================================ */
 @media screen and (max-width: 1024px) {
   .fold-hero {
@@ -227,8 +235,18 @@ body:has(.what-is-this-page) {
   }
   
   .fold-hero .left-content {
-    max-width: 100%;
+    position: relative;
     height: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .page-title {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    max-width: 450px;
   }
   
   .specs-list {
@@ -236,25 +254,30 @@ body:has(.what-is-this-page) {
     left: auto;
     top: auto;
     transform: none;
+    width: 100%;
+    max-width: 472px;
     margin: 40px 0;
   }
   
   .hero-image {
     position: relative;
-    right: auto;
+    left: auto;
     top: auto;
     width: 100%;
     max-width: 500px;
-    height: clamp(300px, 50vw, 450px);
-    margin: 30px 0;
+    height: auto;
+    aspect-ratio: 466 / 638;
+    margin: 20px 0;
   }
   
   .nav-section {
     position: relative;
     left: auto;
-    bottom: auto;
-    margin-top: 30px;
+    top: auto;
+    transform: none;
+    width: 100%;
     max-width: 100%;
+    margin-top: 30px;
   }
 }
 
@@ -264,11 +287,10 @@ body:has(.what-is-this-page) {
 @media screen and (max-width: 768px) {
   .fold {
     min-height: auto;
-    padding-bottom: 40px;
   }
   
   .fold-hero {
-    padding: 25px 20px;
+    padding: 25px 20px 40px;
   }
   
   .page-title {
@@ -282,13 +304,12 @@ body:has(.what-is-this-page) {
   }
   
   .hero-image {
-    height: clamp(250px, 60vw, 350px);
-    margin: 20px 0;
+    max-width: 100%;
   }
   
   .nav-section {
     gap: 16px;
-    margin-top: 20px;
+    margin-top: 24px;
   }
   
   .cta-text {
@@ -322,7 +343,7 @@ body:has(.what-is-this-page) {
    ============================================ */
 @media screen and (max-width: 480px) {
   .fold-hero {
-    padding: 20px 15px;
+    padding: 20px 15px 40px;
   }
   
   .page-title {
@@ -331,10 +352,6 @@ body:has(.what-is-this-page) {
   
   .specs-list {
     font-size: 14px;
-  }
-  
-  .hero-image {
-    height: 250px;
   }
   
   .nav-links {
