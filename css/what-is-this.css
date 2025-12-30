@@ -268,6 +268,74 @@ body:has(.what-is-this-page) {
 }
 
 /* ============================================
+   Fold 3: Quote
+   Figma: Green background #18ff0d, black text
+   ============================================ */
+.fold-quote {
+  background-color: var(--color-acrylic-green);
+  position: relative;
+  padding: 0;
+}
+
+/* Quote Block */
+.quote-block {
+  position: absolute;
+  left: var(--page-padding);
+  top: var(--page-padding);
+  max-width: 88%;
+}
+
+.quote-mark {
+  font-family: var(--font-title);
+  font-size: var(--title-size);
+  line-height: var(--title-line-height);
+  letter-spacing: var(--title-letter-spacing);
+  color: var(--color-bg);
+  display: block;
+}
+
+.quote-mark.open {
+  margin-bottom: 0;
+}
+
+.quote-mark.close {
+  margin-top: 0;
+}
+
+.quote-text {
+  font-family: var(--font-title);
+  font-size: var(--title-size);
+  font-weight: normal;
+  line-height: var(--title-line-height);
+  letter-spacing: var(--title-letter-spacing);
+  font-style: italic;
+  color: var(--color-bg);
+  margin: 0;
+}
+
+/* Research Content */
+.research-content {
+  position: absolute;
+  left: 57.6%;
+  top: 56%;
+  width: 34.7%;
+  max-width: 500px;
+}
+
+.research-content p {
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  font-weight: 700;
+  line-height: var(--body-line-height);
+  color: var(--color-bg);
+  margin: 0 0 1em 0;
+}
+
+.research-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================
    Responsive - Tablet (stack layout)
    ============================================ */
 @media screen and (max-width: 1024px) {
@@ -345,6 +413,28 @@ body:has(.what-is-this-page) {
     max-width: 600px;
     height: auto;
     gap: 30px;
+  }
+  
+  /* Fold 3: Quote - Tablet */
+  .fold-quote {
+    padding: 60px 25px;
+    min-height: auto;
+  }
+  
+  .quote-block {
+    position: relative;
+    left: auto;
+    top: auto;
+    max-width: 100%;
+    margin-bottom: 40px;
+  }
+  
+  .research-content {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    max-width: 600px;
   }
 }
 
