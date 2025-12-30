@@ -874,13 +874,13 @@ body:not(.cinematic-intro) .skip-hint {
     --title-letter-spacing: -2px;
     
     --body-size: 14px;
-    --body-line-height: 18px;
+    --body-line-height: 20px;
     
     --label-size: 12px;
     --arrow-size: 14px;
     
-    --page-padding: 16px;
-    --corner-size: 10px;
+    --page-padding: 20px;
+    --corner-size: 15px;
   }
   
   /* Hide keyboard controls hint on mobile */
@@ -896,6 +896,7 @@ body:not(.cinematic-intro) .skip-hint {
   
   .installation-overlay {
     padding: var(--page-padding);
+    padding-top: 25px;
     padding-bottom: 24px;
   }
   
@@ -1000,6 +1001,22 @@ body:not(.cinematic-intro) .skip-hint {
     
     --body-size: 13px;
     --body-line-height: 17px;
+  }
+  
+  .nav-links {
+    gap: 6px;
+  }
+  
+  .btn {
+    padding: 5px 10px;
+  }
+  
+  .btn-text {
+    font-size: 11px;
+  }
+  
+  .btn-arrow {
+    font-size: 13px;
   }
   
   .nav-links {

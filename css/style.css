@@ -594,15 +594,18 @@ body {
    ============================================ */
 @media screen and (max-width: 768px) {
   :root {
-    --title-size: 42px;
-    --title-line-height: 44px;
-    --title-letter-spacing: -1.2px;
+    --title-size: 56px;
+    --title-line-height: 52px;
+    --title-letter-spacing: -2px;
     
-    --body-size: 16px;
+    --body-size: 14px;
     --body-line-height: 20px;
     
-    --page-padding: 16px;
-    --corner-size: 10px;
+    --label-size: 12px;
+    --arrow-size: 14px;
+    
+    --page-padding: 20px;
+    --corner-size: 15px;
   }
   
   /* Keep viewport fixed - no scroll */
@@ -631,7 +634,7 @@ body {
     max-width: none !important;
     min-width: 0 !important;
     padding: var(--page-padding) !important;
-    padding-top: 20px !important;
+    padding-top: 25px !important;
     padding-bottom: 15px !important;
     height: auto !important;
     flex-shrink: 0 !important;
@@ -756,8 +759,12 @@ body {
 /* Extra small screens */
 @media screen and (max-width: 390px) {
   :root {
-    --title-size: 38px;
-    --title-line-height: 40px;
+    --title-size: 48px;
+    --title-line-height: 44px;
+    --title-letter-spacing: -1.5px;
+    
+    --body-size: 13px;
+    --body-line-height: 17px;
   }
   
   .meta-info {

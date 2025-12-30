@@ -1,0 +1,1133 @@
+/* ============================================
+   Process Page - Pixel-Perfect Figma Match
+   ============================================ */
+
+/* Enable scrolling on process page */
+html:has(.process-page),
+body:has(.process-page) {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: auto;
+}
+
+.process-page {
+  width: 1440px;
+  max-width: 100%;
+  margin: 0 auto;
+  background-color: var(--color-bg);
+  position: relative;
+}
+
+/* ============================================
+   Section Base Styles
+   ============================================ */
+.section {
+  position: relative;
+  width: 100%;
+}
+
+/* Corner accents for each section */
+.section .corner-accent {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  background-color: var(--color-text);
+  z-index: 10;
+}
+
+.section .corner-accent.top-left {
+  top: 0;
+  left: 0;
+}
+
+.section .corner-accent.top-right {
+  top: 0;
+  right: 0;
+}
+
+.section .corner-accent.bottom-left {
+  bottom: 0;
+  left: 0;
+}
+
+.section .corner-accent.bottom-right {
+  bottom: 0;
+  right: 0;
+}
+
+/* ============================================
+   Section 1: Hero (0-999px)
+   ============================================ */
+.section-hero {
+  height: 999px;
+  position: relative;
+}
+
+/* Page Title - exact Figma: 97.02px, line-height 97px, letter-spacing -2.91px */
+.page-title {
+  position: absolute;
+  left: 30px;
+  top: 35px;
+  width: 549px;
+  font-family: var(--font-title);
+  font-size: 97.02px;
+  font-weight: normal;
+  line-height: 97px;
+  letter-spacing: -2.9106px;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Specs List - Figma: 22px, line-height 36px */
+.specs-list {
+  position: absolute;
+  left: 30px;
+  top: 397px;
+  transform: translateY(-50%);
+  width: 472px;
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 36px;
+  color: var(--color-text);
+}
+
+.specs-list p {
+  margin: 0;
+}
+
+.specs-list .emphasis {
+  margin-top: 0;
+}
+
+/* Hero Image - Figma: 466x638 at left:949px, top:35px */
+.hero-image {
+  position: absolute;
+  left: 949px;
+  top: 35px;
+  width: 466px;
+  height: 638px;
+  overflow: hidden;
+}
+
+.hero-image img {
+  width: 100%;
+  height: 130%;
+  object-fit: cover;
+  object-position: center top;
+  margin-top: -15%;
+}
+
+/* Navigation Section - Figma: left:32px, top:865px */
+.nav-section {
+  position: absolute;
+  left: 32px;
+  top: 865px;
+  width: 355px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.cta-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* CTA Text - Figma: Nanum Myeongjo Bold 20px */
+.cta-text {
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.cta-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.cta-arrow {
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--color-text);
+}
+
+/* Buttons - Figma: JetBrains Mono Medium 14px + Alegreya Italic 18px */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 30px;
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 0.8;
+}
+
+.btn-text {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.btn-arrow {
+  font-family: var(--font-arrow);
+  font-size: 18px;
+  font-style: italic;
+  font-weight: normal;
+  line-height: 21.6px;
+}
+
+.btn-primary {
+  background-color: var(--color-text);
+  color: var(--color-bg);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+}
+
+.nav-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   Section 2: Back Story (999-2020px)
+   Height: 1021px
+   ============================================ */
+.section-backstory {
+  height: 1021px;
+  position: relative;
+}
+
+/* Section Title - Figma: 57.02px, line-height 97px, letter-spacing -1.71px */
+.section-title {
+  font-family: var(--font-title);
+  font-size: 57.02px;
+  font-weight: normal;
+  line-height: 97px;
+  letter-spacing: -1.7106px;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Back story title position: left:72px, top:1334px (relative: 335px) */
+.section-backstory .section-title {
+  position: absolute;
+  left: 72px;
+  top: 335px;
+}
+
+/* Center column - Figma: left:546px, width:461px, top:1132px (relative: 133px) */
+.backstory-center {
+  position: absolute;
+  left: 546px;
+  top: 133px;
+  width: 461px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--color-text);
+}
+
+.backstory-center p {
+  margin: 0 0 26px 0;
+}
+
+.backstory-center p:last-child {
+  margin-bottom: 0;
+}
+
+/* Left column - Figma: left:73px, width:405px, top:1743px (relative: 744px, centered) */
+.backstory-left {
+  position: absolute;
+  left: 73px;
+  top: 744px;
+  transform: translateY(-50%);
+  width: 405px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--color-text);
+}
+
+.backstory-left p {
+  margin: 0 0 26px 0;
+}
+
+.backstory-left p:last-child {
+  margin-bottom: 0;
+}
+
+/* Right column - Figma: left:1049px, width:325px, top:1782px (relative: 783px, centered) */
+.backstory-right {
+  position: absolute;
+  left: 1049px;
+  top: 783px;
+  transform: translateY(-50%);
+  width: 325px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--color-text);
+}
+
+.backstory-right p {
+  margin: 0 0 26px 0;
+}
+
+.backstory-right p:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================
+   Section 3: Quote (2020-3039px)
+   Height: 1019px
+   ============================================ */
+.section-quote {
+  height: 1019px;
+  position: relative;
+}
+
+/* Quote - Figma: 57.02px, LINE-HEIGHT 67px (different!), letter-spacing -1.71px */
+/* Position: left:400px, top:2255px (relative: 235px) */
+.main-quote {
+  position: absolute;
+  left: 400px;
+  top: 235px;
+  width: 753px;
+  font-family: var(--font-title);
+  font-size: 57.02px;
+  font-weight: normal;
+  line-height: 67px;
+  letter-spacing: -1.7106px;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.main-quote p {
+  margin: 0;
+}
+
+/* ============================================
+   Section 4: The Space (3039-4146px)
+   Height: 1107px
+   ============================================ */
+.section-space {
+  height: 1107px;
+  position: relative;
+}
+
+/* Title: left:73px, top:3207px (relative: 168px) */
+.section-space .section-title {
+  position: absolute;
+  left: 73px;
+  top: 168px;
+}
+
+/* Text - Figma: left:73px, width:450px, top:3889px (relative: 850px, centered) */
+.space-text {
+  position: absolute;
+  left: 73px;
+  top: 850px;
+  transform: translateY(-50%);
+  width: 450px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--color-text);
+}
+
+.space-text p {
+  margin: 0 0 26px 0;
+}
+
+.space-text p:last-child {
+  margin-bottom: 0;
+}
+
+/* Hallway image - Figma: left:1013px, top:3207px (relative: 168px), 357x474 */
+.space-image {
+  position: absolute;
+  left: 1013px;
+  top: 168px;
+  width: 357px;
+  height: 474px;
+  overflow: hidden;
+}
+
+.space-image img {
+  width: 100%;
+  height: 134%;
+  object-fit: cover;
+  object-position: center;
+  margin-top: -17%;
+}
+
+/* ============================================
+   Section 5: Space Video (4146-5079px)
+   Height: 933px
+   ============================================ */
+.section-space-video {
+  height: 933px;
+  position: relative;
+}
+
+/* Video placeholder - Figma: left:73px, top:4299px (relative: 153px), 929x753 */
+.video-placeholder {
+  position: absolute;
+  left: 73px;
+  top: 153px;
+  width: 929px;
+  height: 753px;
+  background-color: rgba(196, 188, 174, 0.2);
+  overflow: hidden;
+}
+
+.video-placeholder video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Description - Figma: left:1049px, width:341px, top:4883px (relative: 737px, centered) */
+.space-description {
+  position: absolute;
+  left: 1049px;
+  top: 737px;
+  transform: translateY(-50%);
+  width: 341px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--color-text);
+}
+
+.space-description p {
+  margin: 0 0 26px 0;
+}
+
+.space-description p:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================
+   Section 6: Centrepiece (5079-6012px)
+   Height: 933px
+   ============================================ */
+.section-centrepiece {
+  height: 933px;
+  position: relative;
+}
+
+/* Title: left:73px, top:5212px (relative: 133px) */
+.section-centrepiece .section-title {
+  position: absolute;
+  left: 73px;
+  top: 133px;
+}
+
+/* Left text 1 - Figma: left:73px, width:341px, top:5680px (relative: 601px, centered) */
+.centrepiece-text-left {
+  position: absolute;
+  left: 73px;
+  top: 601px;
+  transform: translateY(-50%);
+  width: 341px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--color-text);
+}
+
+.centrepiece-text-left p {
+  margin: 0;
+}
+
+/* Left text 2 - Figma: left:73px, width:341px, top:5849px (relative: 770px, centered) */
+.centrepiece-text-left-2 {
+  position: absolute;
+  left: 73px;
+  top: 770px;
+  transform: translateY(-50%);
+  width: 341px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--color-text);
+}
+
+.centrepiece-text-left-2 p {
+  margin: 0 0 26px 0;
+}
+
+.centrepiece-text-left-2 p:last-child {
+  margin-bottom: 0;
+}
+
+/* Centrepiece Visual Container */
+.centrepiece-visual {
+  position: absolute;
+  left: 731px;
+  top: 184px;
+  width: 505px;
+  height: 605px;
+}
+
+/* Color blocks - Figma: 231x293px, mix-blend-mode: lighten */
+.color-block {
+  position: absolute;
+  width: 231.067px;
+  height: 293.112px;
+  mix-blend-mode: lighten;
+}
+
+/* Yellow - left:731px, top:5299px (relative positions) */
+.color-block.yellow {
+  background-color: #FDFF00;
+  left: 0;
+  top: 36.37px;
+}
+
+/* Red - left:759px, top:5575px */
+.color-block.red {
+  background-color: #FF0505;
+  left: 27.82px;
+  top: 312.37px;
+}
+
+/* Green - left:977px, top:5263px */
+.color-block.green {
+  background-color: #11FF00;
+  left: 246.04px;
+  top: 0;
+}
+
+/* Blue - left:1005px, top:5539px */
+.color-block.blue {
+  background-color: #2600FF;
+  left: 273.86px;
+  top: 276px;
+}
+
+/* TV Frame - Figma: 352x496px with white border */
+.tv-frame {
+  position: absolute;
+  left: 76.25px;
+  top: 85.63px;
+  width: 351.735px;
+  height: 496.143px;
+  border: 1px solid var(--color-text);
+  background-color: var(--color-bg);
+  overflow: hidden;
+}
+
+.tv-frame img {
+  width: 250%;
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Tap hint - Figma: left:914px, top:5926px (relative: 847px) */
+.tap-hint {
+  position: absolute;
+  left: 914px;
+  top: 847px;
+  transform: translateY(-50%);
+  font-family: var(--font-body);
+  font-size: 23.46px;
+  font-weight: 700;
+  line-height: 30.498px;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* ============================================
+   Section 7: Setting It Up - Day 1 (6012-6944px)
+   Height: 932px
+   ============================================ */
+.section-setup {
+  height: 932px;
+  position: relative;
+}
+
+/* Title: left:73px, top:6131px (relative: 119px) */
+.section-setup .section-title {
+  position: absolute;
+  left: 73px;
+  top: 119px;
+}
+
+/* Timeline Item */
+.timeline-item {
+  position: absolute;
+}
+
+/* Day 1 Image - Figma: left:285px, top:6388px (relative: 376px), 371x394 */
+.day-1 .timeline-image {
+  position: absolute;
+  left: 285px;
+  top: 376px;
+  width: 371px;
+  height: 394px;
+  overflow: hidden;
+}
+
+.timeline-image img {
+  width: 138%;
+  height: 171%;
+  object-fit: cover;
+  object-position: center;
+  margin-left: -16%;
+  margin-top: -56%;
+}
+
+/* Timeline Dot - Figma: 45x45px at left:708px, top:6362px (relative: 350px) */
+.day-1 .timeline-connector {
+  position: absolute;
+  left: 708px;
+  top: 350px;
+}
+
+.timeline-dot {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: 2px solid var(--color-text);
+  background-color: transparent;
+}
+
+/* Timeline Line - connects to next section */
+.timeline-line {
+  position: absolute;
+  left: 22px;
+  top: 45px;
+  width: 1px;
+  height: 555px;
+  background-color: var(--color-text);
+}
+
+/* Day Badge - Figma: left:805px, top:6362px (relative: 350px) */
+.day-1 .day-badge {
+  position: absolute;
+  left: 805px;
+  top: 350px;
+  padding: 0 10px;
+  border: 1px solid var(--color-text);
+  border-radius: 30px;
+  font-family: var(--font-title);
+  font-size: 57.02px;
+  font-weight: normal;
+  line-height: 97px;
+  letter-spacing: -1.7106px;
+  color: var(--color-text);
+}
+
+/* Day 1 Text - Figma: left:805px, width:341px, top:6639px (relative: 627px, centered) */
+.day-1 .timeline-text {
+  position: absolute;
+  left: 805px;
+  top: 627px;
+  transform: translateY(-50%);
+  width: 341px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--color-text);
+}
+
+.timeline-text p {
+  margin: 0;
+}
+
+/* ============================================
+   Section 8: Setting It Up - Day 2 (6944-7876px)
+   Height: 932px
+   ============================================ */
+.section-setup-2 {
+  height: 932px;
+  position: relative;
+}
+
+/* Day 2 Image - Figma: left:308px, top:6948px (relative: 4px), 348x388 */
+.day-2 .timeline-image {
+  position: absolute;
+  left: 308px;
+  top: 4px;
+  width: 348px;
+  height: 388px;
+  overflow: hidden;
+}
+
+.day-2 .timeline-image img {
+  width: 136%;
+  height: 159%;
+  margin-left: -27%;
+  margin-top: -50%;
+}
+
+/* Day 2 Dot - Figma: left:708px, top:6948px (relative: 4px) */
+.day-2 .timeline-connector {
+  position: absolute;
+  left: 708px;
+  top: 4px;
+}
+
+/* Day 2 Badge - Figma: left:805px, top:6922px (relative: -22px) */
+.day-2 .day-badge {
+  position: absolute;
+  left: 805px;
+  top: -22px;
+  padding: 0 10px;
+  border: 1px solid var(--color-text);
+  border-radius: 30px;
+  font-family: var(--font-title);
+  font-size: 57.02px;
+  font-weight: normal;
+  line-height: 97px;
+  letter-spacing: -1.7106px;
+  color: var(--color-text);
+}
+
+/* Day 2 Text - Figma: left:805px, width:341px, top:7199px (relative: 255px, centered) */
+.day-2 .timeline-text {
+  position: absolute;
+  left: 805px;
+  top: 255px;
+  transform: translateY(-50%);
+  width: 341px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 26px;
+  color: var(--color-text);
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+.process-footer {
+  padding: 60px 30px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.process-footer p {
+  margin: 0;
+}
+
+/* ============================================
+   Responsive Styles
+   ============================================ */
+@media screen and (max-width: 1440px) {
+  .process-page {
+    width: 100%;
+  }
+  
+  /* Scale down for smaller screens while maintaining proportions */
+  .section-hero,
+  .section-backstory,
+  .section-quote,
+  .section-space,
+  .section-space-video,
+  .section-centrepiece,
+  .section-setup,
+  .section-setup-2 {
+    overflow-x: hidden;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  /* Adjust hero image */
+  .hero-image {
+    left: auto;
+    right: 30px;
+    width: 400px;
+    height: 550px;
+  }
+  
+  /* Adjust backstory columns */
+  .backstory-center {
+    left: 400px;
+    width: 400px;
+  }
+  
+  .backstory-right {
+    left: 850px;
+    width: 300px;
+  }
+  
+  /* Adjust space image */
+  .space-image {
+    left: auto;
+    right: 30px;
+  }
+  
+  /* Adjust centrepiece */
+  .centrepiece-visual {
+    left: 550px;
+  }
+  
+  .tap-hint {
+    left: 750px;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  /* Stack layout for tablets */
+  .section-hero {
+    height: auto;
+    min-height: 100vh;
+    padding-bottom: 150px;
+  }
+  
+  .page-title {
+    font-size: 60px;
+    line-height: 60px;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .specs-list {
+    position: relative;
+    left: 30px;
+    top: auto;
+    transform: none;
+    margin-top: 250px;
+    font-size: 18px;
+    line-height: 30px;
+  }
+  
+  .hero-image {
+    position: relative;
+    left: 30px;
+    top: auto;
+    right: auto;
+    width: calc(100% - 60px);
+    height: 400px;
+    margin-top: 40px;
+  }
+  
+  .nav-section {
+    position: relative;
+    left: 30px;
+    top: auto;
+    margin-top: 40px;
+  }
+  
+  /* Backstory section */
+  .section-backstory {
+    height: auto;
+    padding: 60px 30px;
+  }
+  
+  .section-backstory .section-title {
+    position: relative;
+    left: 0;
+    top: 0;
+  }
+  
+  .backstory-center,
+  .backstory-left,
+  .backstory-right {
+    position: relative;
+    left: 0;
+    top: auto;
+    transform: none;
+    width: 100%;
+    max-width: 600px;
+    margin-top: 40px;
+  }
+  
+  /* Quote section */
+  .section-quote {
+    height: auto;
+    padding: 80px 30px;
+  }
+  
+  .main-quote {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 100%;
+    font-size: 36px;
+    line-height: 46px;
+  }
+  
+  /* Space section */
+  .section-space {
+    height: auto;
+    padding: 60px 30px;
+  }
+  
+  .section-space .section-title {
+    position: relative;
+    left: 0;
+    top: 0;
+  }
+  
+  .space-text {
+    position: relative;
+    left: 0;
+    top: auto;
+    transform: none;
+    width: 100%;
+    max-width: 600px;
+    margin-top: 40px;
+  }
+  
+  .space-image {
+    position: relative;
+    left: 0;
+    top: auto;
+    width: 100%;
+    height: 400px;
+    margin-top: 40px;
+  }
+  
+  /* Space video section */
+  .section-space-video {
+    height: auto;
+    padding: 60px 30px;
+  }
+  
+  .video-placeholder {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 400px;
+  }
+  
+  .space-description {
+    position: relative;
+    left: 0;
+    top: auto;
+    transform: none;
+    width: 100%;
+    max-width: 500px;
+    margin-top: 40px;
+  }
+  
+  /* Centrepiece section */
+  .section-centrepiece {
+    height: auto;
+    padding: 60px 30px;
+  }
+  
+  .section-centrepiece .section-title {
+    position: relative;
+    left: 0;
+    top: 0;
+  }
+  
+  .centrepiece-text-left,
+  .centrepiece-text-left-2 {
+    position: relative;
+    left: 0;
+    top: auto;
+    transform: none;
+    width: 100%;
+    max-width: 500px;
+    margin-top: 30px;
+  }
+  
+  .centrepiece-visual {
+    position: relative;
+    left: 0;
+    top: auto;
+    width: 100%;
+    max-width: 450px;
+    height: 500px;
+    margin: 40px auto;
+  }
+  
+  .color-block {
+    width: 180px;
+    height: 230px;
+  }
+  
+  .tv-frame {
+    width: 280px;
+    height: 400px;
+  }
+  
+  .tap-hint {
+    position: relative;
+    left: 0;
+    top: auto;
+    transform: none;
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  /* Setup sections */
+  .section-setup,
+  .section-setup-2 {
+    height: auto;
+    padding: 60px 30px;
+  }
+  
+  .section-setup .section-title {
+    position: relative;
+    left: 0;
+    top: 0;
+  }
+  
+  .timeline-item {
+    position: relative;
+  }
+  
+  .day-1 .timeline-image,
+  .day-2 .timeline-image {
+    position: relative;
+    left: 0;
+    top: auto;
+    width: 100%;
+    max-width: 400px;
+    height: 350px;
+    margin-top: 40px;
+  }
+  
+  .day-1 .timeline-connector,
+  .day-2 .timeline-connector {
+    display: none;
+  }
+  
+  .day-1 .day-badge,
+  .day-2 .day-badge {
+    position: relative;
+    left: 0;
+    top: auto;
+    display: inline-block;
+    margin-top: 30px;
+    font-size: 36px;
+    line-height: 60px;
+  }
+  
+  .day-1 .timeline-text,
+  .day-2 .timeline-text {
+    position: relative;
+    left: 0;
+    top: auto;
+    transform: none;
+    width: 100%;
+    max-width: 500px;
+    margin-top: 20px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .page-title {
+    font-size: 48px;
+    line-height: 48px;
+    letter-spacing: -1.5px;
+  }
+  
+  .section-title {
+    font-size: 36px;
+    line-height: 48px;
+  }
+  
+  .main-quote {
+    font-size: 28px;
+    line-height: 36px;
+  }
+  
+  .day-badge {
+    font-size: 28px !important;
+    line-height: 48px !important;
+  }
+  
+  .centrepiece-visual {
+    max-width: 350px;
+    height: 400px;
+  }
+  
+  .color-block {
+    width: 140px;
+    height: 180px;
+  }
+  
+  .tv-frame {
+    left: 50px;
+    top: 60px;
+    width: 220px;
+    height: 320px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .page-title {
+    font-size: 36px;
+    line-height: 36px;
+  }
+  
+  .section-title {
+    font-size: 28px;
+    line-height: 36px;
+  }
+  
+  .main-quote {
+    font-size: 22px;
+    line-height: 30px;
+  }
+  
+  .specs-list {
+    font-size: 16px;
+    line-height: 26px;
+  }
+  
+  .nav-links {
+    flex-direction: column;
+  }
+  
+  .centrepiece-visual {
+    max-width: 300px;
+    height: 350px;
+  }
+  
+  .color-block {
+    width: 120px;
+    height: 150px;
+  }
+  
+  .tv-frame {
+    left: 40px;
+    top: 50px;
+    width: 180px;
+    height: 260px;
+  }
+}
