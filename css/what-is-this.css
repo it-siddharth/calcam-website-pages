@@ -285,16 +285,16 @@ body.on-light-bg > .corner-accent {
 .fold-quote {
   background-color: var(--color-acrylic-green);
   position: relative;
-  padding: 0;
+  padding: var(--page-padding);
+  display: grid;
+  grid-template-columns: 55% 40%;
+  gap: 5%;
+  align-items: center;
 }
 
-/* Quote Block - left side, max 50% width */
+/* Quote Block - left column */
 .quote-block {
-  position: absolute;
-  left: var(--page-padding);
-  top: var(--page-padding);
-  width: 50%;
-  max-width: 650px;
+  grid-column: 1;
 }
 
 .quote-mark {
@@ -325,14 +325,10 @@ body.on-light-bg > .corner-accent {
   margin: 0;
 }
 
-/* Research Content - right side */
+/* Research Content - right column */
 .research-content {
-  position: absolute;
-  right: var(--page-padding);
-  top: 50%;
-  transform: translateY(-50%);
-  width: 35%;
-  max-width: 500px;
+  grid-column: 2;
+  align-self: center;
 }
 
 .research-content p {
@@ -434,23 +430,14 @@ body.on-light-bg > .corner-accent {
     min-height: auto;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    gap: 40px;
   }
   
   .quote-block {
-    position: relative;
-    left: auto;
-    top: auto;
     width: 100%;
-    max-width: 100%;
-    margin-bottom: 40px;
   }
   
   .research-content {
-    position: relative;
-    right: auto;
-    top: auto;
-    transform: none;
     width: 100%;
     max-width: 600px;
   }
@@ -527,20 +514,17 @@ body.on-light-bg > .corner-accent {
   /* Fold 3: Quote - Mobile */
   .fold-quote {
     padding: 40px var(--page-padding);
-  }
-  
-  .quote-block {
-    margin-bottom: 30px;
+    gap: 30px;
   }
   
   .quote-mark {
-    font-size: calc(var(--title-size) * 0.6);
+    font-size: var(--title-size);
     line-height: 0.8;
   }
   
   .quote-text {
-    font-size: calc(var(--title-size) * 0.6);
-    line-height: 1.1;
+    font-size: var(--title-size);
+    line-height: var(--title-line-height);
   }
   
   .research-content p {
