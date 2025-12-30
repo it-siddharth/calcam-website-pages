@@ -138,7 +138,7 @@ body.on-light-bg > .corner-accent {
 .specs-list {
   position: absolute;
   left: var(--page-padding);
-  top: 35%;
+  top: 340px;
   font-family: var(--font-body);
   font-size: var(--body-size);
   font-weight: 700;
