@@ -126,7 +126,7 @@ body:has(.what-is-this-page) {
 .specs-list {
   position: absolute;
   left: var(--page-padding);
-  top: 39%;
+  top: 50%;
   transform: translateY(-50%);
   font-family: var(--font-body);
   font-size: var(--body-size);
@@ -144,15 +144,15 @@ body:has(.what-is-this-page) {
   margin-top: 0.5em;
 }
 
-/* Hero Image - Figma: left:915px (63.5%), top:331px (32%), 466x638 */
+/* Hero Image - anchored to right, 15% bigger */
 .hero-image {
   position: absolute;
-  left: 63.5%;
+  right: var(--page-padding);
   top: 32%;
-  width: 32.4%; /* 466/1440 = 32.4% */
-  max-width: 466px;
-  height: 62.3%; /* 638/1024 = 62.3% */
-  max-height: 638px;
+  width: 37%; /* ~15% bigger than 32.4% */
+  max-width: 536px; /* 466 * 1.15 = 536 */
+  height: 72%; /* ~15% bigger than 62.3% */
+  max-height: 734px; /* 638 * 1.15 = 734 */
   display: flex;
   align-items: center;
   justify-content: center;
