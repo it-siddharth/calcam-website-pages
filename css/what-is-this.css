@@ -105,28 +105,35 @@ body.on-light-bg > .corner-accent {
    ============================================ */
 .fold-hero {
   position: relative;
-  padding: 0;
+  padding: var(--page-padding);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto 1fr auto;
+  gap: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
-/* Left Content Area - just a wrapper, doesn't affect positioning */
+/* Left Content Area - contains title, specs, and nav */
 .fold-hero .left-content {
-  position: relative;
-  height: 100vh;
-  height: 100dvh;
+  grid-column: 1;
+  grid-row: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-right: 40px;
+  max-width: 550px;
 }
 
 /* Page Title - matches home page .title */
 .page-title {
-  position: absolute;
-  left: var(--page-padding);
-  top: var(--page-padding);
   font-family: var(--font-title);
   font-size: var(--title-size);
   font-weight: normal;
   line-height: var(--title-line-height);
   letter-spacing: var(--title-letter-spacing);
   color: var(--color-text);
-  margin: 0;
+  margin: 0 0 20px 0;
 }
 
 .page-title span {
@@ -136,15 +143,13 @@ body.on-light-bg > .corner-accent {
 
 /* Specs List - positioned below title */
 .specs-list {
-  position: absolute;
-  left: var(--page-padding);
-  top: 340px;
   font-family: var(--font-body);
   font-size: var(--body-size);
   font-weight: 700;
   line-height: 1.64;
   color: var(--color-text);
   max-width: 472px;
+  margin-top: 20px;
 }
 
 .specs-list p {
@@ -155,14 +160,12 @@ body.on-light-bg > .corner-accent {
   margin-top: 0.5em;
 }
 
-/* Hero Image - anchored to right with bottom padding */
+/* Hero Image - anchored to right side */
 .hero-image {
-  position: absolute;
-  right: var(--page-padding);
-  top: var(--page-padding);
-  bottom: var(--page-padding);
-  width: 37%;
-  max-width: 536px;
+  grid-column: 2;
+  grid-row: 1 / -1;
+  width: 466px;
+  max-width: 40vw;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -170,19 +173,18 @@ body.on-light-bg > .corner-accent {
 
 .hero-image img {
   width: 100%;
-  height: 100%;
+  height: auto;
+  max-height: calc(100vh - 60px);
   object-fit: contain;
   object-position: center;
 }
 
 /* Navigation Section - matches home page .cta-section */
 .nav-section {
-  position: absolute;
-  left: var(--page-padding);
-  bottom: var(--page-padding);
   display: flex;
   flex-direction: column;
   gap: 22px;
+  margin-top: auto;
 }
 
 .cta-block {
@@ -345,60 +347,160 @@ body.on-light-bg > .corner-accent {
 }
 
 /* ============================================
+   Fold 4: The Space
+   Figma: Black background, white text
+   NOT viewport-height restricted - content flows naturally
+   ============================================ */
+.fold-space {
+  background-color: var(--color-bg);
+  position: relative;
+  padding: var(--page-padding);
+  padding-top: 35px;
+  padding-bottom: 60px;
+  min-height: auto;
+  overflow: visible;
+  display: grid;
+  grid-template-columns: 40% 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: 40px;
+}
+
+/* Title - spans full width */
+.fold-space .fold-title {
+  grid-column: 1 / -1;
+  font-family: var(--font-title);
+  font-size: var(--title-size);
+  font-weight: normal;
+  line-height: var(--title-line-height);
+  letter-spacing: var(--title-letter-spacing);
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Text content - left column */
+.fold-space .space-text {
+  grid-column: 1;
+  grid-row: 2 / 4;
+  align-self: center;
+  max-width: 472px;
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  font-weight: 700;
+  line-height: 36px;
+  color: var(--color-text);
+}
+
+.fold-space .space-text p {
+  margin: 0 0 1.5em 0;
+}
+
+.fold-space .space-text p:last-child {
+  margin-bottom: 0;
+}
+
+/* 3D Room Container - right column */
+.room-3d-wrapper {
+  grid-column: 2;
+  grid-row: 2;
+  width: 100%;
+  max-width: 703px;
+  min-height: 500px;
+  position: relative;
+  justify-self: end;
+  overflow: hidden;
+}
+
+.room-3d-container {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  cursor: grab;
+}
+
+.room-3d-container:active {
+  cursor: grabbing;
+}
+
+.room-3d-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.room-3d-hint {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.room-3d-wrapper:hover .room-3d-hint {
+  opacity: 0;
+}
+
+/* Room Image - bottom right, below blueprint */
+.room-image {
+  grid-column: 2;
+  grid-row: 3;
+  justify-self: end;
+  width: 270px;
+  height: 359px;
+}
+
+.room-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ============================================
    Responsive - Tablet (stack layout)
    ============================================ */
 @media screen and (max-width: 1024px) {
   .fold-hero {
     padding: 30px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
   }
   
   .fold-hero .left-content {
-    position: relative;
-    height: auto;
-    display: flex;
-    flex-direction: column;
+    max-width: 100%;
+    padding-right: 0;
+    gap: 20px;
   }
   
   .page-title {
-    position: relative;
-    left: auto;
-    top: auto;
     width: 100%;
     max-width: 450px;
-    font-size: var(--title-size);
-    line-height: var(--title-line-height);
-    letter-spacing: var(--title-letter-spacing);
   }
   
   .specs-list {
-    position: relative;
-    left: auto;
-    top: auto;
-    transform: none;
     width: 100%;
     max-width: 472px;
-    margin: 40px 0;
-  }
-  
-  .hero-image {
-    position: relative;
-    left: auto;
-    top: auto;
-    width: 100%;
-    max-width: 500px;
-    height: auto;
-    aspect-ratio: 466 / 638;
     margin: 20px 0;
   }
   
+  .hero-image {
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 466 / 638;
+    align-self: center;
+  }
+  
   .nav-section {
-    position: relative;
-    left: auto;
-    top: auto;
-    transform: none;
     width: 100%;
     max-width: 100%;
-    margin-top: 30px;
+    margin-top: auto;
   }
   
   /* Fold 2: Backstory - Tablet */
@@ -441,6 +543,42 @@ body.on-light-bg > .corner-accent {
     width: 100%;
     max-width: 600px;
   }
+  
+  /* Fold 4: The Space - Tablet */
+  .fold-space {
+    padding: 40px 25px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .fold-space .fold-title {
+    margin-bottom: 0;
+  }
+  
+  .fold-space .space-text {
+    width: 100%;
+    max-width: 600px;
+    align-self: flex-start;
+  }
+  
+  .room-3d-wrapper {
+    width: 100%;
+    max-width: 100%;
+    min-height: 400px;
+    justify-self: stretch;
+  }
+  
+  .room-3d-container {
+    min-height: 400px;
+  }
+  
+  .room-image {
+    width: 270px;
+    height: 359px;
+    align-self: flex-end;
+    justify-self: flex-end;
+  }
 }
 
 /* ============================================
@@ -453,6 +591,19 @@ body.on-light-bg > .corner-accent {
   
   .fold-hero {
     padding: 25px var(--page-padding) 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .fold-hero .left-content {
+    order: 1;
+  }
+  
+  .hero-image {
+    order: 2;
+    max-width: 100%;
+    width: 100%;
   }
   
   .page-title {
@@ -463,16 +614,12 @@ body.on-light-bg > .corner-accent {
   .specs-list {
     font-size: var(--body-size);
     line-height: var(--body-line-height);
-    margin: 24px 0;
-  }
-  
-  .hero-image {
-    max-width: 100%;
+    margin: 16px 0;
   }
   
   .nav-section {
     gap: 10px;
-    margin-top: 24px;
+    margin-top: 20px;
   }
   
   body:has(.what-is-this-page) > .corner-accent {
@@ -530,6 +677,45 @@ body.on-light-bg > .corner-accent {
   .research-content p {
     font-size: var(--body-size);
     line-height: var(--body-line-height);
+  }
+  
+  /* Fold 4: The Space - Mobile */
+  .fold-space {
+    padding: 30px var(--page-padding) 40px;
+    gap: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .fold-space .fold-title {
+    font-size: var(--title-size);
+    line-height: var(--title-line-height);
+  }
+  
+  .fold-space .space-text {
+    font-size: var(--body-size);
+    line-height: var(--body-line-height);
+    max-width: 100%;
+  }
+  
+  .room-3d-wrapper {
+    min-height: 280px;
+    width: 100%;
+  }
+  
+  .room-3d-container {
+    min-height: 280px;
+  }
+  
+  .room-3d-hint {
+    font-size: 10px;
+    bottom: 10px;
+  }
+  
+  .room-image {
+    width: 180px;
+    height: 240px;
+    align-self: flex-end;
   }
 }
 
