@@ -82,16 +82,16 @@ class Room3D {
   }
 
   init() {
-    // Scene - dark blueprint background
+    // Scene - transparent background to float on page
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0a1628);
+    this.scene.background = null; // Transparent
 
     // Camera - positioned outside for cutaway view, looking at the installation
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 100);
     this.camera.position.set(6, 4, 8);
     this.camera.lookAt(0, 2, -3);
 
-    // Renderer
+    // Renderer with transparent background
     this.renderer = new THREE.WebGLRenderer({ 
       antialias: true,
       alpha: true 
@@ -99,6 +99,7 @@ class Room3D {
     this.renderer.setSize(this.width, this.height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.setClearColor(0x000000, 0); // Fully transparent background
     this.container.appendChild(this.renderer.domElement);
 
     // Controls - orbit around the room
@@ -117,42 +118,42 @@ class Room3D {
   createRoom() {
     const { width, height, depth } = this.CONFIG.room;
     
-    // Blueprint style - transparent walls with dotted lines
-    const blueprintMat = new THREE.MeshBasicMaterial({
-      color: 0x1a3a5c,
+    // Black transparent walls
+    const wallMat = new THREE.MeshBasicMaterial({
+      color: 0x000000,
       transparent: true,
-      opacity: 0.08,
+      opacity: 0.15,
       side: THREE.DoubleSide
     });
 
-    // Floor - very subtle
+    // Floor - subtle black
     const floorGeom = new THREE.PlaneGeometry(width, depth);
-    const floor = new THREE.Mesh(floorGeom, blueprintMat.clone());
+    const floor = new THREE.Mesh(floorGeom, wallMat.clone());
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = 0;
     this.scene.add(floor);
 
-    // Back wall - subtle fill
+    // Back wall - subtle black fill
     const backWallGeom = new THREE.PlaneGeometry(width, height);
-    const backWall = new THREE.Mesh(backWallGeom, blueprintMat.clone());
+    const backWall = new THREE.Mesh(backWallGeom, wallMat.clone());
     backWall.position.set(0, height / 2, -depth / 2);
     this.scene.add(backWall);
 
-    // Left wall - subtle fill
+    // Left wall - subtle black fill
     const leftWallGeom = new THREE.PlaneGeometry(depth, height);
-    const leftWall = new THREE.Mesh(leftWallGeom, blueprintMat.clone());
+    const leftWall = new THREE.Mesh(leftWallGeom, wallMat.clone());
     leftWall.position.set(-width / 2, height / 2, 0);
     leftWall.rotation.y = Math.PI / 2;
     this.scene.add(leftWall);
 
-    // Right wall - subtle fill
+    // Right wall - subtle black fill
     const rightWallGeom = new THREE.PlaneGeometry(depth, height);
-    const rightWall = new THREE.Mesh(rightWallGeom, blueprintMat.clone());
+    const rightWall = new THREE.Mesh(rightWallGeom, wallMat.clone());
     rightWall.position.set(width / 2, height / 2, 0);
     rightWall.rotation.y = -Math.PI / 2;
     this.scene.add(rightWall);
 
-    // Add blueprint-style dotted edges
+    // Add dotted white edges
     this.addBlueprintEdges(width, height, depth);
   }
 

@@ -407,7 +407,8 @@ body.on-light-bg > .corner-accent {
   min-height: 500px;
   position: relative;
   justify-self: end;
-  overflow: hidden;
+  overflow: visible;
+  background: transparent;
 }
 
 .room-3d-container {
