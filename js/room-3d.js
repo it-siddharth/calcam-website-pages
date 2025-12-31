@@ -521,20 +521,21 @@ class Room3D {
       const bracket = new THREE.Mesh(bracketGeom, wireframeMat.clone());
       bracket.position.set(pos.x, room.height - 0.125, pos.z);
       
-      // Light beam (subtle cone showing projection)
-      const beamGeom = new THREE.ConeGeometry(1.5, 3, 4);
+      // Light beam (cone showing projection - spans from projector to opposite wall)
+      const beamLength = room.width - 0.6; // Almost full width of room
+      const beamRadius = room.height * 0.6; // Wider to cover more wall
+      const beamGeom = new THREE.ConeGeometry(beamRadius, beamLength, 4);
       const beamMat = new THREE.MeshBasicMaterial({
         color: 0x4a90d9,
         transparent: true,
-        opacity: 0.06,
+        opacity: 0.04,
         side: THREE.DoubleSide
       });
       const beam = new THREE.Mesh(beamGeom, beamMat);
-      beam.position.set(
-        pos.rotation > 0 ? pos.x + 1.8 : pos.x - 1.8,
-        room.height - 1.5,
-        pos.z
-      );
+      // Position beam so it starts at projector and bottom aligns with floor
+      const beamCenterX = pos.rotation > 0 ? pos.x + beamLength / 2 : pos.x - beamLength / 2;
+      const beamCenterY = room.height / 2; // Center vertically so bottom reaches floor
+      beam.position.set(beamCenterX, beamCenterY, pos.z);
       beam.rotation.z = pos.rotation > 0 ? -Math.PI / 2 : Math.PI / 2;
       
       this.scene.add(body);
