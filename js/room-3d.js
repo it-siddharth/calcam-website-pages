@@ -82,9 +82,9 @@ class Room3D {
   }
 
   init() {
-    // Scene
+    // Scene - dark blueprint background
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0a0a0a);
+    this.scene.background = new THREE.Color(0x0a1628);
 
     // Camera - positioned outside for cutaway view, looking at the installation
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 0.1, 100);
@@ -117,64 +117,50 @@ class Room3D {
   createRoom() {
     const { width, height, depth } = this.CONFIG.room;
     
-    // Materials - matching installation colors (darker)
-    const wallMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(this.roomSettings.wallColor),
-      side: THREE.DoubleSide
-    });
-    
-    const backWallMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(this.roomSettings.wallColor).multiplyScalar(0.85),
-      side: THREE.DoubleSide
-    });
-    
-    const floorMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(this.roomSettings.floorColor),
+    // Blueprint style - transparent walls with dotted lines
+    const blueprintMat = new THREE.MeshBasicMaterial({
+      color: 0x1a3a5c,
+      transparent: true,
+      opacity: 0.08,
       side: THREE.DoubleSide
     });
 
-    // Floor
+    // Floor - very subtle
     const floorGeom = new THREE.PlaneGeometry(width, depth);
-    const floor = new THREE.Mesh(floorGeom, floorMat);
+    const floor = new THREE.Mesh(floorGeom, blueprintMat.clone());
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = 0;
     this.scene.add(floor);
 
-    // NO ceiling - removed for cutaway view
-
-    // Back wall (where installation is) - darker
+    // Back wall - subtle fill
     const backWallGeom = new THREE.PlaneGeometry(width, height);
-    const backWall = new THREE.Mesh(backWallGeom, backWallMat);
+    const backWall = new THREE.Mesh(backWallGeom, blueprintMat.clone());
     backWall.position.set(0, height / 2, -depth / 2);
     this.scene.add(backWall);
 
-    // Left wall - full wall (where projection goes)
+    // Left wall - subtle fill
     const leftWallGeom = new THREE.PlaneGeometry(depth, height);
-    const leftWall = new THREE.Mesh(leftWallGeom, wallMat.clone());
+    const leftWall = new THREE.Mesh(leftWallGeom, blueprintMat.clone());
     leftWall.position.set(-width / 2, height / 2, 0);
     leftWall.rotation.y = Math.PI / 2;
     this.scene.add(leftWall);
 
-    // Right wall - full wall
+    // Right wall - subtle fill
     const rightWallGeom = new THREE.PlaneGeometry(depth, height);
-    const rightWall = new THREE.Mesh(rightWallGeom, wallMat.clone());
+    const rightWall = new THREE.Mesh(rightWallGeom, blueprintMat.clone());
     rightWall.position.set(width / 2, height / 2, 0);
     rightWall.rotation.y = -Math.PI / 2;
     this.scene.add(rightWall);
 
-    // NO front wall - cutaway view to see inside
-
-    // Add subtle edge wireframe for the room
-    this.addRoomEdges(width, height, depth);
+    // Add blueprint-style dotted edges
+    this.addBlueprintEdges(width, height, depth);
   }
 
-  addRoomEdges(width, height, depth) {
-    const edgeMaterial = new THREE.LineBasicMaterial({ 
-      color: 0x666666,
-      transparent: true,
-      opacity: 0.6
-    });
-
+  addBlueprintEdges(width, height, depth) {
+    // Create dotted/dashed line material for blueprint style
+    const dashSize = 0.15;
+    const gapSize = 0.1;
+    
     const edges = [
       // Floor edges
       [[-width/2, 0, -depth/2], [width/2, 0, -depth/2]],
@@ -194,13 +180,89 @@ class Room3D {
     ];
 
     edges.forEach(edge => {
-      const geometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(...edge[0]),
-        new THREE.Vector3(...edge[1])
-      ]);
-      const line = new THREE.Line(geometry, edgeMaterial);
+      const start = new THREE.Vector3(...edge[0]);
+      const end = new THREE.Vector3(...edge[1]);
+      
+      // Create dashed line using LineDashedMaterial
+      const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+      
+      const material = new THREE.LineDashedMaterial({
+        color: 0xffffff,
+        dashSize: dashSize,
+        gapSize: gapSize,
+        transparent: true,
+        opacity: 0.7
+      });
+      
+      const line = new THREE.Line(geometry, material);
+      line.computeLineDistances(); // Required for dashed lines - call on Line, not geometry
       this.scene.add(line);
     });
+    
+    // Add wall outline rectangles with dashed lines
+    this.addWallOutlines(width, height, depth, dashSize, gapSize);
+  }
+  
+  addWallOutlines(width, height, depth, dashSize, gapSize) {
+    const material = new THREE.LineDashedMaterial({
+      color: 0xffffff,
+      dashSize: dashSize,
+      gapSize: gapSize,
+      transparent: true,
+      opacity: 0.5
+    });
+    
+    // Back wall outline
+    const backWallPoints = [
+      new THREE.Vector3(-width/2, 0, -depth/2),
+      new THREE.Vector3(width/2, 0, -depth/2),
+      new THREE.Vector3(width/2, height, -depth/2),
+      new THREE.Vector3(-width/2, height, -depth/2),
+      new THREE.Vector3(-width/2, 0, -depth/2)
+    ];
+    const backWallGeom = new THREE.BufferGeometry().setFromPoints(backWallPoints);
+    const backWallLine = new THREE.Line(backWallGeom, material.clone());
+    backWallLine.computeLineDistances();
+    this.scene.add(backWallLine);
+    
+    // Left wall outline
+    const leftWallPoints = [
+      new THREE.Vector3(-width/2, 0, -depth/2),
+      new THREE.Vector3(-width/2, 0, depth/2),
+      new THREE.Vector3(-width/2, height, depth/2),
+      new THREE.Vector3(-width/2, height, -depth/2),
+      new THREE.Vector3(-width/2, 0, -depth/2)
+    ];
+    const leftWallGeom = new THREE.BufferGeometry().setFromPoints(leftWallPoints);
+    const leftWallLine = new THREE.Line(leftWallGeom, material.clone());
+    leftWallLine.computeLineDistances();
+    this.scene.add(leftWallLine);
+    
+    // Right wall outline
+    const rightWallPoints = [
+      new THREE.Vector3(width/2, 0, -depth/2),
+      new THREE.Vector3(width/2, 0, depth/2),
+      new THREE.Vector3(width/2, height, depth/2),
+      new THREE.Vector3(width/2, height, -depth/2),
+      new THREE.Vector3(width/2, 0, -depth/2)
+    ];
+    const rightWallGeom = new THREE.BufferGeometry().setFromPoints(rightWallPoints);
+    const rightWallLine = new THREE.Line(rightWallGeom, material.clone());
+    rightWallLine.computeLineDistances();
+    this.scene.add(rightWallLine);
+    
+    // Floor outline
+    const floorPoints = [
+      new THREE.Vector3(-width/2, 0, -depth/2),
+      new THREE.Vector3(width/2, 0, -depth/2),
+      new THREE.Vector3(width/2, 0, depth/2),
+      new THREE.Vector3(-width/2, 0, depth/2),
+      new THREE.Vector3(-width/2, 0, -depth/2)
+    ];
+    const floorGeom = new THREE.BufferGeometry().setFromPoints(floorPoints);
+    const floorLine = new THREE.Line(floorGeom, material.clone());
+    floorLine.computeLineDistances();
+    this.scene.add(floorLine);
   }
 
   createInstallation() {
@@ -219,10 +281,13 @@ class Room3D {
   createTV() {
     const { tv } = this.CONFIG;
     
-    // TV frame (bezel)
+    // TV frame (bezel) - blueprint wireframe style
     const frameGeometry = new THREE.BoxGeometry(tv.width, tv.height, tv.depth);
     const frameMaterial = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(this.roomSettings.tvFrameColor)
+      color: 0xffffff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.6
     });
     const tvFrame = new THREE.Mesh(frameGeometry, frameMaterial);
     
@@ -265,15 +330,18 @@ class Room3D {
     const tvBottomY = this.roomSettings.tvHeight - tv.height / 2;
     const poleHeight = tvBottomY + room.depth / 2;
     
-    // Main pole
+    // Main pole - blueprint wireframe style
     const poleGeometry = new THREE.CylinderGeometry(
       stand.poleRadius,
       stand.poleRadius,
       poleHeight,
-      16
+      8
     );
     const poleMaterial = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(this.roomSettings.tvFrameColor)
+      color: 0xffffff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.5
     });
     const standPole = new THREE.Mesh(poleGeometry, poleMaterial);
     standPole.position.y = tvBottomY - poleHeight / 2;
@@ -369,10 +437,17 @@ class Room3D {
   }
 
   createSpeakers() {
-    const speakerColor = 0x0a0a0a;
     const speakerWidth = 0.15;
     const speakerHeight = 0.35;
     const speakerDepth = 0.12;
+    
+    // Blueprint wireframe material
+    const wireframeMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.5
+    });
     
     const positions = [
       { x: -1.2, z: -this.CONFIG.room.depth / 2 + 0.8 },
@@ -380,23 +455,20 @@ class Room3D {
     ];
     
     positions.forEach(pos => {
-      // Speaker cabinet
+      // Speaker cabinet - wireframe
       const cabinetGeom = new THREE.BoxGeometry(speakerWidth, speakerHeight, speakerDepth);
-      const cabinetMat = new THREE.MeshBasicMaterial({ color: speakerColor });
-      const cabinet = new THREE.Mesh(cabinetGeom, cabinetMat);
+      const cabinet = new THREE.Mesh(cabinetGeom, wireframeMat.clone());
       cabinet.position.set(pos.x, speakerHeight / 2, pos.z);
       
-      // Speaker cone
+      // Speaker cone - wireframe ring
       const coneRadius = 0.04;
-      const coneGeom = new THREE.CircleGeometry(coneRadius, 16);
-      const coneMat = new THREE.MeshBasicMaterial({ color: 0x151515 });
-      const cone = new THREE.Mesh(coneGeom, coneMat);
+      const coneGeom = new THREE.RingGeometry(coneRadius * 0.3, coneRadius, 16);
+      const cone = new THREE.Mesh(coneGeom, wireframeMat.clone());
       cone.position.set(pos.x, speakerHeight / 2 - 0.03, pos.z + speakerDepth / 2 + 0.001);
       
-      // Tweeter
-      const tweeterGeom = new THREE.CircleGeometry(0.015, 12);
-      const tweeterMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
-      const tweeter = new THREE.Mesh(tweeterGeom, tweeterMat);
+      // Tweeter - wireframe ring
+      const tweeterGeom = new THREE.RingGeometry(0.005, 0.015, 12);
+      const tweeter = new THREE.Mesh(tweeterGeom, wireframeMat.clone());
       tweeter.position.set(pos.x, speakerHeight / 2 + 0.08, pos.z + speakerDepth / 2 + 0.001);
       
       this.scene.add(cabinet);
@@ -407,12 +479,19 @@ class Room3D {
 
   createProjectors() {
     const { room } = this.CONFIG;
-    const projectorColor = 0x1a1a1a;
     
     // Projector dimensions (small ceiling-mounted projectors)
     const projectorWidth = 0.25;
     const projectorHeight = 0.15;
     const projectorDepth = 0.35;
+    
+    // Blueprint wireframe material
+    const wireframeMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.6
+    });
     
     // Two projectors on opposite walls, mounted near the ceiling
     const positions = [
@@ -421,17 +500,15 @@ class Room3D {
     ];
     
     positions.forEach(pos => {
-      // Projector body
+      // Projector body - wireframe
       const bodyGeom = new THREE.BoxGeometry(projectorWidth, projectorHeight, projectorDepth);
-      const bodyMat = new THREE.MeshBasicMaterial({ color: projectorColor });
-      const body = new THREE.Mesh(bodyGeom, bodyMat);
+      const body = new THREE.Mesh(bodyGeom, wireframeMat.clone());
       body.position.set(pos.x, room.height - 0.3, pos.z);
       body.rotation.y = pos.rotation;
       
-      // Projector lens (cylinder)
-      const lensGeom = new THREE.CylinderGeometry(0.04, 0.05, 0.08, 16);
-      const lensMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
-      const lens = new THREE.Mesh(lensGeom, lensMat);
+      // Projector lens (cylinder) - wireframe
+      const lensGeom = new THREE.CylinderGeometry(0.04, 0.05, 0.08, 8);
+      const lens = new THREE.Mesh(lensGeom, wireframeMat.clone());
       lens.rotation.z = Math.PI / 2;
       lens.position.set(
         pos.x + (pos.rotation > 0 ? 0.15 : -0.15),
@@ -439,18 +516,17 @@ class Room3D {
         pos.z
       );
       
-      // Mounting bracket (connects to ceiling)
+      // Mounting bracket - wireframe
       const bracketGeom = new THREE.BoxGeometry(0.08, 0.25, 0.08);
-      const bracketMat = new THREE.MeshBasicMaterial({ color: 0x222222 });
-      const bracket = new THREE.Mesh(bracketGeom, bracketMat);
+      const bracket = new THREE.Mesh(bracketGeom, wireframeMat.clone());
       bracket.position.set(pos.x, room.height - 0.125, pos.z);
       
       // Light beam (subtle cone showing projection)
       const beamGeom = new THREE.ConeGeometry(1.5, 3, 4);
       const beamMat = new THREE.MeshBasicMaterial({
-        color: 0xffffee,
+        color: 0x4a90d9,
         transparent: true,
-        opacity: 0.03,
+        opacity: 0.06,
         side: THREE.DoubleSide
       });
       const beam = new THREE.Mesh(beamGeom, beamMat);
