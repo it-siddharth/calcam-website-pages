@@ -20,6 +20,10 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/what-is-this.css">
   
+  <!-- Three.js for 3D Room -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  
   <style>
     html, body {
       background-color: #000000 !important;
@@ -149,6 +153,29 @@
         <p>For visual direction, I looked at camouflage in nature, X-rays, and thermal scans. Images where solid things become see-through, where what's hidden becomes visible. I also studied new media artists working with room-scale interactive installations since I had never built anything like this before. Their work helped me understand how to think about the viewer's body moving through a space.</p>
       </div>
     </section>
+
+    <!-- Fold 4: The Space -->
+    <section class="fold fold-space">
+      <!-- Title -->
+      <h2 class="fold-title">the space</h2>
+      
+      <!-- Left Text Content -->
+      <div class="space-text">
+        <p>Once I saw the gallery, I started planning how the experience would unfold. I wanted a central focal point at the far end of the room with body-tracking projections on both side walls. Visitors would be surrounded by responsive imagery as they moved toward the centerpiece.</p>
+        <p>I talked with my advisors about what equipment was available on campus, calculated projection sizes based on throw distances, and figured out camera placements. The technical setup started to take shape: cameras at eye level, projectors mounted to the ceiling on opposite walls.</p>
+      </div>
+      
+      <!-- 3D Room Model Container -->
+      <div class="room-3d-wrapper">
+        <div id="room-3d-container" class="room-3d-container"></div>
+        <p class="room-3d-hint">drag to rotate</p>
+      </div>
+      
+      <!-- Room Image - empty gallery before installation -->
+      <div class="room-image">
+        <img src="assets/IMG_4800.png" alt="Empty gallery room">
+      </div>
+    </section>
     
   </main>
 
@@ -196,5 +223,8 @@
       checkBackground(); // Initial check
     })();
   </script>
+  
+  <!-- 3D Room Script -->
+  <script src="js/room-3d.js"></script>
 </body>
 </html>
