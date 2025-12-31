@@ -74,6 +74,7 @@ class Room3D {
     this.createInstallation();
     this.createProjection();
     this.createSpeakers();
+    this.createProjectors();
     this.addLights();
     this.animate();
     this.handleResize();
@@ -401,6 +402,69 @@ class Room3D {
       this.scene.add(cabinet);
       this.scene.add(cone);
       this.scene.add(tweeter);
+    });
+  }
+
+  createProjectors() {
+    const { room } = this.CONFIG;
+    const projectorColor = 0x1a1a1a;
+    
+    // Projector dimensions (small ceiling-mounted projectors)
+    const projectorWidth = 0.25;
+    const projectorHeight = 0.15;
+    const projectorDepth = 0.35;
+    
+    // Two projectors on opposite walls, mounted near the ceiling
+    const positions = [
+      { x: -room.width / 2 + 0.3, z: 0, rotation: Math.PI / 2 },   // Left wall, pointing right
+      { x: room.width / 2 - 0.3, z: 0, rotation: -Math.PI / 2 }    // Right wall, pointing left
+    ];
+    
+    positions.forEach(pos => {
+      // Projector body
+      const bodyGeom = new THREE.BoxGeometry(projectorWidth, projectorHeight, projectorDepth);
+      const bodyMat = new THREE.MeshBasicMaterial({ color: projectorColor });
+      const body = new THREE.Mesh(bodyGeom, bodyMat);
+      body.position.set(pos.x, room.height - 0.3, pos.z);
+      body.rotation.y = pos.rotation;
+      
+      // Projector lens (cylinder)
+      const lensGeom = new THREE.CylinderGeometry(0.04, 0.05, 0.08, 16);
+      const lensMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
+      const lens = new THREE.Mesh(lensGeom, lensMat);
+      lens.rotation.z = Math.PI / 2;
+      lens.position.set(
+        pos.x + (pos.rotation > 0 ? 0.15 : -0.15),
+        room.height - 0.3,
+        pos.z
+      );
+      
+      // Mounting bracket (connects to ceiling)
+      const bracketGeom = new THREE.BoxGeometry(0.08, 0.25, 0.08);
+      const bracketMat = new THREE.MeshBasicMaterial({ color: 0x222222 });
+      const bracket = new THREE.Mesh(bracketGeom, bracketMat);
+      bracket.position.set(pos.x, room.height - 0.125, pos.z);
+      
+      // Light beam (subtle cone showing projection)
+      const beamGeom = new THREE.ConeGeometry(1.5, 3, 4);
+      const beamMat = new THREE.MeshBasicMaterial({
+        color: 0xffffee,
+        transparent: true,
+        opacity: 0.03,
+        side: THREE.DoubleSide
+      });
+      const beam = new THREE.Mesh(beamGeom, beamMat);
+      beam.position.set(
+        pos.rotation > 0 ? pos.x + 1.8 : pos.x - 1.8,
+        room.height - 1.5,
+        pos.z
+      );
+      beam.rotation.z = pos.rotation > 0 ? -Math.PI / 2 : Math.PI / 2;
+      
+      this.scene.add(body);
+      this.scene.add(lens);
+      this.scene.add(bracket);
+      this.scene.add(beam);
     });
   }
 
