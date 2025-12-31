@@ -485,12 +485,12 @@ class Room3D {
     const projectorHeight = 0.15;
     const projectorDepth = 0.35;
     
-    // Blueprint wireframe material
-    const wireframeMat = new THREE.MeshBasicMaterial({
+    // White wireframe material for projectors
+    const projectorMat = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       wireframe: true,
       transparent: true,
-      opacity: 0.6
+      opacity: 0.8
     });
     
     // Two projectors on opposite walls, mounted near the ceiling
@@ -500,15 +500,15 @@ class Room3D {
     ];
     
     positions.forEach(pos => {
-      // Projector body - wireframe
+      // Projector body - white wireframe
       const bodyGeom = new THREE.BoxGeometry(projectorWidth, projectorHeight, projectorDepth);
-      const body = new THREE.Mesh(bodyGeom, wireframeMat.clone());
+      const body = new THREE.Mesh(bodyGeom, projectorMat.clone());
       body.position.set(pos.x, room.height - 0.3, pos.z);
       body.rotation.y = pos.rotation;
       
-      // Projector lens (cylinder) - wireframe
+      // Projector lens (cylinder) - white wireframe
       const lensGeom = new THREE.CylinderGeometry(0.04, 0.05, 0.08, 8);
-      const lens = new THREE.Mesh(lensGeom, wireframeMat.clone());
+      const lens = new THREE.Mesh(lensGeom, projectorMat.clone());
       lens.rotation.z = Math.PI / 2;
       lens.position.set(
         pos.x + (pos.rotation > 0 ? 0.15 : -0.15),
@@ -516,32 +516,15 @@ class Room3D {
         pos.z
       );
       
-      // Mounting bracket - wireframe
+      // Mounting bracket - white wireframe
       const bracketGeom = new THREE.BoxGeometry(0.08, 0.25, 0.08);
-      const bracket = new THREE.Mesh(bracketGeom, wireframeMat.clone());
+      const bracket = new THREE.Mesh(bracketGeom, projectorMat.clone());
       bracket.position.set(pos.x, room.height - 0.125, pos.z);
-      
-      // Light beam (cone showing projection - spans from projector to opposite wall)
-      const beamLength = room.width - 0.6; // Almost full width of room
-      const beamRadius = room.height * 0.6; // Wider to cover more wall
-      const beamGeom = new THREE.ConeGeometry(beamRadius, beamLength, 4);
-      const beamMat = new THREE.MeshBasicMaterial({
-        color: 0x4a90d9,
-        transparent: true,
-        opacity: 0.04,
-        side: THREE.DoubleSide
-      });
-      const beam = new THREE.Mesh(beamGeom, beamMat);
-      // Position beam so it starts at projector and bottom aligns with floor
-      const beamCenterX = pos.rotation > 0 ? pos.x + beamLength / 2 : pos.x - beamLength / 2;
-      const beamCenterY = room.height / 2; // Center vertically so bottom reaches floor
-      beam.position.set(beamCenterX, beamCenterY, pos.z);
-      beam.rotation.z = pos.rotation > 0 ? -Math.PI / 2 : Math.PI / 2;
       
       this.scene.add(body);
       this.scene.add(lens);
       this.scene.add(bracket);
-      this.scene.add(beam);
+      // No projection beams
     });
   }
 
