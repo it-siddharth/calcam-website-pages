@@ -272,7 +272,6 @@ class Room3D {
     this.installationGroup.position.set(0, 0, -room.depth / 2 + tv.depth / 2 + 0.01);
     
     this.createTV();
-    this.createStand();
     this.createAcrylicPanels();
     
     this.scene.add(this.installationGroup);
