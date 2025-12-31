@@ -25,6 +25,13 @@ body:has(.what-is-this-page) {
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
+  overflow: visible;
+}
+
+/* Keep overflow hidden only for sections that need it */
+.fold-hero,
+.fold-backstory,
+.fold-quote {
   overflow: hidden;
 }
 
@@ -416,6 +423,7 @@ body.on-light-bg > .corner-accent {
   height: 100%;
   min-height: 500px;
   cursor: grab;
+  overflow: visible;
 }
 
 .room-3d-container:active {
@@ -426,6 +434,7 @@ body.on-light-bg > .corner-accent {
   display: block;
   width: 100% !important;
   height: 100% !important;
+  overflow: visible;
 }
 
 .room-3d-hint {
