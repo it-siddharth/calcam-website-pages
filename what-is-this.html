@@ -45,56 +45,75 @@
   <!-- Page Transition Overlay -->
   <div class="page-transition-overlay"></div>
 
-  <!-- Main Content Container -->
-  <main class="what-is-this-page">
-    <div class="what-is-this-page-inner">
+  <!-- Section 1: Hero (Full Viewport, Edge to Edge) -->
+  <section class="section-hero">
+    <!-- Corner Accents -->
+    <div class="corner-accent top-left"></div>
+    <div class="corner-accent top-right"></div>
+    <div class="corner-accent bottom-left"></div>
+    <div class="corner-accent bottom-right"></div>
     
-    <!-- Top Corner Accents -->
-    <div class="corner-accents-top">
-      <div class="corner-accent-top left"></div>
-      <div class="corner-accent-top right"></div>
-    </div>
-
-    <!-- Section 1: Hero -->
-    <section class="section section-hero">
-      <div class="hero-content">
-        <!-- Back Button -->
-        <a href="index.html" class="back-button">
-          <span class="back-arrow">←</span>
-          <span class="back-text">BACK</span>
-        </a>
+    <!-- Back Button -->
+    <a href="index.html" class="back-button">
+      <span class="back-arrow">←</span>
+      <span class="back-text">BACK</span>
+    </a>
+    
+    <div class="hero-layout">
+      <div class="hero-left">
         <h1 class="section-title">THE WHAT &<br>THE HOW</h1>
-        <p class="specs-text">1 17ft by 15 ft room. 2 projectors. 3 cameras. 1 55 inch TV. 2 speakers. 4 mid air hanging acrylic sheets. 3 days to install & me.</p>
+        
+        <div class="specs-list">
+          <p>1 17ft by 15 ft room.</p>
+          <p>2 projectors.</p>
+          <p>3 cameras.</p>
+          <p>1 55 inch TV.</p>
+          <p>2 speakers.</p>
+          <p>4 mid air hanging acrylic sheets.</p>
+          <p>3 days to install.</p>
+          <p class="specs-emphasis">& me.</p>
+        </div>
         
         <div class="cta-block">
           <p class="cta-label">Curious? See the 3d installation for yourself</p>
           <div class="cta-row">
             <span class="cta-arrow">↳</span>
-            <div class="nav-pills">
-              <a href="installation.html" class="btn btn-primary">
-                <span class="btn-text">EXPERIENCE IT YOURSELF</span>
-                <span class="btn-arrow"> →</span>
-              </a>
-              <a href="journal.html" class="btn btn-secondary">
-                <span class="btn-text">viewer journal</span>
-                <span class="btn-arrow"> →</span>
-              </a>
-              <a href="gallery.html" class="btn btn-secondary">
-                <span class="btn-text">gallery</span>
-                <span class="btn-arrow"> →</span>
-              </a>
-            </div>
+            <a href="installation.html" class="btn btn-primary">
+              <span class="btn-text">EXPERIENCE IT YOURSELF</span>
+              <span class="btn-arrow">→</span>
+            </a>
+          </div>
+          <div class="nav-pills">
+            <a href="#backstory" class="btn btn-secondary">
+              <span class="btn-text">process</span>
+              <span class="btn-arrow">→</span>
+            </a>
+            <a href="journal.html" class="btn btn-secondary">
+              <span class="btn-text">viewer journal</span>
+              <span class="btn-arrow">→</span>
+            </a>
+            <a href="gallery.html" class="btn btn-secondary">
+              <span class="btn-text">gallery</span>
+              <span class="btn-arrow">→</span>
+            </a>
           </div>
         </div>
       </div>
       
-      <div class="hero-image">
-        <img src="assets/IMG_6327.png" alt="Installation setup - behind the scenes">
+      <div class="hero-right">
+        <div class="hero-image">
+          <img src="assets/IMG_6327.png" alt="Installation setup - behind the scenes">
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
+
+  <!-- Main Content Container -->
+  <main class="what-is-this-page">
+    <div class="what-is-this-page-inner">
 
     <!-- Section 2: Backstory -->
-    <section class="section section-backstory">
+    <section id="backstory" class="section section-backstory">
       <h2 class="section-title">backstory</h2>
       <div class="backstory-text">
         <p>This project was my thesis for a graphic design MFA. We had four months to pick a personal topic, research it, build it, and install it.</p>
