@@ -20,10 +20,6 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/what-is-this.css">
   
-  <!-- Three.js for 3D Room -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  
   <style>
     html, body {
       background-color: #000000 !important;
@@ -49,134 +45,153 @@
   <!-- Page Transition Overlay -->
   <div class="page-transition-overlay"></div>
 
-  <!-- Fixed Corner Accents (viewport-level, outside main for true fixed positioning) -->
-  <div class="corner-accent top-left"></div>
-  <div class="corner-accent top-right"></div>
-  <div class="corner-accent bottom-left"></div>
-  <div class="corner-accent bottom-right"></div>
-
-  <!-- Back Button (fixed, outside main) -->
-  <a href="index.html" class="back-button">
-    <span class="back-arrow">←</span>
-    <span class="back-text">BACK</span>
-  </a>
-
   <!-- Main Content Container -->
   <main class="what-is-this-page">
+    <div class="what-is-this-page-inner">
+    
+    <!-- Top Corner Accents -->
+    <div class="corner-accents-top">
+      <div class="corner-accent-top left"></div>
+      <div class="corner-accent-top right"></div>
+    </div>
 
-    <!-- Fold 1: Hero -->
-    <section class="fold fold-hero">
-      <!-- Left Content -->
-      <div class="left-content">
-      <!-- Title -->
-      <h1 class="page-title"><span>THE WHAT &</span><br><span>THE HOW</span></h1>
-      
-      <!-- Specs List -->
-      <div class="specs-list">
-        <p>1 17ft by 15 ft room.</p>
-        <p>2 projectors.</p>
-        <p>3 cameras.</p>
-        <p>1 55 inch TV.</p>
-        <p>2 speakers.</p>
-        <p>4 mid air hanging acrylic sheets.</p>
-        <p>3 days to install.</p>
-        <p class="emphasis">& me.</p>
-      </div>
-      
-      <!-- Navigation -->
-      <div class="nav-section">
+    <!-- Section 1: Hero -->
+    <section class="section section-hero">
+      <div class="hero-content">
+        <h1 class="section-title">THE WHAT &<br>THE HOW</h1>
+        <p class="specs-text">1 17ft by 15 ft room. 2 projectors. 3 cameras. 1 55 inch TV. 2 speakers. 4 mid air hanging acrylic sheets. 3 days to install & me.</p>
+        
         <div class="cta-block">
-          <p class="cta-text">Curious? See the 3d installation for yourself</p>
+          <p class="cta-label">Curious? See the 3d installation for yourself</p>
           <div class="cta-row">
             <span class="cta-arrow">↳</span>
-            <a href="installation.html" class="btn btn-primary">
-              <span class="btn-text">EXPERIENCE IT YOURSELF</span>
-              <span class="btn-arrow"> →</span>
-            </a>
+            <div class="nav-pills">
+              <a href="installation.html" class="btn btn-primary">
+                <span class="btn-text">EXPERIENCE IT YOURSELF</span>
+                <span class="btn-arrow"> →</span>
+              </a>
+              <a href="journal.html" class="btn btn-secondary">
+                <span class="btn-text">viewer journal</span>
+                <span class="btn-arrow"> →</span>
+              </a>
+              <a href="gallery.html" class="btn btn-secondary">
+                <span class="btn-text">gallery</span>
+                <span class="btn-arrow"> →</span>
+              </a>
+            </div>
           </div>
         </div>
-        
-        <div class="nav-links">
-            <a href="what-is-this.html" class="btn btn-secondary active">
-              <span class="btn-text">what is this</span>
-            <span class="btn-arrow"> →</span>
-          </a>
-          <a href="journal.html" class="btn btn-secondary">
-            <span class="btn-text">viewer journal</span>
-            <span class="btn-arrow"> →</span>
-          </a>
-          <a href="gallery.html" class="btn btn-secondary">
-            <span class="btn-text">gallery</span>
-            <span class="btn-arrow"> →</span>
-          </a>
-        </div>
-      </div>
       </div>
       
-      <!-- Hero Image -->
       <div class="hero-image">
         <img src="assets/IMG_6327.png" alt="Installation setup - behind the scenes">
       </div>
     </section>
-    
-    <!-- Fold 2: Backstory -->
-    <section class="fold fold-backstory">
-      <!-- Title -->
-      <h2 class="fold-title">backstory</h2>
-      
-      <!-- Text Content -->
-      <div class="backstory-content">
-        <div class="text-block text-block-1">
-          <p>This project was my thesis for a graphic design MFA. We had four months to pick a personal topic, research it, build it, and install it.</p>
-          <p>I spent a lot of that time thinking about my first year in the US. Moving here, I had pushed myself to embrace discomfort. Initiating conversations, stepping outside my comfort zone, becoming someone new in order to find community. It worked. I found amazing friends and felt genuinely at home.</p>
+
+    <!-- Section 2: Backstory -->
+    <section class="section section-backstory">
+      <h2 class="section-title">backstory</h2>
+      <div class="backstory-text">
+        <p>This project was my thesis for a graphic design MFA. We had four months to pick a personal topic, research it, build it, and install it.</p>
+        <p>I spent a lot of that time thinking about my first year in the US. Moving here, I had pushed myself to embrace discomfort. Initiating conversations, stepping outside my comfort zone, becoming someone new in order to find community. It worked. I found amazing friends and felt genuinely at home.</p>
       </div>
-      
-        <div class="text-block text-block-2">
-          <p>But I also noticed how much I had changed. I kept asking myself whether I was losing my true self by adapting so much to different people and environments. The more I sat with this question, the more I realized I was thinking about it wrong. I don't need to hold onto a fixed "true self." I'm constantly evolving, shedding old versions to become new ones. That's not losing myself. That's being myself.</p>
-          <p>This became the core of my installation. The title "Calculated Camouflage" comes from this idea. We present different versions of ourselves in different environments, but that doesn't make us fake. We are our choices and whatever we make of them.</p>
-        </div>
+      <div class="backstory-text">
+        <p>But I also noticed how much I had changed. I kept asking myself whether I was losing my true self by adapting so much to different people and environments. The more I sat with this question, the more I realized I was thinking about it wrong. I don't need to hold onto a fixed "true self." I'm constantly evolving, shedding old versions to become new ones. That's not losing myself. That's being myself.</p>
+        <p>This became the core of my installation. The title "Calculated Camouflage" comes from this idea. We present different versions of ourselves in different environments, but that doesn't make us fake. We are our choices and whatever we make of them.</p>
       </div>
     </section>
-    
-    <!-- Fold 3: Quote -->
-    <section class="fold fold-quote">
-      <!-- Quote Block -->
+
+    <!-- Section 3: Quote -->
+    <section class="section section-quote">
       <div class="quote-block">
-        <span class="quote-mark open">"</span>
-        <p class="quote-text">The traditional view of authenticity as consistency creates unnecessary</p>
-        <span class="quote-mark close">"</span>
+        <span class="quote-mark">"</span>
+        <p class="quote-text">The traditional view of authenticity as consistency<br>creates unnecessary</p>
+        <span class="quote-mark">"</span>
       </div>
-      
-      <!-- Research Content -->
-      <div class="research-content">
+    </section>
+
+    <!-- Section 4: Research Text -->
+    <section class="section section-research">
+      <div class="research-text">
         <p>Once I had the core idea, I needed to figure out how to communicate it visually. I started with philosophy, and Søren Kierkegaard's writing gave me the anchor I needed. He describes the self not as something you have, but as something you continuously create through your choices.</p>
         <p>For visual direction, I looked at camouflage in nature, X-rays, and thermal scans. Images where solid things become see-through, where what's hidden becomes visible. I also studied new media artists working with room-scale interactive installations since I had never built anything like this before. Their work helped me understand how to think about the viewer's body moving through a space.</p>
       </div>
     </section>
 
-    <!-- Fold 4: The Space -->
-    <section class="fold fold-space">
-      <!-- Title -->
-      <h2 class="fold-title">the space</h2>
-      
-      <!-- Left Text Content -->
+    <!-- Section 5: The Space -->
+    <section class="section section-space">
+      <h2 class="section-title">the space</h2>
+      <div class="space-images">
+        <div class="space-image-large">
+          <img src="assets/IMG_4800.png" alt="Gallery space layout">
+        </div>
+        <div class="space-image-small">
+          <img src="assets/R0002068 2.png" alt="Gallery detail">
+        </div>
+      </div>
       <div class="space-text">
         <p>Once I saw the gallery, I started planning how the experience would unfold. I wanted a central focal point at the far end of the room with body-tracking projections on both side walls. Visitors would be surrounded by responsive imagery as they moved toward the centerpiece.</p>
         <p>I talked with my advisors about what equipment was available on campus, calculated projection sizes based on throw distances, and figured out camera placements. The technical setup started to take shape: cameras at eye level, projectors mounted to the ceiling on opposite walls.</p>
       </div>
-      
-      <!-- 3D Room Model Container -->
-      <div class="room-3d-wrapper">
-        <div id="room-3d-container" class="room-3d-container"></div>
-        <p class="room-3d-hint">drag to rotate</p>
+    </section>
+
+    <!-- Section 6: Centrepiece -->
+    <section class="section section-centrepiece">
+      <div class="centrepiece-header">
+        <h2 class="section-title">centrepiece</h2>
+        <p class="centrepiece-intro">I used p5.js to experiment with different face filters, and an RGB visual style started to emerge that I was drawn to. But I was struggling to find something that would tie the physical and digital elements together.</p>
       </div>
-      
-      <!-- Room Image - empty gallery before installation -->
-      <div class="room-image">
-        <img src="assets/IMG_4800.png" alt="Empty gallery room">
+      <div class="centrepiece-media">
+        <video autoplay loop muted playsinline>
+          <source src="assets/videos/vid-1.mp4" type="video/mp4">
+        </video>
+      </div>
+      <p class="centrepiece-text">My advisor suggested colored acrylic sheets. Panels that block certain light wavelengths and filter what you see. The idea clicked immediately. To get the full picture, viewers would have to look through these colored windows. It worked both ways: practically, the acrylics filtered the RGB display. Conceptually, you need to look through different lenses to see the whole truth.</p>
+    </section>
+
+    <!-- Section 7: Setting It Up -->
+    <section class="section section-setup">
+      <h2 class="section-title">setting it up</h2>
+      <p class="setup-intro">Turning all of this into a physical installation meant figuring out things I had never done before. Mounting projectors to ceilings, hanging acrylic in mid-air, getting cameras and code to work together in real time. I had a tight window to get everything installed, so I broke it down into phases.</p>
+      <div class="day-cards">
+        <div class="day-card">
+          <div class="day-card-image">
+            <img src="assets/R0002097 1.png" alt="Day 1 setup">
+          </div>
+          <span class="day-label">day 1</span>
+        </div>
+        <div class="day-card">
+          <div class="day-card-image">
+            <img src="assets/R0002355 1.png" alt="Day 2 setup">
+          </div>
+          <span class="day-label">day 2</span>
+        </div>
+        <div class="day-card">
+          <div class="day-card-image">
+            <img src="assets/R0002358 1.png" alt="Day 3 setup">
+          </div>
+          <span class="day-label">day 3</span>
+        </div>
       </div>
     </section>
-    
+
+    <!-- Section 8: Personal Reflections -->
+    <section class="section section-reflections">
+      <h2 class="section-title">personal<br>reflections</h2>
+      <p class="reflections-text">Turning all of this into a physical installation meant figuring out things I had never done before. Mounting projectors to ceilings, hanging acrylic in mid-air, getting cameras and code to work together in real time. I had a tight window to get everything installed, so I broke it down into phases.</p>
+      <div class="reflections-image">
+        <img src="assets/DSC_4952 1.png" alt="Personal reflection moment">
+      </div>
+      <footer class="page-credit">Made by Siddharth. ©itsiddharth 2026</footer>
+    </section>
+
+    <!-- Bottom Corner Accents -->
+    <div class="corner-accents-bottom">
+      <div class="corner-accent-bottom left"></div>
+      <div class="corner-accent-bottom right"></div>
+    </div>
+
+    </div><!-- .what-is-this-page-inner -->
   </main>
 
   <!-- Fade out page transition overlay -->
@@ -194,37 +209,6 @@
         });
       });
     });
-
-    // Corner accent color switching based on background
-    (function() {
-      const lightBgFolds = document.querySelectorAll('.fold-backstory, .fold-quote');
-      
-      function checkBackground() {
-        const viewportCenter = window.innerHeight / 2;
-        let onLightBg = false;
-        
-        lightBgFolds.forEach(fold => {
-          const rect = fold.getBoundingClientRect();
-          // Check if fold covers the center of viewport
-          if (rect.top < viewportCenter && rect.bottom > viewportCenter) {
-            onLightBg = true;
-          }
-        });
-        
-        if (onLightBg) {
-          document.body.classList.add('on-light-bg');
-        } else {
-          document.body.classList.remove('on-light-bg');
-        }
-      }
-      
-      window.addEventListener('scroll', checkBackground, { passive: true });
-      window.addEventListener('resize', checkBackground, { passive: true });
-      checkBackground(); // Initial check
-    })();
   </script>
-  
-  <!-- 3D Room Script -->
-  <script src="js/room-3d.js"></script>
 </body>
 </html>
