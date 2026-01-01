@@ -28,10 +28,10 @@
   --font-mono: 'JetBrains Mono', monospace;
   --font-arrow: 'Alegreya', serif;
   
-  /* Title - 97px (Figma: 97.02px) */
-  --title-size: 97px;
-  --title-line-height: 97px;
-  --title-letter-spacing: -3px;
+  /* Title - matches home page */
+  --title-size: 136px;
+  --title-line-height: 130px;
+  --title-letter-spacing: -4px;
   
   /* Quote - 67px (Figma: 67.02px) */
   --quote-size: 67px;
@@ -112,8 +112,8 @@ body:has(.what-is-this-page) {
   width: 1px;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0.4) 0px,
-    rgba(255, 255, 255, 0.4) 4px,
+    rgba(255, 255, 255, 0.2) 0px,
+    rgba(255, 255, 255, 0.2) 4px,
     transparent 4px,
     transparent 8px
   );
@@ -168,6 +168,41 @@ body:has(.what-is-this-page) {
 }
 
 /* ============================================
+   Back Button
+   ============================================ */
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--color-text);
+  border-radius: 30px;
+  color: var(--color-text);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  font-weight: 500;
+  text-transform: uppercase;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+  width: fit-content;
+  margin-bottom: 20px;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.back-arrow {
+  font-family: var(--font-arrow);
+  font-size: 16px;
+  font-style: italic;
+}
+
+/* ============================================
    Section 1: Hero
    ============================================ */
 .section-hero {
@@ -181,7 +216,7 @@ body:has(.what-is-this-page) {
 .hero-content {
   display: flex;
   flex-direction: column;
-  gap: 51px;
+  gap: 32px;
   width: 100%;
 }
 
@@ -479,8 +514,8 @@ body:has(.what-is-this-page) {
    Section 7: Setting It Up
    ============================================ */
 .section-setup {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
   gap: var(--gap-large);
 }
 
@@ -498,7 +533,7 @@ body:has(.what-is-this-page) {
   display: flex;
   gap: var(--gap-day-cards);
   flex-wrap: wrap;
-  width: 100%;
+    width: 100%;
 }
 
 .day-card {
@@ -511,13 +546,13 @@ body:has(.what-is-this-page) {
 }
 
 .day-card-image {
-  width: 100%;
+    width: 100%;
   aspect-ratio: 295 / 440;
   overflow: hidden;
-}
-
+  }
+  
 .day-card-image img {
-  width: 100%;
+    width: 100%;
   height: 100%;
   object-fit: cover;
 }
@@ -538,8 +573,8 @@ body:has(.what-is-this-page) {
    Section 8: Personal Reflections
    ============================================ */
 .section-reflections {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
   gap: var(--gap-title-to-text);
 }
 
@@ -554,7 +589,7 @@ body:has(.what-is-this-page) {
 }
 
 .reflections-image {
-  width: 100%;
+    width: 100%;
   max-width: 575px;
   aspect-ratio: 4096 / 2734;
   overflow: hidden;
@@ -562,7 +597,7 @@ body:has(.what-is-this-page) {
 }
 
 .reflections-image img {
-  width: 100%;
+    width: 100%;
   height: 100%;
   object-fit: cover;
 }
@@ -590,8 +625,9 @@ body:has(.what-is-this-page) {
    ============================================ */
 @media screen and (max-width: 1024px) {
   :root {
-    --title-size: 72px;
-    --title-line-height: 72px;
+    --title-size: 90px;
+    --title-line-height: 86px;
+    --title-letter-spacing: -3px;
     --quote-size: 48px;
     --quote-line-height: 56px;
     --section-gap: 60px;
@@ -625,8 +661,8 @@ body:has(.what-is-this-page) {
     --page-padding-x: 20px;
     --section-gap: 50px;
     
-    --title-size: 48px;
-    --title-line-height: 48px;
+    --title-size: 56px;
+    --title-line-height: 52px;
     --title-letter-spacing: -2px;
     
     --quote-size: 32px;
@@ -655,7 +691,17 @@ body:has(.what-is-this-page) {
   }
   
   .hero-content {
-    gap: 30px;
+    gap: 20px;
+  }
+  
+  .back-button {
+    padding: 6px 12px;
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .back-arrow {
+    font-size: 14px;
   }
   
   .hero-image {
@@ -689,8 +735,9 @@ body:has(.what-is-this-page) {
    ============================================ */
 @media screen and (max-width: 480px) {
   :root {
-    --title-size: 36px;
-    --title-line-height: 38px;
+    --title-size: 48px;
+    --title-line-height: 44px;
+    --title-letter-spacing: -1.5px;
     
     --quote-size: 24px;
     --quote-line-height: 30px;

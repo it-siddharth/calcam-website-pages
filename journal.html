@@ -120,26 +120,24 @@
        Back Button
        ============================================ */
     .back-button {
-      position: fixed;
-      top: var(--page-padding);
-      right: var(--page-padding);
-      z-index: 50;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      gap: 5px;
+      padding: 8px 14px;
+      background: transparent;
+      border: 1px solid var(--color-text);
       border-radius: 30px;
       color: var(--color-text);
       text-decoration: none;
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: var(--label-size);
       font-weight: 500;
       text-transform: uppercase;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       transition: all 0.2s ease;
+      width: fit-content;
+      margin-bottom: 20px;
     }
 
     .back-button:hover {
@@ -509,7 +507,8 @@
       
       .back-button {
         padding: 6px 12px;
-        font-size: 10px;
+        font-size: 12px;
+        margin-bottom: 10px;
       }
       
       .back-arrow { font-size: 14px; }
@@ -566,16 +565,15 @@
   <div class="corner-accent bottom-left"></div>
   <div class="corner-accent bottom-right"></div>
 
-  <!-- Back Button -->
-  <a href="index.html" class="back-button">
-    <span class="back-arrow">←</span>
-    <span class="back-text">BACK</span>
-  </a>
-
   <!-- Main Content Container -->
   <main class="journal-page">
     <!-- Left Content Section -->
     <section class="journal-content">
+      <!-- Back Button -->
+      <a href="index.html" class="back-button">
+        <span class="back-arrow">←</span>
+        <span class="back-text">BACK</span>
+      </a>
       <h1 class="journal-title">VIEWER<br>JOURNAL</h1>
       
       <p class="journal-description desktop-only">
