@@ -72,7 +72,7 @@ class Room3D {
     this.init();
     this.createRoom();
     this.createInstallation();
-    this.createProjection();
+    // Wall projection removed
     this.createSpeakers();
     this.createProjectors();
     this.addLights();
@@ -448,7 +448,7 @@ class Room3D {
       transparent: true,
       opacity: 0.5
     });
-    
+
     const positions = [
       { x: -1.2, z: -this.CONFIG.room.depth / 2 + 0.8 },
       { x: 1.2, z: -this.CONFIG.room.depth / 2 + 0.8 }
@@ -485,12 +485,11 @@ class Room3D {
     const projectorHeight = 0.15;
     const projectorDepth = 0.35;
     
-    // White wireframe material for projectors
+    // White filled material for projectors
     const projectorMat = new THREE.MeshBasicMaterial({
       color: 0xffffff,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.8
+      wireframe: false,
+      transparent: false
     });
     
     // Two projectors on opposite walls, mounted near the ceiling
@@ -703,7 +702,7 @@ class Room3D {
     
     // Update animations
     this.updateScreenAnimation(time);
-    this.updateProjection(time);
+    // Wall projection removed
     
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
