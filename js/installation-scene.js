@@ -114,6 +114,9 @@ let leftWallVisible = true;
 let rightWallVisible = true;
 let leftWallOpacity = 0.8;
 let rightWallOpacity = 0.8;
+let debugView = false;
+let debugCanvas = null;
+let debugCtx = null;
 
 // Movement
 let moveForward = false, moveBackward = false;
@@ -1224,11 +1227,11 @@ function setupWebcamThreshold() {
   webcamCanvas.height = 240;
   webcamCtx = webcamCanvas.getContext('2d', { willReadFrequently: true });
   
-  // Create threshold canvas
-  thresholdCanvas = document.createElement('canvas');
-  thresholdCanvas.width = 320;
-  thresholdCanvas.height = 240;
-  thresholdCtx = thresholdCanvas.getContext('2d', { willReadFrequently: true });
+  // Setup debug canvas
+  debugCanvas = document.getElementById('debug-canvas');
+  if (debugCanvas) {
+    debugCtx = debugCanvas.getContext('2d');
+  }
   
   // Create video element for webcam
   webcamVideo = document.createElement('video');
@@ -1282,43 +1285,57 @@ function updateWebcamStatus(active) {
 }
 
 function processWebcamFrame() {
-  if (!hasWebcamAccess || !webcamVideo || webcamVideo.readyState !== webcamVideo.HAVE_ENOUGH_DATA) {
+  if (!hasWebcamAccess || !webcamVideo) {
     requestAnimationFrame(processWebcamFrame);
     return;
   }
   
-  // Draw mirrored webcam feed
-  webcamCtx.save();
-  webcamCtx.scale(-1, 1); // Mirror horizontally
-  webcamCtx.drawImage(webcamVideo, -webcamCanvas.width, 0, webcamCanvas.width, webcamCanvas.height);
-  webcamCtx.restore();
-  
-  // Get image data
-  const imageData = webcamCtx.getImageData(0, 0, webcamCanvas.width, webcamCanvas.height);
-  const pixels = imageData.data;
-  
-  // Apply brightness threshold
-  const thresholdData = thresholdCtx.createImageData(webcamCanvas.width, webcamCanvas.height);
-  const thresholdPixels = thresholdData.data;
-  
-  for (let i = 0; i < pixels.length; i += 4) {
-    const r = pixels[i];
-    const g = pixels[i + 1];
-    const b = pixels[i + 2];
-    
-    // Calculate brightness (grayscale)
-    const brightness = (r + g + b) / 3;
-    
-    // Apply hard threshold
-    const value = brightness > THRESHOLD_VALUE ? 255 : 0;
-    
-    thresholdPixels[i] = value;     // R
-    thresholdPixels[i + 1] = value; // G
-    thresholdPixels[i + 2] = value; // B
-    thresholdPixels[i + 3] = 255;   // A
+  if (webcamVideo.readyState !== webcamVideo.HAVE_ENOUGH_DATA) {
+    requestAnimationFrame(processWebcamFrame);
+    return;
   }
   
-  thresholdCtx.putImageData(thresholdData, 0, 0);
+  try {
+    // Draw mirrored webcam feed
+    webcamCtx.save();
+    webcamCtx.scale(-1, 1); // Mirror horizontally
+    webcamCtx.drawImage(webcamVideo, -webcamCanvas.width, 0, webcamCanvas.width, webcamCanvas.height);
+    webcamCtx.restore();
+    
+    // Draw to debug canvas if enabled
+    if (debugView && debugCtx) {
+      debugCtx.save();
+      debugCtx.scale(-1, 1);
+      debugCtx.drawImage(webcamVideo, -debugCanvas.width, 0, debugCanvas.width, debugCanvas.height);
+      debugCtx.restore();
+      
+      // Overlay threshold visualization
+      const imageData = debugCtx.getImageData(0, 0, debugCanvas.width, debugCanvas.height);
+      const pixels = imageData.data;
+      
+      for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        const brightness = (r + g + b) / 3;
+        
+        // Overlay colored tint based on threshold
+        if (brightness > leftWallThreshold) {
+          pixels[i] += 30;     // Add red tint for silhouette
+          pixels[i + 1] -= 20;
+          pixels[i + 2] -= 20;
+        } else {
+          pixels[i] -= 20;
+          pixels[i + 1] -= 20;
+          pixels[i + 2] += 30; // Add blue tint for background
+        }
+      }
+      
+      debugCtx.putImageData(imageData, 0, 0);
+    }
+  } catch (e) {
+    console.error('Error drawing webcam frame:', e);
+  }
   
   // Continue processing
   requestAnimationFrame(processWebcamFrame);
@@ -1326,29 +1343,33 @@ function processWebcamFrame() {
 
 // Sample brightness at a normalized position with specific threshold
 function sampleThreshold(normalizedX, normalizedY, thresholdValue) {
-  if (!hasWebcamAccess || !thresholdCanvas) {
+  if (!hasWebcamAccess || !webcamCanvas || !webcamCtx) {
     return null; // Will trigger fallback logic
   }
   
-  // Convert normalized coordinates to canvas coordinates
-  // Map projection space (-2.5 to 2.5 horizontal, 0.5 to 3.5 vertical) to canvas (0 to 320, 0 to 240)
-  const canvasX = Math.floor(((normalizedX + 2.5) / 5.0) * thresholdCanvas.width);
-  const canvasY = Math.floor((1 - ((normalizedY - 0.5) / 3.0)) * thresholdCanvas.height);
-  
-  // Clamp to canvas bounds
-  const x = Math.max(0, Math.min(thresholdCanvas.width - 1, canvasX));
-  const y = Math.max(0, Math.min(thresholdCanvas.height - 1, canvasY));
-  
-  // Sample pixel from original webcam (not thresholded)
-  const imageData = webcamCtx.getImageData(x, y, 1, 1);
-  const r = imageData.data[0];
-  const g = imageData.data[1];
-  const b = imageData.data[2];
-  
-  // Calculate brightness
-  const brightness = (r + g + b) / 3;
-  
-  return brightness > thresholdValue; // true = bright (silhouette), false = dark (background)
+  try {
+    // Convert normalized coordinates to canvas coordinates
+    // Map projection space (-2.5 to 2.5 horizontal, 0.5 to 3.5 vertical) to canvas (0 to 320, 0 to 240)
+    const canvasX = Math.floor(((normalizedX + 2.5) / 5.0) * webcamCanvas.width);
+    const canvasY = Math.floor((1 - ((normalizedY - 0.5) / 3.0)) * webcamCanvas.height);
+    
+    // Clamp to canvas bounds
+    const x = Math.max(0, Math.min(webcamCanvas.width - 1, canvasX));
+    const y = Math.max(0, Math.min(webcamCanvas.height - 1, canvasY));
+    
+    // Sample pixel from original webcam
+    const imageData = webcamCtx.getImageData(x, y, 1, 1);
+    const r = imageData.data[0];
+    const g = imageData.data[1];
+    const b = imageData.data[2];
+    
+    // Calculate brightness
+    const brightness = (r + g + b) / 3;
+    
+    return brightness > thresholdValue; // true = bright (silhouette), false = dark (background)
+  } catch (e) {
+    return null; // Error sampling, use fallback
+  }
 }
 
 // ============================================
@@ -1781,6 +1802,18 @@ function setupWallProjectionControls() {
       document.getElementById('val-right-opacity').textContent = rightWallOpacity.toFixed(2);
       if (rightProjectionMaterial) {
         rightProjectionMaterial.opacity = rightWallOpacity;
+      }
+    });
+  }
+  
+  // Debug view toggle
+  const debugViewCtrl = document.getElementById('ctrl-debug-view');
+  if (debugViewCtrl) {
+    debugViewCtrl.addEventListener('change', (e) => {
+      debugView = e.target.checked;
+      const debugWebcam = document.getElementById('debug-webcam');
+      if (debugWebcam) {
+        debugWebcam.style.display = debugView ? 'block' : 'none';
       }
     });
   }

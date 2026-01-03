@@ -275,7 +275,20 @@
         <span>Webcam Status:</span>
         <span id="webcam-status" class="status-indicator">Checking...</span>
       </div>
+      
+      <!-- Debug View -->
+      <div class="control-group">
+        <label>
+          <input type="checkbox" id="ctrl-debug-view">
+          <span>Show Debug View</span>
+        </label>
+      </div>
     </div>
+  </div>
+  
+  <!-- Debug Webcam View -->
+  <div id="debug-webcam" style="position: fixed; top: 20px; left: 20px; display: none; z-index: 200; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; overflow: hidden; background: #000;">
+    <canvas id="debug-canvas" width="320" height="240"></canvas>
   </div>
 
   <!-- Music Toggle Button -->
