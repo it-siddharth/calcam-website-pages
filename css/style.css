@@ -238,6 +238,7 @@ body {
   font-size: var(--label-size);
   font-weight: 500;
   line-height: var(--label-line-height);
+  text-transform: uppercase;
 }
 
 .btn-arrow {

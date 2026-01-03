@@ -238,6 +238,7 @@
       font-size: var(--label-size);
       font-weight: 500;
       line-height: var(--label-line-height);
+      text-transform: uppercase;
     }
 
     .btn-arrow {
@@ -246,6 +247,11 @@
       font-style: italic;
       line-height: 1;
       margin-right: -2px;
+    }
+
+    .btn-primary {
+      background-color: var(--color-text);
+      color: var(--color-bg);
     }
 
     .btn-secondary {
@@ -258,6 +264,30 @@
 
     .btn-secondary.active {
       background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    /* CTA Styles */
+    .cta-text {
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      font-weight: 700;
+      line-height: var(--body-line-height);
+      margin-bottom: 0;
+    }
+
+    .cta-primary-row {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-bottom: 22px;
+    }
+
+    .cta-arrow {
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: var(--body-line-height);
     }
 
     /* ============================================
