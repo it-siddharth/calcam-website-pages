@@ -258,7 +258,8 @@ body {
   font-size: var(--body-size);
   font-weight: 700;
   line-height: var(--body-line-height);
-  margin-bottom: 0;
+  margin-bottom: 22px;
+  white-space: nowrap;
 }
 
 .cta-primary-row {

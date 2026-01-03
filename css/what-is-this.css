@@ -355,6 +355,7 @@ body:has(.what-is-this-page) {
   line-height: var(--body-line-height);
   color: var(--color-text);
   margin: 0;
+  white-space: nowrap;
 }
 
 .cta-row {

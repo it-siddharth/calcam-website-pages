@@ -199,6 +199,7 @@ body {
   font-weight: 700;
   line-height: var(--body-line-height);
   margin-bottom: 0;
+  white-space: nowrap;
 }
 
 .cta-primary-row {
