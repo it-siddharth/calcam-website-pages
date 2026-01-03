@@ -141,8 +141,8 @@
     <button class="panel-close" onclick="closeAnchorPanel()">×</button>
     <h3 class="panel-title">LEFT WALL</h3>
     <div class="panel-description">
-      <p>Through the webcam, your silhouette is captured and inverted. Particles fill the background around you, defining you by absence.</p>
-      <p>You appear as a void carved from light. The space you occupy becomes emptiness, and what surrounds you defines your form.</p>
+      <p>Your webcam silhouette is reconstructed from thousands of particles. Your body, face, and gestures are formed from light.</p>
+      <p>You are made visible through data. Move, and watch yourself dissolve and reform in real time.</p>
     </div>
   </div>
   
@@ -150,8 +150,8 @@
     <button class="panel-close" onclick="closeAnchorPanel()">×</button>
     <h3 class="panel-title">RIGHT WALL</h3>
     <div class="panel-description">
-      <p>Your webcam silhouette is reconstructed from thousands of particles. Your body, face, and gestures are formed from light.</p>
-      <p>You are made visible through data. Move, and watch yourself dissolve and reform in real time.</p>
+      <p>Through the webcam, your silhouette is captured and inverted. Particles fill the background around you, defining you by absence.</p>
+      <p>You appear as a void carved from light. The space you occupy becomes emptiness, and what surrounds you defines your form.</p>
     </div>
   </div>
 
@@ -214,7 +214,7 @@
     <div class="controls-content">
       <!-- Left Wall Controls -->
       <div class="control-section">
-        <h4>Left Wall (Background)</h4>
+        <h4>Left Wall (Your Silhouette)</h4>
         
         <div class="control-group">
           <label>
@@ -229,7 +229,7 @@
             <span class="control-value" id="val-left-threshold">127</span>
           </label>
           <input type="range" id="ctrl-left-threshold" min="0" max="255" value="127" step="1">
-          <small style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 4px; display: block;">Lower = more background particles</small>
+          <small style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 4px; display: block;">Higher = clearer silhouette</small>
         </div>
         
         <div class="control-group">
@@ -243,7 +243,7 @@
       
       <!-- Right Wall Controls -->
       <div class="control-section">
-        <h4>Right Wall (Your Silhouette)</h4>
+        <h4>Right Wall (Background)</h4>
         
         <div class="control-group">
           <label>
@@ -258,7 +258,7 @@
             <span class="control-value" id="val-right-threshold">127</span>
           </label>
           <input type="range" id="ctrl-right-threshold" min="0" max="255" value="127" step="1">
-          <small style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 4px; display: block;">Higher = clearer silhouette</small>
+          <small style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 4px; display: block;">Lower = more background particles</small>
         </div>
         
         <div class="control-group">
