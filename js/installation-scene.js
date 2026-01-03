@@ -95,7 +95,8 @@ let scene, camera, renderer, controls;
 let installationGroup, tvGroup, tvScreen, tvScreenTexture, tvFrame, screenBorder;
 let standPole;
 let acrylicPanels = [];
-let projectionPlane, projectionMaterial;
+let leftProjectionPlane, leftProjectionMaterial;
+let rightProjectionPlane, rightProjectionMaterial;
 let ambientLight, tvGlow;
 let walls = [], floor, ceiling, backWall;
 let speakers = [];
@@ -117,7 +118,8 @@ const TOUCH_SENSITIVITY = 0.003;
 
 // Projection animation
 let projectionTime = 0;
-let particlePositions = [];
+let leftParticlePositions = [];
+let rightParticlePositions = [];
 const PARTICLE_COUNT = 12000;
 
 // Model control state
@@ -1039,11 +1041,22 @@ function createSpeakers() {
 }
 
 // ============================================
-// Create Wall Projection (Point Cloud Effect)
+// Create Wall Projections (Point Cloud Effect)
 // ============================================
 function createProjection() {
+  // Initialize particle positions for both walls
   for (let i = 0; i < PARTICLE_COUNT; i++) {
-    particlePositions.push({
+    leftParticlePositions.push({
+      x: (Math.random() - 0.5) * 5,
+      y: Math.random() * 3 + 0.5,
+      z: 0,
+      vx: (Math.random() - 0.5) * 0.015,
+      vy: (Math.random() - 0.5) * 0.015,
+      baseX: 0,
+      baseY: 0
+    });
+    
+    rightParticlePositions.push({
       x: (Math.random() - 0.5) * 5,
       y: Math.random() * 3 + 0.5,
       z: 0,
@@ -1054,28 +1067,29 @@ function createProjection() {
     });
   }
   
-  const geometry = new THREE.BufferGeometry();
-  const positions = new Float32Array(PARTICLE_COUNT * 3);
-  const colors = new Float32Array(PARTICLE_COUNT * 3);
-  const sizes = new Float32Array(PARTICLE_COUNT);
+  // Left wall projection (particles outside silhouette)
+  const leftGeometry = new THREE.BufferGeometry();
+  const leftPositions = new Float32Array(PARTICLE_COUNT * 3);
+  const leftColors = new Float32Array(PARTICLE_COUNT * 3);
+  const leftSizes = new Float32Array(PARTICLE_COUNT);
   
   for (let i = 0; i < PARTICLE_COUNT; i++) {
-    positions[i * 3] = particlePositions[i].x;
-    positions[i * 3 + 1] = particlePositions[i].y;
-    positions[i * 3 + 2] = particlePositions[i].z;
+    leftPositions[i * 3] = leftParticlePositions[i].x;
+    leftPositions[i * 3 + 1] = leftParticlePositions[i].y;
+    leftPositions[i * 3 + 2] = leftParticlePositions[i].z;
     
-    colors[i * 3] = 0.85 + Math.random() * 0.15;
-    colors[i * 3 + 1] = 0.8 + Math.random() * 0.15;
-    colors[i * 3 + 2] = 0.75 + Math.random() * 0.15;
+    leftColors[i * 3] = 0.85 + Math.random() * 0.15;
+    leftColors[i * 3 + 1] = 0.8 + Math.random() * 0.15;
+    leftColors[i * 3 + 2] = 0.75 + Math.random() * 0.15;
     
-    sizes[i] = Math.random() * 0.025 + 0.008;
+    leftSizes[i] = Math.random() * 0.025 + 0.008;
   }
   
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+  leftGeometry.setAttribute('position', new THREE.BufferAttribute(leftPositions, 3));
+  leftGeometry.setAttribute('color', new THREE.BufferAttribute(leftColors, 3));
+  leftGeometry.setAttribute('size', new THREE.BufferAttribute(leftSizes, 1));
   
-  projectionMaterial = new THREE.PointsMaterial({
+  leftProjectionMaterial = new THREE.PointsMaterial({
     size: 0.035,
     vertexColors: true,
     transparent: true,
@@ -1085,11 +1099,49 @@ function createProjection() {
     sizeAttenuation: true
   });
   
-  projectionPlane = new THREE.Points(geometry, projectionMaterial);
-  projectionPlane.position.set(-CONFIG.room.width / 2 + 0.1, 0, -1);
-  projectionPlane.rotation.y = Math.PI / 2;
-  projectionPlane.visible = roomSettings.projectionOn;
-  scene.add(projectionPlane);
+  leftProjectionPlane = new THREE.Points(leftGeometry, leftProjectionMaterial);
+  leftProjectionPlane.position.set(-CONFIG.room.width / 2 + 0.1, 0, -1);
+  leftProjectionPlane.rotation.y = Math.PI / 2;
+  leftProjectionPlane.visible = roomSettings.projectionOn;
+  scene.add(leftProjectionPlane);
+  
+  // Right wall projection (particles inside silhouette)
+  const rightGeometry = new THREE.BufferGeometry();
+  const rightPositions = new Float32Array(PARTICLE_COUNT * 3);
+  const rightColors = new Float32Array(PARTICLE_COUNT * 3);
+  const rightSizes = new Float32Array(PARTICLE_COUNT);
+  
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    rightPositions[i * 3] = rightParticlePositions[i].x;
+    rightPositions[i * 3 + 1] = rightParticlePositions[i].y;
+    rightPositions[i * 3 + 2] = rightParticlePositions[i].z;
+    
+    rightColors[i * 3] = 0.85 + Math.random() * 0.15;
+    rightColors[i * 3 + 1] = 0.8 + Math.random() * 0.15;
+    rightColors[i * 3 + 2] = 0.75 + Math.random() * 0.15;
+    
+    rightSizes[i] = Math.random() * 0.025 + 0.008;
+  }
+  
+  rightGeometry.setAttribute('position', new THREE.BufferAttribute(rightPositions, 3));
+  rightGeometry.setAttribute('color', new THREE.BufferAttribute(rightColors, 3));
+  rightGeometry.setAttribute('size', new THREE.BufferAttribute(rightSizes, 1));
+  
+  rightProjectionMaterial = new THREE.PointsMaterial({
+    size: 0.035,
+    vertexColors: true,
+    transparent: true,
+    opacity: roomSettings.projectionIntensity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    sizeAttenuation: true
+  });
+  
+  rightProjectionPlane = new THREE.Points(rightGeometry, rightProjectionMaterial);
+  rightProjectionPlane.position.set(CONFIG.room.width / 2 - 0.1, 0, -1);
+  rightProjectionPlane.rotation.y = -Math.PI / 2;
+  rightProjectionPlane.visible = roomSettings.projectionOn;
+  scene.add(rightProjectionPlane);
 }
 
 // ============================================
@@ -1384,7 +1436,8 @@ function setupRoomControls() {
   if (projCtrl) {
     projCtrl.addEventListener('change', (e) => {
       roomSettings.projectionOn = e.target.checked;
-      projectionPlane.visible = e.target.checked;
+      if (leftProjectionPlane) leftProjectionPlane.visible = e.target.checked;
+      if (rightProjectionPlane) rightProjectionPlane.visible = e.target.checked;
     });
   }
   
@@ -1395,7 +1448,8 @@ function setupRoomControls() {
       const v = parseFloat(e.target.value);
       document.getElementById('val-projintensity').textContent = v.toFixed(1);
       roomSettings.projectionIntensity = v;
-      projectionMaterial.opacity = v;
+      if (leftProjectionMaterial) leftProjectionMaterial.opacity = v;
+      if (rightProjectionMaterial) rightProjectionMaterial.opacity = v;
     });
   }
 }
@@ -1581,8 +1635,10 @@ window.resetRoomSettings = function() {
   });
   floor.material.color.set(defaults.floorColor);
   ceiling.material.color.set(defaults.ceilingColor);
-  projectionPlane.visible = defaults.projectionOn;
-  projectionMaterial.opacity = defaults.projectionIntensity;
+  if (leftProjectionPlane) leftProjectionPlane.visible = defaults.projectionOn;
+  if (rightProjectionPlane) rightProjectionPlane.visible = defaults.projectionOn;
+  if (leftProjectionMaterial) leftProjectionMaterial.opacity = defaults.projectionIntensity;
+  if (rightProjectionMaterial) rightProjectionMaterial.opacity = defaults.projectionIntensity;
   acrylicPanels.forEach(panel => panel.material.opacity = defaults.panelOpacity);
   updatePanelThickness(defaults.thickness);
   updatePanelSpacing(defaults.hSpread, defaults.vSpread, defaults.zOffset);
@@ -1610,55 +1666,105 @@ if (localStorage.getItem('installationHintDismissed')) {
 // Update Projection Animation
 // ============================================
 function updateProjection(time) {
-  if (!projectionPlane || !roomSettings.projectionOn) return;
+  if (!roomSettings.projectionOn) return;
   
-  const positions = projectionPlane.geometry.attributes.position.array;
-  
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const p = particlePositions[i];
+  // Update LEFT wall projection (particles OUTSIDE silhouette)
+  if (leftProjectionPlane) {
+    const leftPositions = leftProjectionPlane.geometry.attributes.position.array;
     
-    const noiseX = Math.sin(time * 0.4 + p.baseY * 2) * 0.25;
-    const noiseY = Math.cos(time * 0.25 + p.baseX * 2) * 0.15;
-    
-    p.x += p.vx + noiseX * 0.008;
-    p.y += p.vy + noiseY * 0.008;
-    
-    const centerY = 2;
-    const centerX = 0;
-    const headRadiusX = 1;
-    const headRadiusY = 1.3;
-    const headCenterY = centerY + 0.4;
-    
-    const inHead = Math.pow((p.x - centerX) / headRadiusX, 2) + 
-                   Math.pow((p.y - headCenterY) / headRadiusY, 2) < 1;
-    
-    const bodyTop = centerY - 0.7;
-    const inBody = p.y < bodyTop && p.y > 0.3 &&
-                   Math.abs(p.x) < 1.8 - (bodyTop - p.y) * 0.4;
-    
-    if (!inHead && !inBody) {
-      if (Math.random() > 0.5) {
-        const angle = Math.random() * Math.PI * 2;
-        const r = Math.random();
-        p.x = centerX + Math.cos(angle) * headRadiusX * r;
-        p.y = headCenterY + Math.sin(angle) * headRadiusY * r;
-      } else {
-        p.x = (Math.random() - 0.5) * 2.5;
-        p.y = Math.random() * (bodyTop - 0.3) + 0.3;
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const p = leftParticlePositions[i];
+      
+      const noiseX = Math.sin(time * 0.4 + p.baseY * 2) * 0.25;
+      const noiseY = Math.cos(time * 0.25 + p.baseX * 2) * 0.15;
+      
+      p.x += p.vx + noiseX * 0.008;
+      p.y += p.vy + noiseY * 0.008;
+      
+      const centerY = 2;
+      const centerX = 0;
+      const headRadiusX = 1;
+      const headRadiusY = 1.3;
+      const headCenterY = centerY + 0.4;
+      
+      const inHead = Math.pow((p.x - centerX) / headRadiusX, 2) + 
+                     Math.pow((p.y - headCenterY) / headRadiusY, 2) < 1;
+      
+      const bodyTop = centerY - 0.7;
+      const inBody = p.y < bodyTop && p.y > 0.3 &&
+                     Math.abs(p.x) < 1.8 - (bodyTop - p.y) * 0.4;
+      
+      // INVERTED LOGIC: If particle is INSIDE silhouette, respawn it OUTSIDE
+      if (inHead || inBody) {
+        // Respawn outside the silhouette
+        p.x = (Math.random() - 0.5) * 5;
+        p.y = Math.random() * 3 + 0.5;
+        p.vx = (Math.random() - 0.5) * 0.008;
+        p.vy = (Math.random() - 0.5) * 0.008;
       }
-      p.vx = (Math.random() - 0.5) * 0.008;
-      p.vy = (Math.random() - 0.5) * 0.008;
+      
+      p.baseX = p.x;
+      p.baseY = p.y;
+      
+      leftPositions[i * 3] = p.x;
+      leftPositions[i * 3 + 1] = p.y;
+      leftPositions[i * 3 + 2] = Math.sin(time + i * 0.001) * 0.03;
     }
     
-    p.baseX = p.x;
-    p.baseY = p.y;
-    
-    positions[i * 3] = p.x;
-    positions[i * 3 + 1] = p.y;
-    positions[i * 3 + 2] = Math.sin(time + i * 0.001) * 0.03;
+    leftProjectionPlane.geometry.attributes.position.needsUpdate = true;
   }
   
-  projectionPlane.geometry.attributes.position.needsUpdate = true;
+  // Update RIGHT wall projection (particles INSIDE silhouette)
+  if (rightProjectionPlane) {
+    const rightPositions = rightProjectionPlane.geometry.attributes.position.array;
+    
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const p = rightParticlePositions[i];
+      
+      const noiseX = Math.sin(time * 0.4 + p.baseY * 2) * 0.25;
+      const noiseY = Math.cos(time * 0.25 + p.baseX * 2) * 0.15;
+      
+      p.x += p.vx + noiseX * 0.008;
+      p.y += p.vy + noiseY * 0.008;
+      
+      const centerY = 2;
+      const centerX = 0;
+      const headRadiusX = 1;
+      const headRadiusY = 1.3;
+      const headCenterY = centerY + 0.4;
+      
+      const inHead = Math.pow((p.x - centerX) / headRadiusX, 2) + 
+                     Math.pow((p.y - headCenterY) / headRadiusY, 2) < 1;
+      
+      const bodyTop = centerY - 0.7;
+      const inBody = p.y < bodyTop && p.y > 0.3 &&
+                     Math.abs(p.x) < 1.8 - (bodyTop - p.y) * 0.4;
+      
+      // ORIGINAL LOGIC: If particle is OUTSIDE silhouette, respawn it INSIDE
+      if (!inHead && !inBody) {
+        if (Math.random() > 0.5) {
+          const angle = Math.random() * Math.PI * 2;
+          const r = Math.random();
+          p.x = centerX + Math.cos(angle) * headRadiusX * r;
+          p.y = headCenterY + Math.sin(angle) * headRadiusY * r;
+        } else {
+          p.x = (Math.random() - 0.5) * 2.5;
+          p.y = Math.random() * (bodyTop - 0.3) + 0.3;
+        }
+        p.vx = (Math.random() - 0.5) * 0.008;
+        p.vy = (Math.random() - 0.5) * 0.008;
+      }
+      
+      p.baseX = p.x;
+      p.baseY = p.y;
+      
+      rightPositions[i * 3] = p.x;
+      rightPositions[i * 3 + 1] = p.y;
+      rightPositions[i * 3 + 2] = Math.sin(time + i * 0.001) * 0.03;
+    }
+    
+    rightProjectionPlane.geometry.attributes.position.needsUpdate = true;
+  }
 }
 
 // ============================================
