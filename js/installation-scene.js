@@ -102,6 +102,14 @@ let walls = [], floor, ceiling, backWall;
 let speakers = [];
 let silhouetteCanvas, silhouetteCtx;
 
+// Webcam threshold system
+let webcamCanvas, webcamCtx;
+let thresholdCanvas, thresholdCtx;
+let webcamStream = null;
+let webcamVideo = null;
+let hasWebcamAccess = false;
+const THRESHOLD_VALUE = 127; // 50% brightness (0-255 range)
+
 // Movement
 let moveForward = false, moveBackward = false;
 let moveLeft = false, moveRight = false;
@@ -674,6 +682,9 @@ function init() {
   // Setup silhouette texture
   setupSilhouetteTexture();
   
+  // Setup webcam threshold system for wall projections
+  setupWebcamThreshold();
+  
   // Setup controls
   setupKeyboardControls();
   setupRoomControls();
@@ -1196,6 +1207,122 @@ function setupSilhouetteTexture() {
 }
 
 // ============================================
+// Setup Webcam Threshold System
+// ============================================
+function setupWebcamThreshold() {
+  // Create hidden canvas for webcam capture
+  webcamCanvas = document.createElement('canvas');
+  webcamCanvas.width = 320; // Lower res for performance
+  webcamCanvas.height = 240;
+  webcamCtx = webcamCanvas.getContext('2d', { willReadFrequently: true });
+  
+  // Create threshold canvas
+  thresholdCanvas = document.createElement('canvas');
+  thresholdCanvas.width = 320;
+  thresholdCanvas.height = 240;
+  thresholdCtx = thresholdCanvas.getContext('2d', { willReadFrequently: true });
+  
+  // Create video element for webcam
+  webcamVideo = document.createElement('video');
+  webcamVideo.width = 320;
+  webcamVideo.height = 240;
+  webcamVideo.autoplay = true;
+  webcamVideo.playsInline = true;
+  
+  // Request webcam access
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ 
+      video: { 
+        width: 320, 
+        height: 240,
+        facingMode: 'user'
+      } 
+    })
+    .then(stream => {
+      webcamStream = stream;
+      webcamVideo.srcObject = stream;
+      hasWebcamAccess = true;
+      console.log('Webcam access granted for wall projections');
+      
+      // Start processing webcam frames
+      processWebcamFrame();
+    })
+    .catch(err => {
+      console.log('Webcam access denied or unavailable, using fallback shape:', err);
+      hasWebcamAccess = false;
+    });
+  } else {
+    console.log('getUserMedia not supported, using fallback shape');
+    hasWebcamAccess = false;
+  }
+}
+
+function processWebcamFrame() {
+  if (!hasWebcamAccess || !webcamVideo || webcamVideo.readyState !== webcamVideo.HAVE_ENOUGH_DATA) {
+    requestAnimationFrame(processWebcamFrame);
+    return;
+  }
+  
+  // Draw mirrored webcam feed
+  webcamCtx.save();
+  webcamCtx.scale(-1, 1); // Mirror horizontally
+  webcamCtx.drawImage(webcamVideo, -webcamCanvas.width, 0, webcamCanvas.width, webcamCanvas.height);
+  webcamCtx.restore();
+  
+  // Get image data
+  const imageData = webcamCtx.getImageData(0, 0, webcamCanvas.width, webcamCanvas.height);
+  const pixels = imageData.data;
+  
+  // Apply brightness threshold
+  const thresholdData = thresholdCtx.createImageData(webcamCanvas.width, webcamCanvas.height);
+  const thresholdPixels = thresholdData.data;
+  
+  for (let i = 0; i < pixels.length; i += 4) {
+    const r = pixels[i];
+    const g = pixels[i + 1];
+    const b = pixels[i + 2];
+    
+    // Calculate brightness (grayscale)
+    const brightness = (r + g + b) / 3;
+    
+    // Apply hard threshold
+    const value = brightness > THRESHOLD_VALUE ? 255 : 0;
+    
+    thresholdPixels[i] = value;     // R
+    thresholdPixels[i + 1] = value; // G
+    thresholdPixels[i + 2] = value; // B
+    thresholdPixels[i + 3] = 255;   // A
+  }
+  
+  thresholdCtx.putImageData(thresholdData, 0, 0);
+  
+  // Continue processing
+  requestAnimationFrame(processWebcamFrame);
+}
+
+// Sample brightness at a normalized position (0-1 range for x and y)
+function sampleThreshold(normalizedX, normalizedY) {
+  if (!hasWebcamAccess || !thresholdCanvas) {
+    return null; // Will trigger fallback logic
+  }
+  
+  // Convert normalized coordinates to canvas coordinates
+  // Map projection space (-2.5 to 2.5 horizontal, 0.5 to 3.5 vertical) to canvas (0 to 320, 0 to 240)
+  const canvasX = Math.floor(((normalizedX + 2.5) / 5.0) * thresholdCanvas.width);
+  const canvasY = Math.floor((1 - ((normalizedY - 0.5) / 3.0)) * thresholdCanvas.height);
+  
+  // Clamp to canvas bounds
+  const x = Math.max(0, Math.min(thresholdCanvas.width - 1, canvasX));
+  const y = Math.max(0, Math.min(thresholdCanvas.height - 1, canvasY));
+  
+  // Sample pixel
+  const imageData = thresholdCtx.getImageData(x, y, 1, 1);
+  const brightness = imageData.data[0]; // R channel (all channels are same in grayscale)
+  
+  return brightness > THRESHOLD_VALUE; // true = bright, false = dark
+}
+
+// ============================================
 // Placeholder Animation
 // ============================================
 function drawPlaceholderAnimation() {
@@ -1668,7 +1795,7 @@ if (localStorage.getItem('installationHintDismissed')) {
 function updateProjection(time) {
   if (!roomSettings.projectionOn) return;
   
-  // Update LEFT wall projection (particles OUTSIDE silhouette)
+  // Update LEFT wall projection (particles in DARK areas - webcam-driven or fallback)
   if (leftProjectionPlane) {
     const leftPositions = leftProjectionPlane.geometry.attributes.position.array;
     
@@ -1681,22 +1808,37 @@ function updateProjection(time) {
       p.x += p.vx + noiseX * 0.008;
       p.y += p.vy + noiseY * 0.008;
       
-      const centerY = 2;
-      const centerX = 0;
-      const headRadiusX = 1;
-      const headRadiusY = 1.3;
-      const headCenterY = centerY + 0.4;
+      let shouldRespawn = false;
       
-      const inHead = Math.pow((p.x - centerX) / headRadiusX, 2) + 
-                     Math.pow((p.y - headCenterY) / headRadiusY, 2) < 1;
+      if (hasWebcamAccess) {
+        // WEBCAM MODE: Sample threshold, respawn if particle is in BRIGHT area
+        const isBright = sampleThreshold(p.x, p.y);
+        if (isBright === true) {
+          shouldRespawn = true;
+        }
+      } else {
+        // FALLBACK MODE: Use programmatic shape
+        const centerY = 2;
+        const centerX = 0;
+        const headRadiusX = 1;
+        const headRadiusY = 1.3;
+        const headCenterY = centerY + 0.4;
+        
+        const inHead = Math.pow((p.x - centerX) / headRadiusX, 2) + 
+                       Math.pow((p.y - headCenterY) / headRadiusY, 2) < 1;
+        
+        const bodyTop = centerY - 0.7;
+        const inBody = p.y < bodyTop && p.y > 0.3 &&
+                       Math.abs(p.x) < 1.8 - (bodyTop - p.y) * 0.4;
+        
+        // INVERTED LOGIC: If particle is INSIDE silhouette, respawn it OUTSIDE
+        if (inHead || inBody) {
+          shouldRespawn = true;
+        }
+      }
       
-      const bodyTop = centerY - 0.7;
-      const inBody = p.y < bodyTop && p.y > 0.3 &&
-                     Math.abs(p.x) < 1.8 - (bodyTop - p.y) * 0.4;
-      
-      // INVERTED LOGIC: If particle is INSIDE silhouette, respawn it OUTSIDE
-      if (inHead || inBody) {
-        // Respawn outside the silhouette
+      if (shouldRespawn) {
+        // Respawn in a random position
         p.x = (Math.random() - 0.5) * 5;
         p.y = Math.random() * 3 + 0.5;
         p.vx = (Math.random() - 0.5) * 0.008;
@@ -1714,7 +1856,7 @@ function updateProjection(time) {
     leftProjectionPlane.geometry.attributes.position.needsUpdate = true;
   }
   
-  // Update RIGHT wall projection (particles INSIDE silhouette)
+  // Update RIGHT wall projection (particles in BRIGHT areas - webcam-driven or fallback)
   if (rightProjectionPlane) {
     const rightPositions = rightProjectionPlane.geometry.attributes.position.array;
     
@@ -1727,29 +1869,58 @@ function updateProjection(time) {
       p.x += p.vx + noiseX * 0.008;
       p.y += p.vy + noiseY * 0.008;
       
-      const centerY = 2;
-      const centerX = 0;
-      const headRadiusX = 1;
-      const headRadiusY = 1.3;
-      const headCenterY = centerY + 0.4;
+      let shouldRespawn = false;
       
-      const inHead = Math.pow((p.x - centerX) / headRadiusX, 2) + 
-                     Math.pow((p.y - headCenterY) / headRadiusY, 2) < 1;
+      if (hasWebcamAccess) {
+        // WEBCAM MODE: Sample threshold, respawn if particle is in DARK area
+        const isBright = sampleThreshold(p.x, p.y);
+        if (isBright === false) {
+          shouldRespawn = true;
+        }
+      } else {
+        // FALLBACK MODE: Use programmatic shape
+        const centerY = 2;
+        const centerX = 0;
+        const headRadiusX = 1;
+        const headRadiusY = 1.3;
+        const headCenterY = centerY + 0.4;
+        
+        const inHead = Math.pow((p.x - centerX) / headRadiusX, 2) + 
+                       Math.pow((p.y - headCenterY) / headRadiusY, 2) < 1;
+        
+        const bodyTop = centerY - 0.7;
+        const inBody = p.y < bodyTop && p.y > 0.3 &&
+                       Math.abs(p.x) < 1.8 - (bodyTop - p.y) * 0.4;
+        
+        // ORIGINAL LOGIC: If particle is OUTSIDE silhouette, respawn it INSIDE
+        if (!inHead && !inBody) {
+          shouldRespawn = true;
+        }
+      }
       
-      const bodyTop = centerY - 0.7;
-      const inBody = p.y < bodyTop && p.y > 0.3 &&
-                     Math.abs(p.x) < 1.8 - (bodyTop - p.y) * 0.4;
-      
-      // ORIGINAL LOGIC: If particle is OUTSIDE silhouette, respawn it INSIDE
-      if (!inHead && !inBody) {
-        if (Math.random() > 0.5) {
-          const angle = Math.random() * Math.PI * 2;
-          const r = Math.random();
-          p.x = centerX + Math.cos(angle) * headRadiusX * r;
-          p.y = headCenterY + Math.sin(angle) * headRadiusY * r;
+      if (shouldRespawn) {
+        if (hasWebcamAccess) {
+          // Respawn in a random position (will naturally settle in bright areas)
+          p.x = (Math.random() - 0.5) * 5;
+          p.y = Math.random() * 3 + 0.5;
         } else {
-          p.x = (Math.random() - 0.5) * 2.5;
-          p.y = Math.random() * (bodyTop - 0.3) + 0.3;
+          // Respawn inside the programmatic shape
+          const centerY = 2;
+          const centerX = 0;
+          const headRadiusX = 1;
+          const headRadiusY = 1.3;
+          const headCenterY = centerY + 0.4;
+          const bodyTop = centerY - 0.7;
+          
+          if (Math.random() > 0.5) {
+            const angle = Math.random() * Math.PI * 2;
+            const r = Math.random();
+            p.x = centerX + Math.cos(angle) * headRadiusX * r;
+            p.y = headCenterY + Math.sin(angle) * headRadiusY * r;
+          } else {
+            p.x = (Math.random() - 0.5) * 2.5;
+            p.y = Math.random() * (bodyTop - 0.3) + 0.3;
+          }
         }
         p.vx = (Math.random() - 0.5) * 0.008;
         p.vy = (Math.random() - 0.5) * 0.008;
