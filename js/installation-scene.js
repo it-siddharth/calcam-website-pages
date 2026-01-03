@@ -108,8 +108,7 @@ let thresholdCanvas, thresholdCtx;
 let webcamStream = null;
 let webcamVideo = null;
 let hasWebcamAccess = false;
-let leftWallThreshold = 127; // Threshold for left wall (background detection)
-let rightWallThreshold = 127; // Threshold for right wall (silhouette detection)
+let thresholdValue = 127; // Single threshold for both walls
 let leftWallVisible = true;
 let rightWallVisible = true;
 let leftWallOpacity = 0.8;
@@ -1307,8 +1306,8 @@ function processWebcamFrame() {
     webcamCtx.drawImage(webcamVideo, -webcamCanvas.width, 0, webcamCanvas.width, webcamCanvas.height);
     webcamCtx.restore();
     
-    // Update black & white threshold data for both walls
-    updateBlackWhiteThresholds();
+    // Update black & white threshold data
+    updateBlackWhiteThreshold();
     
     // Draw to debug canvas if enabled
     if (debugView && debugCtx) {
@@ -1317,18 +1316,14 @@ function processWebcamFrame() {
       debugCtx.drawImage(webcamVideo, -debugCanvas.width, 0, debugCanvas.width, debugCanvas.height);
       debugCtx.restore();
       
-      if (leftWallBWData && rightWallBWData) {
+      if (bwThresholdData) {
         if (showPureBW) {
-          // Show PURE B&W output (split screen: left wall | right wall)
+          // Show PURE B&W output
           const imageData = debugCtx.createImageData(debugCanvas.width, debugCanvas.height);
           const pixels = imageData.data;
           
-          for (let i = 0; i < leftWallBWData.length; i++) {
-            const x = i % debugCanvas.width;
-            const halfWidth = debugCanvas.width / 2;
-            
-            // Left half shows left wall B&W, right half shows right wall B&W
-            const bwValue = x < halfWidth ? leftWallBWData[i] : rightWallBWData[i];
+          for (let i = 0; i < bwThresholdData.length; i++) {
+            const bwValue = bwThresholdData[i];
             
             pixels[i * 4] = bwValue;     // R
             pixels[i * 4 + 1] = bwValue; // G
@@ -1338,46 +1333,29 @@ function processWebcamFrame() {
           
           debugCtx.putImageData(imageData, 0, 0);
           
-          // Draw divider line
-          debugCtx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
-          debugCtx.lineWidth = 2;
-          debugCtx.beginPath();
-          debugCtx.moveTo(debugCanvas.width / 2, 0);
-          debugCtx.lineTo(debugCanvas.width / 2, debugCanvas.height);
-          debugCtx.stroke();
-          
-          // Labels
+          // Label
           debugCtx.font = '12px monospace';
           debugCtx.fillStyle = 'rgba(255, 0, 0, 0.9)';
-          debugCtx.fillText('LEFT WALL B&W', 10, 20);
-          debugCtx.fillText('RIGHT WALL B&W', debugCanvas.width / 2 + 10, 20);
+          debugCtx.fillText('PURE B&W THRESHOLD', 10, 20);
         } else {
-          // Show color-coded overlay
+          // Show color-coded overlay (white=bright, black=dark)
           const imageData = debugCtx.getImageData(0, 0, debugCanvas.width, debugCanvas.height);
           const pixels = imageData.data;
           
-          for (let i = 0; i < leftWallBWData.length; i++) {
-            const leftBW = leftWallBWData[i];
-            const rightBW = rightWallBWData[i];
+          for (let i = 0; i < bwThresholdData.length; i++) {
+            const bwValue = bwThresholdData[i];
             
-            // Color overlay based on detection
-            if (leftBW === 255 && rightBW === 255) {
-              // Both detect silhouette - Green tint
+            if (bwValue === 255) {
+              // White/bright area (silhouette) - Green tint
               pixels[i * 4] = Math.max(0, pixels[i * 4] - 30);
               pixels[i * 4 + 1] = Math.min(255, pixels[i * 4 + 1] + 60);
               pixels[i * 4 + 2] = Math.max(0, pixels[i * 4 + 2] - 30);
-            } else if (leftBW === 255) {
-              // Only left wall detects - Red tint
-              pixels[i * 4] = Math.min(255, pixels[i * 4] + 60);
-              pixels[i * 4 + 1] = Math.max(0, pixels[i * 4 + 1] - 30);
-              pixels[i * 4 + 2] = Math.max(0, pixels[i * 4 + 2] - 30);
-            } else if (rightBW === 255) {
-              // Only right wall detects - Blue tint
+            } else {
+              // Black/dark area (background) - Blue tint
               pixels[i * 4] = Math.max(0, pixels[i * 4] - 30);
               pixels[i * 4 + 1] = Math.max(0, pixels[i * 4 + 1] - 30);
               pixels[i * 4 + 2] = Math.min(255, pixels[i * 4 + 2] + 60);
             }
-            // else: neither detects, leave original color
           }
           
           debugCtx.putImageData(imageData, 0, 0);
@@ -1385,13 +1363,11 @@ function processWebcamFrame() {
           // Add legend
           debugCtx.font = '11px monospace';
           debugCtx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-          debugCtx.fillRect(5, 5, 150, 60);
+          debugCtx.fillRect(5, 5, 180, 45);
           debugCtx.fillStyle = '#00ff00';
-          debugCtx.fillText('Green: Both walls', 10, 20);
-          debugCtx.fillStyle = '#ff0000';
-          debugCtx.fillText('Red: Left wall only', 10, 35);
+          debugCtx.fillText('Green: Bright (silhouette)', 10, 20);
           debugCtx.fillStyle = '#0000ff';
-          debugCtx.fillText('Blue: Right wall only', 10, 50);
+          debugCtx.fillText('Blue: Dark (background)', 10, 35);
         }
       }
     }
@@ -1407,9 +1383,9 @@ function processWebcamFrame() {
 let leftWallBWData = null;
 let rightWallBWData = null;
 
-// Create black & white threshold images for each wall
+// Single black & white threshold (ONE webcam feed, ONE threshold)
 // ALWAYS use pure binary Black & White thresholding (0 or 255 only, no grayscale)
-function updateBlackWhiteThresholds() {
+function updateBlackWhiteThreshold() {
   if (!hasWebcamAccess || !webcamCanvas || !webcamCtx) {
     return;
   }
@@ -1420,9 +1396,8 @@ function updateBlackWhiteThresholds() {
     const pixels = imageData.data;
     const pixelCount = webcamCanvas.width * webcamCanvas.height;
     
-    // Create separate B&W arrays for each wall
-    leftWallBWData = new Uint8Array(pixelCount);
-    rightWallBWData = new Uint8Array(pixelCount);
+    // Create single B&W array
+    bwThresholdData = new Uint8Array(pixelCount);
     
     // BINARY THRESHOLDING ONLY - No grayscale, only pure black (0) or white (255)
     for (let i = 0; i < pixels.length; i += 4) {
@@ -1433,26 +1408,18 @@ function updateBlackWhiteThresholds() {
       // Calculate brightness (grayscale conversion)
       const brightness = (r + g + b) / 3;
       
-      // Apply LEFT wall threshold -> PURE BINARY (0 or 255 ONLY)
-      leftWallBWData[i / 4] = brightness > leftWallThreshold ? 255 : 0;
-      
-      // Apply RIGHT wall threshold -> PURE BINARY (0 or 255 ONLY)
-      rightWallBWData[i / 4] = brightness > rightWallThreshold ? 255 : 0;
+      // Apply SINGLE threshold -> PURE BINARY (0 or 255 ONLY)
+      bwThresholdData[i / 4] = brightness > thresholdValue ? 255 : 0;
     }
   } catch (e) {
-    console.error('Error creating B&W thresholds:', e);
+    console.error('Error creating B&W threshold:', e);
   }
 }
 
 // Sample from black & white threshold data
-function sampleThreshold(normalizedX, normalizedY, wallSide) {
-  if (!hasWebcamAccess || !webcamCanvas) {
+function sampleThreshold(normalizedX, normalizedY) {
+  if (!hasWebcamAccess || !webcamCanvas || !bwThresholdData) {
     return null; // Will trigger fallback logic
-  }
-  
-  const bwData = wallSide === 'left' ? leftWallBWData : rightWallBWData;
-  if (!bwData) {
-    return null;
   }
   
   try {
@@ -1467,7 +1434,7 @@ function sampleThreshold(normalizedX, normalizedY, wallSide) {
     
     // Sample from B&W data
     const index = y * webcamCanvas.width + x;
-    const bwValue = bwData[index];
+    const bwValue = bwThresholdData[index];
     
     // Return true if white (bright/silhouette), false if black (dark/background)
     return bwValue === 255;
@@ -1836,14 +1803,14 @@ function setupModelControls() {
 // Setup Wall Projection Controls
 // ============================================
 function setupWallProjectionControls() {
-  // Left wall threshold control
-  const leftThresholdCtrl = document.getElementById('ctrl-left-threshold');
-  if (leftThresholdCtrl) {
-    leftThresholdCtrl.value = leftWallThreshold;
-    document.getElementById('val-left-threshold').textContent = leftWallThreshold;
-    leftThresholdCtrl.addEventListener('input', (e) => {
-      leftWallThreshold = parseInt(e.target.value);
-      document.getElementById('val-left-threshold').textContent = leftWallThreshold;
+  // Single threshold control
+  const thresholdCtrl = document.getElementById('ctrl-threshold');
+  if (thresholdCtrl) {
+    thresholdCtrl.value = thresholdValue;
+    document.getElementById('val-threshold').textContent = thresholdValue;
+    thresholdCtrl.addEventListener('input', (e) => {
+      thresholdValue = parseInt(e.target.value);
+      document.getElementById('val-threshold').textContent = thresholdValue;
     });
   }
   
@@ -1870,17 +1837,6 @@ function setupWallProjectionControls() {
       if (leftProjectionMaterial) {
         leftProjectionMaterial.opacity = leftWallOpacity;
       }
-    });
-  }
-  
-  // Right wall threshold control
-  const rightThresholdCtrl = document.getElementById('ctrl-right-threshold');
-  if (rightThresholdCtrl) {
-    rightThresholdCtrl.value = rightWallThreshold;
-    document.getElementById('val-right-threshold').textContent = rightWallThreshold;
-    rightThresholdCtrl.addEventListener('input', (e) => {
-      rightWallThreshold = parseInt(e.target.value);
-      document.getElementById('val-right-threshold').textContent = rightWallThreshold;
     });
   }
   
@@ -2116,7 +2072,7 @@ function updateProjection(time) {
       if (hasWebcamAccess) {
         // WEBCAM MODE: Sample B&W threshold
         // Left wall = particles INSIDE silhouette (WHITE areas in B&W / bright areas)
-        const isBright = sampleThreshold(p.x, p.y, 'left'); // true = white/255, false = black/0
+        const isBright = sampleThreshold(p.x, p.y); // true = white/255, false = black/0
         if (isBright === false) {
           // Particle is OUTSIDE silhouette (in black), but we want it INSIDE for left wall
           // Gently nudge it back instead of hard respawn to prevent flickering
@@ -2187,7 +2143,7 @@ function updateProjection(time) {
       if (hasWebcamAccess) {
         // WEBCAM MODE: Sample B&W threshold
         // Right wall = particles OUTSIDE silhouette (BLACK areas in B&W / dark areas/background)
-        const isBright = sampleThreshold(p.x, p.y, 'right'); // true = white/255, false = black/0
+        const isBright = sampleThreshold(p.x, p.y); // true = white/255, false = black/0
         if (isBright === true) {
           // Particle is INSIDE silhouette (in white), but we want it OUTSIDE for right wall
           // Gently nudge it back instead of hard respawn to prevent flickering
