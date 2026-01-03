@@ -199,7 +199,6 @@ body {
 .nav-links {
   display: flex;
   gap: 10px;
-  padding-bottom: var(--page-padding);
 }
 
 .btn {
