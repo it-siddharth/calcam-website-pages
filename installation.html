@@ -212,16 +212,6 @@
     </div>
     
     <div class="controls-content">
-      <!-- Webcam Threshold -->
-      <div class="control-group">
-        <label for="ctrl-threshold">
-          <span>Silhouette Threshold</span>
-          <span class="control-value" id="val-threshold">127</span>
-        </label>
-        <input type="range" id="ctrl-threshold" min="0" max="255" value="127" step="1">
-        <small style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 4px; display: block;">Adjust to detect your silhouette (higher = more sensitive)</small>
-      </div>
-      
       <!-- Left Wall Controls -->
       <div class="control-section">
         <h4>Left Wall (Background)</h4>
@@ -231,6 +221,15 @@
             <input type="checkbox" id="ctrl-left-visible" checked>
             <span>Show Left Wall</span>
           </label>
+        </div>
+        
+        <div class="control-group">
+          <label for="ctrl-left-threshold">
+            <span>Threshold</span>
+            <span class="control-value" id="val-left-threshold">127</span>
+          </label>
+          <input type="range" id="ctrl-left-threshold" min="0" max="255" value="127" step="1">
+          <small style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 4px; display: block;">Lower = more background particles</small>
         </div>
         
         <div class="control-group">
@@ -251,6 +250,15 @@
             <input type="checkbox" id="ctrl-right-visible" checked>
             <span>Show Right Wall</span>
           </label>
+        </div>
+        
+        <div class="control-group">
+          <label for="ctrl-right-threshold">
+            <span>Threshold</span>
+            <span class="control-value" id="val-right-threshold">127</span>
+          </label>
+          <input type="range" id="ctrl-right-threshold" min="0" max="255" value="127" step="1">
+          <small style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 4px; display: block;">Higher = clearer silhouette</small>
         </div>
         
         <div class="control-group">

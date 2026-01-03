@@ -108,7 +108,8 @@ let thresholdCanvas, thresholdCtx;
 let webcamStream = null;
 let webcamVideo = null;
 let hasWebcamAccess = false;
-let THRESHOLD_VALUE = 127; // 50% brightness (0-255 range) - now mutable
+let leftWallThreshold = 127; // Threshold for left wall (background detection)
+let rightWallThreshold = 127; // Threshold for right wall (silhouette detection)
 let leftWallVisible = true;
 let rightWallVisible = true;
 let leftWallOpacity = 0.8;
@@ -1323,8 +1324,8 @@ function processWebcamFrame() {
   requestAnimationFrame(processWebcamFrame);
 }
 
-// Sample brightness at a normalized position (0-1 range for x and y)
-function sampleThreshold(normalizedX, normalizedY) {
+// Sample brightness at a normalized position with specific threshold
+function sampleThreshold(normalizedX, normalizedY, thresholdValue) {
   if (!hasWebcamAccess || !thresholdCanvas) {
     return null; // Will trigger fallback logic
   }
@@ -1338,11 +1339,16 @@ function sampleThreshold(normalizedX, normalizedY) {
   const x = Math.max(0, Math.min(thresholdCanvas.width - 1, canvasX));
   const y = Math.max(0, Math.min(thresholdCanvas.height - 1, canvasY));
   
-  // Sample pixel
-  const imageData = thresholdCtx.getImageData(x, y, 1, 1);
-  const brightness = imageData.data[0]; // R channel (all channels are same in grayscale)
+  // Sample pixel from original webcam (not thresholded)
+  const imageData = webcamCtx.getImageData(x, y, 1, 1);
+  const r = imageData.data[0];
+  const g = imageData.data[1];
+  const b = imageData.data[2];
   
-  return brightness > THRESHOLD_VALUE; // true = bright, false = dark
+  // Calculate brightness
+  const brightness = (r + g + b) / 3;
+  
+  return brightness > thresholdValue; // true = bright (silhouette), false = dark (background)
 }
 
 // ============================================
@@ -1705,14 +1711,14 @@ function setupModelControls() {
 // Setup Wall Projection Controls
 // ============================================
 function setupWallProjectionControls() {
-  // Threshold control
-  const thresholdCtrl = document.getElementById('ctrl-threshold');
-  if (thresholdCtrl) {
-    thresholdCtrl.value = THRESHOLD_VALUE;
-    document.getElementById('val-threshold').textContent = THRESHOLD_VALUE;
-    thresholdCtrl.addEventListener('input', (e) => {
-      THRESHOLD_VALUE = parseInt(e.target.value);
-      document.getElementById('val-threshold').textContent = THRESHOLD_VALUE;
+  // Left wall threshold control
+  const leftThresholdCtrl = document.getElementById('ctrl-left-threshold');
+  if (leftThresholdCtrl) {
+    leftThresholdCtrl.value = leftWallThreshold;
+    document.getElementById('val-left-threshold').textContent = leftWallThreshold;
+    leftThresholdCtrl.addEventListener('input', (e) => {
+      leftWallThreshold = parseInt(e.target.value);
+      document.getElementById('val-left-threshold').textContent = leftWallThreshold;
     });
   }
   
@@ -1739,6 +1745,17 @@ function setupWallProjectionControls() {
       if (leftProjectionMaterial) {
         leftProjectionMaterial.opacity = leftWallOpacity;
       }
+    });
+  }
+  
+  // Right wall threshold control
+  const rightThresholdCtrl = document.getElementById('ctrl-right-threshold');
+  if (rightThresholdCtrl) {
+    rightThresholdCtrl.value = rightWallThreshold;
+    document.getElementById('val-right-threshold').textContent = rightWallThreshold;
+    rightThresholdCtrl.addEventListener('input', (e) => {
+      rightWallThreshold = parseInt(e.target.value);
+      document.getElementById('val-right-threshold').textContent = rightWallThreshold;
     });
   }
   
@@ -1904,7 +1921,7 @@ function updateProjection(time) {
       if (hasWebcamAccess) {
         // WEBCAM MODE: Sample threshold to detect silhouette
         // Left wall = particles OUTSIDE silhouette (in background/dark areas)
-        const isInSilhouette = sampleThreshold(p.x, p.y);
+        const isInSilhouette = sampleThreshold(p.x, p.y, leftWallThreshold);
         if (isInSilhouette === true) {
           // Particle is inside silhouette, but we want it outside for left wall
           shouldRespawn = true;
@@ -1967,7 +1984,7 @@ function updateProjection(time) {
       if (hasWebcamAccess) {
         // WEBCAM MODE: Sample threshold to detect silhouette
         // Right wall = particles INSIDE silhouette (forming your shape)
-        const isInSilhouette = sampleThreshold(p.x, p.y);
+        const isInSilhouette = sampleThreshold(p.x, p.y, rightWallThreshold);
         if (isInSilhouette === false) {
           // Particle is outside silhouette, but we want it inside for right wall
           shouldRespawn = true;
