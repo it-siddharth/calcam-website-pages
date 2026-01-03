@@ -64,9 +64,9 @@ const PAN_RANGE = 0.4;     // How far left/right to pan (radians)
 
 // TV appearance settings
 const tvSettings = {
-  frameColor: '#8f8f8f',  // Medium gray from user
+  frameColor: '#525252',  // RGB(82, 82, 82) - darker gray
   borderVisible: true,
-  borderColor: '#ffffff',
+  borderColor: '#969696',  // RGB(150, 150, 150) - lighter gray
   scale: 1
 };
 
@@ -657,12 +657,13 @@ function setupGUI() {
   `;
   document.body.appendChild(panel);
   
-  // Create toggle button
+  // Create toggle button (hidden by default)
   const toggleBtn = document.createElement('button');
   toggleBtn.id = 'settings-toggle';
   toggleBtn.className = 'settings-toggle';
   toggleBtn.innerHTML = '⚙';
   toggleBtn.onclick = toggleSettings;
+  toggleBtn.style.display = 'none';  // Hidden
   document.body.appendChild(toggleBtn);
   
   // Apply default values on init
