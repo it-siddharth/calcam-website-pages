@@ -2115,10 +2115,10 @@ function updateProjection(time) {
       
       if (hasWebcamAccess) {
         // WEBCAM MODE: Sample B&W threshold
-        // Left wall = particles in BLACK areas (0) of the FULL webcam feed
+        // Left wall = particles INSIDE silhouette (WHITE areas in B&W / bright areas)
         const isBright = sampleThreshold(p.x, p.y, 'left'); // true = white/255, false = black/0
-        if (isBright === true) {
-          // Particle is in WHITE area, but we want it in BLACK areas for left wall
+        if (isBright === false) {
+          // Particle is OUTSIDE silhouette (in black), but we want it INSIDE for left wall
           // Gently nudge it back instead of hard respawn to prevent flickering
           const nudgeStrength = 0.02;
           p.vx += (Math.random() - 0.5) * nudgeStrength;
@@ -2186,10 +2186,10 @@ function updateProjection(time) {
       
       if (hasWebcamAccess) {
         // WEBCAM MODE: Sample B&W threshold
-        // Right wall = particles in WHITE areas (255) of the FULL webcam feed
+        // Right wall = particles OUTSIDE silhouette (BLACK areas in B&W / dark areas/background)
         const isBright = sampleThreshold(p.x, p.y, 'right'); // true = white/255, false = black/0
-        if (isBright === false) {
-          // Particle is in BLACK area, but we want it in WHITE areas for right wall
+        if (isBright === true) {
+          // Particle is INSIDE silhouette (in white), but we want it OUTSIDE for right wall
           // Gently nudge it back instead of hard respawn to prevent flickering
           const nudgeStrength = 0.02;
           p.vx += (Math.random() - 0.5) * nudgeStrength;
