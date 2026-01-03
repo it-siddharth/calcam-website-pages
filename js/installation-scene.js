@@ -2114,12 +2114,12 @@ function updateProjection(time) {
       let shouldRespawn = false;
       
       if (hasWebcamAccess) {
-        // WEBCAM MODE: Sample threshold to detect silhouette
-        // Left wall = particles INSIDE silhouette (forming your shape)
-        const isInSilhouette = sampleThreshold(p.x, p.y, 'left');
-        if (isInSilhouette === false) {
-          // Particle is outside silhouette - gently nudge it back instead of hard respawn
-          // This prevents flickering
+        // WEBCAM MODE: Sample B&W threshold
+        // Left wall = particles in BLACK areas (0) of the FULL webcam feed
+        const isBright = sampleThreshold(p.x, p.y, 'left'); // true = white/255, false = black/0
+        if (isBright === true) {
+          // Particle is in WHITE area, but we want it in BLACK areas for left wall
+          // Gently nudge it back instead of hard respawn to prevent flickering
           const nudgeStrength = 0.02;
           p.vx += (Math.random() - 0.5) * nudgeStrength;
           p.vy += (Math.random() - 0.5) * nudgeStrength;
@@ -2185,12 +2185,12 @@ function updateProjection(time) {
       let shouldRespawn = false;
       
       if (hasWebcamAccess) {
-        // WEBCAM MODE: Sample threshold to detect silhouette
-        // Right wall = particles OUTSIDE silhouette (background)
-        const isInSilhouette = sampleThreshold(p.x, p.y, 'right');
-        if (isInSilhouette === true) {
-          // Particle is inside silhouette - gently nudge it away instead of hard respawn
-          // This prevents flickering
+        // WEBCAM MODE: Sample B&W threshold
+        // Right wall = particles in WHITE areas (255) of the FULL webcam feed
+        const isBright = sampleThreshold(p.x, p.y, 'right'); // true = white/255, false = black/0
+        if (isBright === false) {
+          // Particle is in BLACK area, but we want it in WHITE areas for right wall
+          // Gently nudge it back instead of hard respawn to prevent flickering
           const nudgeStrength = 0.02;
           p.vx += (Math.random() - 0.5) * nudgeStrength;
           p.vy += (Math.random() - 0.5) * nudgeStrength;
