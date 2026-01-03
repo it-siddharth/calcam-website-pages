@@ -95,32 +95,11 @@ let scene, camera, renderer, controls;
 let installationGroup, tvGroup, tvScreen, tvScreenTexture, tvFrame, screenBorder;
 let standPole;
 let acrylicPanels = [];
-let leftProjectionPlane, leftProjectionMaterial;
-let rightProjectionPlane, rightProjectionMaterial;
+let projectionPlane, projectionMaterial;
 let ambientLight, tvGlow;
 let walls = [], floor, ceiling, backWall;
 let speakers = [];
 let silhouetteCanvas, silhouetteCtx;
-
-// Webcam threshold system
-let webcamCanvas, webcamCtx;
-let thresholdCanvas, thresholdCtx;
-let webcamStream = null;
-let webcamVideo = null;
-let hasWebcamAccess = false;
-let thresholdValue = 127; // Single threshold for both walls
-let leftWallVisible = true;
-let rightWallVisible = true;
-let leftWallOpacity = 0.8;
-let rightWallOpacity = 0.8;
-let leftParticleSize = 0.035;
-let rightParticleSize = 0.035;
-let leftParticleSpeed = 1.0;
-let rightParticleSpeed = 1.0;
-let debugView = false;
-let showPureBW = false;
-let debugCanvas = null;
-let debugCtx = null;
 
 // Movement
 let moveForward = false, moveBackward = false;
@@ -138,8 +117,7 @@ const TOUCH_SENSITIVITY = 0.003;
 
 // Projection animation
 let projectionTime = 0;
-let leftParticlePositions = [];
-let rightParticlePositions = [];
+let particlePositions = [];
 const PARTICLE_COUNT = 12000;
 
 // Model control state
@@ -694,9 +672,6 @@ function init() {
   // Setup silhouette texture
   setupSilhouetteTexture();
   
-  // Setup webcam threshold system for wall projections
-  setupWebcamThreshold();
-  
   // Setup controls
   setupKeyboardControls();
   setupRoomControls();
@@ -1064,22 +1039,11 @@ function createSpeakers() {
 }
 
 // ============================================
-// Create Wall Projections (Point Cloud Effect)
+// Create Wall Projection (Point Cloud Effect)
 // ============================================
 function createProjection() {
-  // Initialize particle positions for both walls
   for (let i = 0; i < PARTICLE_COUNT; i++) {
-    leftParticlePositions.push({
-      x: (Math.random() - 0.5) * 5,
-      y: Math.random() * 3 + 0.5,
-      z: 0,
-      vx: (Math.random() - 0.5) * 0.015,
-      vy: (Math.random() - 0.5) * 0.015,
-      baseX: 0,
-      baseY: 0
-    });
-    
-    rightParticlePositions.push({
+    particlePositions.push({
       x: (Math.random() - 0.5) * 5,
       y: Math.random() * 3 + 0.5,
       z: 0,
@@ -1090,84 +1054,42 @@ function createProjection() {
     });
   }
   
-  // Left wall projection (particles outside silhouette)
-  const leftGeometry = new THREE.BufferGeometry();
-  const leftPositions = new Float32Array(PARTICLE_COUNT * 3);
-  const leftColors = new Float32Array(PARTICLE_COUNT * 3);
-  const leftSizes = new Float32Array(PARTICLE_COUNT);
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(PARTICLE_COUNT * 3);
+  const colors = new Float32Array(PARTICLE_COUNT * 3);
+  const sizes = new Float32Array(PARTICLE_COUNT);
   
   for (let i = 0; i < PARTICLE_COUNT; i++) {
-    leftPositions[i * 3] = leftParticlePositions[i].x;
-    leftPositions[i * 3 + 1] = leftParticlePositions[i].y;
-    leftPositions[i * 3 + 2] = leftParticlePositions[i].z;
+    positions[i * 3] = particlePositions[i].x;
+    positions[i * 3 + 1] = particlePositions[i].y;
+    positions[i * 3 + 2] = particlePositions[i].z;
     
-    leftColors[i * 3] = 0.85 + Math.random() * 0.15;
-    leftColors[i * 3 + 1] = 0.8 + Math.random() * 0.15;
-    leftColors[i * 3 + 2] = 0.75 + Math.random() * 0.15;
+    colors[i * 3] = 0.85 + Math.random() * 0.15;
+    colors[i * 3 + 1] = 0.8 + Math.random() * 0.15;
+    colors[i * 3 + 2] = 0.75 + Math.random() * 0.15;
     
-    leftSizes[i] = Math.random() * 0.025 + 0.008;
+    sizes[i] = Math.random() * 0.025 + 0.008;
   }
   
-  leftGeometry.setAttribute('position', new THREE.BufferAttribute(leftPositions, 3));
-  leftGeometry.setAttribute('color', new THREE.BufferAttribute(leftColors, 3));
-  leftGeometry.setAttribute('size', new THREE.BufferAttribute(leftSizes, 1));
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
   
-  leftProjectionMaterial = new THREE.PointsMaterial({
-    size: leftParticleSize,
+  projectionMaterial = new THREE.PointsMaterial({
+    size: 0.035,
     vertexColors: true,
     transparent: true,
-    opacity: leftWallOpacity,
+    opacity: roomSettings.projectionIntensity,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
     sizeAttenuation: true
   });
   
-  leftProjectionPlane = new THREE.Points(leftGeometry, leftProjectionMaterial);
-  leftProjectionPlane.position.set(-CONFIG.room.width / 2 + 0.1, 0, -1);
-  leftProjectionPlane.rotation.y = Math.PI / 2;
-  leftProjectionPlane.visible = leftWallVisible;
-  scene.add(leftProjectionPlane);
-  
-  // Right wall projection (particles inside silhouette)
-  const rightGeometry = new THREE.BufferGeometry();
-  const rightPositions = new Float32Array(PARTICLE_COUNT * 3);
-  const rightColors = new Float32Array(PARTICLE_COUNT * 3);
-  const rightSizes = new Float32Array(PARTICLE_COUNT);
-  
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    rightPositions[i * 3] = rightParticlePositions[i].x;
-    rightPositions[i * 3 + 1] = rightParticlePositions[i].y;
-    rightPositions[i * 3 + 2] = rightParticlePositions[i].z;
-    
-    rightColors[i * 3] = 0.85 + Math.random() * 0.15;
-    rightColors[i * 3 + 1] = 0.8 + Math.random() * 0.15;
-    rightColors[i * 3 + 2] = 0.75 + Math.random() * 0.15;
-    
-    rightSizes[i] = Math.random() * 0.025 + 0.008;
-  }
-  
-  rightGeometry.setAttribute('position', new THREE.BufferAttribute(rightPositions, 3));
-  rightGeometry.setAttribute('color', new THREE.BufferAttribute(rightColors, 3));
-  rightGeometry.setAttribute('size', new THREE.BufferAttribute(rightSizes, 1));
-  
-  rightProjectionMaterial = new THREE.PointsMaterial({
-    size: rightParticleSize,
-    vertexColors: true,
-    transparent: true,
-    opacity: rightWallOpacity,
-    blending: THREE.AdditiveBlending,
-    depthWrite: false,
-    sizeAttenuation: true
-  });
-  
-  rightProjectionPlane = new THREE.Points(rightGeometry, rightProjectionMaterial);
-  rightProjectionPlane.position.set(CONFIG.room.width / 2 - 0.1, 0, -1);
-  rightProjectionPlane.rotation.y = -Math.PI / 2;
-  rightProjectionPlane.visible = rightWallVisible;
-  scene.add(rightProjectionPlane);
-  
-  // Setup wall projection controls after creating projections
-  setupWallProjectionControls();
+  projectionPlane = new THREE.Points(geometry, projectionMaterial);
+  projectionPlane.position.set(-CONFIG.room.width / 2 + 0.1, 0, -1);
+  projectionPlane.rotation.y = Math.PI / 2;
+  projectionPlane.visible = roomSettings.projectionOn;
+  scene.add(projectionPlane);
 }
 
 // ============================================
@@ -1218,228 +1140,6 @@ function setupSilhouetteTexture() {
   } else {
     // No iframe, use placeholder
     setInterval(drawPlaceholderAnimation, 1000 / 30);
-  }
-}
-
-// ============================================
-// Setup Webcam Threshold System
-// ============================================
-function setupWebcamThreshold() {
-  // Create hidden canvas for webcam capture
-  webcamCanvas = document.createElement('canvas');
-  webcamCanvas.width = 320; // Lower res for performance
-  webcamCanvas.height = 240;
-  webcamCtx = webcamCanvas.getContext('2d', { willReadFrequently: true });
-  
-  // Setup debug canvas
-  debugCanvas = document.getElementById('debug-canvas');
-  if (debugCanvas) {
-    debugCtx = debugCanvas.getContext('2d');
-  }
-  
-  // Create video element for webcam
-  webcamVideo = document.createElement('video');
-  webcamVideo.width = 320;
-  webcamVideo.height = 240;
-  webcamVideo.autoplay = true;
-  webcamVideo.playsInline = true;
-  
-  // Request webcam access
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia({ 
-      video: { 
-        width: 320, 
-        height: 240,
-        facingMode: 'user'
-      } 
-    })
-    .then(stream => {
-      webcamStream = stream;
-      webcamVideo.srcObject = stream;
-      hasWebcamAccess = true;
-      console.log('Webcam access granted for wall projections');
-      updateWebcamStatus(true);
-      
-      // Start processing webcam frames
-      processWebcamFrame();
-    })
-    .catch(err => {
-      console.log('Webcam access denied or unavailable, using fallback shape:', err);
-      hasWebcamAccess = false;
-      updateWebcamStatus(false);
-    });
-  } else {
-    console.log('getUserMedia not supported, using fallback shape');
-    hasWebcamAccess = false;
-    updateWebcamStatus(false);
-  }
-}
-
-function updateWebcamStatus(active) {
-  const statusEl = document.getElementById('webcam-status');
-  if (statusEl) {
-    if (active) {
-      statusEl.textContent = 'Active';
-      statusEl.className = 'status-indicator active';
-    } else {
-      statusEl.textContent = 'Fallback Mode';
-      statusEl.className = 'status-indicator inactive';
-    }
-  }
-}
-
-function processWebcamFrame() {
-  if (!hasWebcamAccess || !webcamVideo) {
-    requestAnimationFrame(processWebcamFrame);
-    return;
-  }
-  
-  if (webcamVideo.readyState !== webcamVideo.HAVE_ENOUGH_DATA) {
-    requestAnimationFrame(processWebcamFrame);
-    return;
-  }
-  
-  try {
-    // Draw mirrored webcam feed
-    webcamCtx.save();
-    webcamCtx.scale(-1, 1); // Mirror horizontally
-    webcamCtx.drawImage(webcamVideo, -webcamCanvas.width, 0, webcamCanvas.width, webcamCanvas.height);
-    webcamCtx.restore();
-    
-    // Update black & white threshold data
-    updateBlackWhiteThreshold();
-    
-    // Draw to debug canvas if enabled
-    if (debugView && debugCtx) {
-      debugCtx.save();
-      debugCtx.scale(-1, 1);
-      debugCtx.drawImage(webcamVideo, -debugCanvas.width, 0, debugCanvas.width, debugCanvas.height);
-      debugCtx.restore();
-      
-      if (bwThresholdData) {
-        if (showPureBW) {
-          // Show PURE B&W output
-          const imageData = debugCtx.createImageData(debugCanvas.width, debugCanvas.height);
-          const pixels = imageData.data;
-          
-          for (let i = 0; i < bwThresholdData.length; i++) {
-            const bwValue = bwThresholdData[i];
-            
-            pixels[i * 4] = bwValue;     // R
-            pixels[i * 4 + 1] = bwValue; // G
-            pixels[i * 4 + 2] = bwValue; // B
-            pixels[i * 4 + 3] = 255;     // A
-          }
-          
-          debugCtx.putImageData(imageData, 0, 0);
-          
-          // Label
-          debugCtx.font = '12px monospace';
-          debugCtx.fillStyle = 'rgba(255, 0, 0, 0.9)';
-          debugCtx.fillText('PURE B&W THRESHOLD', 10, 20);
-        } else {
-          // Show color-coded overlay (white=bright, black=dark)
-          const imageData = debugCtx.getImageData(0, 0, debugCanvas.width, debugCanvas.height);
-          const pixels = imageData.data;
-          
-          for (let i = 0; i < bwThresholdData.length; i++) {
-            const bwValue = bwThresholdData[i];
-            
-            if (bwValue === 255) {
-              // White/bright area (silhouette) - Green tint
-              pixels[i * 4] = Math.max(0, pixels[i * 4] - 30);
-              pixels[i * 4 + 1] = Math.min(255, pixels[i * 4 + 1] + 60);
-              pixels[i * 4 + 2] = Math.max(0, pixels[i * 4 + 2] - 30);
-            } else {
-              // Black/dark area (background) - Blue tint
-              pixels[i * 4] = Math.max(0, pixels[i * 4] - 30);
-              pixels[i * 4 + 1] = Math.max(0, pixels[i * 4 + 1] - 30);
-              pixels[i * 4 + 2] = Math.min(255, pixels[i * 4 + 2] + 60);
-            }
-          }
-          
-          debugCtx.putImageData(imageData, 0, 0);
-          
-          // Add legend
-          debugCtx.font = '11px monospace';
-          debugCtx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-          debugCtx.fillRect(5, 5, 180, 45);
-          debugCtx.fillStyle = '#00ff00';
-          debugCtx.fillText('Green: Bright (silhouette)', 10, 20);
-          debugCtx.fillStyle = '#0000ff';
-          debugCtx.fillText('Blue: Dark (background)', 10, 35);
-        }
-      }
-    }
-  } catch (e) {
-    console.error('Error drawing webcam frame:', e);
-  }
-  
-  // Continue processing
-  requestAnimationFrame(processWebcamFrame);
-}
-
-// Black & white threshold data for each wall
-let leftWallBWData = null;
-let rightWallBWData = null;
-
-// Single black & white threshold (ONE webcam feed, ONE threshold)
-// ALWAYS use pure binary Black & White thresholding (0 or 255 only, no grayscale)
-function updateBlackWhiteThreshold() {
-  if (!hasWebcamAccess || !webcamCanvas || !webcamCtx) {
-    return;
-  }
-  
-  try {
-    // Get webcam image data
-    const imageData = webcamCtx.getImageData(0, 0, webcamCanvas.width, webcamCanvas.height);
-    const pixels = imageData.data;
-    const pixelCount = webcamCanvas.width * webcamCanvas.height;
-    
-    // Create single B&W array
-    bwThresholdData = new Uint8Array(pixelCount);
-    
-    // BINARY THRESHOLDING ONLY - No grayscale, only pure black (0) or white (255)
-    for (let i = 0; i < pixels.length; i += 4) {
-      const r = pixels[i];
-      const g = pixels[i + 1];
-      const b = pixels[i + 2];
-      
-      // Calculate brightness (grayscale conversion)
-      const brightness = (r + g + b) / 3;
-      
-      // Apply SINGLE threshold -> PURE BINARY (0 or 255 ONLY)
-      bwThresholdData[i / 4] = brightness > thresholdValue ? 255 : 0;
-    }
-  } catch (e) {
-    console.error('Error creating B&W threshold:', e);
-  }
-}
-
-// Sample from black & white threshold data
-function sampleThreshold(normalizedX, normalizedY) {
-  if (!hasWebcamAccess || !webcamCanvas || !bwThresholdData) {
-    return null; // Will trigger fallback logic
-  }
-  
-  try {
-    // Convert normalized coordinates to canvas coordinates
-    // Map projection space (-2.5 to 2.5 horizontal, 0.5 to 3.5 vertical) to canvas (0 to 320, 0 to 240)
-    const canvasX = Math.floor(((normalizedX + 2.5) / 5.0) * webcamCanvas.width);
-    const canvasY = Math.floor((1 - ((normalizedY - 0.5) / 3.0)) * webcamCanvas.height);
-    
-    // Clamp to canvas bounds
-    const x = Math.max(0, Math.min(webcamCanvas.width - 1, canvasX));
-    const y = Math.max(0, Math.min(webcamCanvas.height - 1, canvasY));
-    
-    // Sample from B&W data
-    const index = y * webcamCanvas.width + x;
-    const bwValue = bwThresholdData[index];
-    
-    // Return true if white (bright/silhouette), false if black (dark/background)
-    return bwValue === 255;
-  } catch (e) {
-    return null; // Error sampling, use fallback
   }
 }
 
@@ -1684,8 +1384,7 @@ function setupRoomControls() {
   if (projCtrl) {
     projCtrl.addEventListener('change', (e) => {
       roomSettings.projectionOn = e.target.checked;
-      if (leftProjectionPlane) leftProjectionPlane.visible = e.target.checked;
-      if (rightProjectionPlane) rightProjectionPlane.visible = e.target.checked;
+      projectionPlane.visible = e.target.checked;
     });
   }
   
@@ -1696,8 +1395,7 @@ function setupRoomControls() {
       const v = parseFloat(e.target.value);
       document.getElementById('val-projintensity').textContent = v.toFixed(1);
       roomSettings.projectionIntensity = v;
-      if (leftProjectionMaterial) leftProjectionMaterial.opacity = v;
-      if (rightProjectionMaterial) rightProjectionMaterial.opacity = v;
+      projectionMaterial.opacity = v;
     });
   }
 }
@@ -1799,144 +1497,6 @@ function setupModelControls() {
   }
 }
 
-// ============================================
-// Setup Wall Projection Controls
-// ============================================
-function setupWallProjectionControls() {
-  // Single threshold control
-  const thresholdCtrl = document.getElementById('ctrl-threshold');
-  if (thresholdCtrl) {
-    thresholdCtrl.value = thresholdValue;
-    document.getElementById('val-threshold').textContent = thresholdValue;
-    thresholdCtrl.addEventListener('input', (e) => {
-      thresholdValue = parseInt(e.target.value);
-      document.getElementById('val-threshold').textContent = thresholdValue;
-    });
-  }
-  
-  // Left wall visible toggle
-  const leftVisibleCtrl = document.getElementById('ctrl-left-visible');
-  if (leftVisibleCtrl) {
-    leftVisibleCtrl.checked = leftWallVisible;
-    leftVisibleCtrl.addEventListener('change', (e) => {
-      leftWallVisible = e.target.checked;
-      if (leftProjectionPlane) {
-        leftProjectionPlane.visible = leftWallVisible;
-      }
-    });
-  }
-  
-  // Left wall opacity
-  const leftOpacityCtrl = document.getElementById('ctrl-left-opacity');
-  if (leftOpacityCtrl) {
-    leftOpacityCtrl.value = leftWallOpacity;
-    document.getElementById('val-left-opacity').textContent = leftWallOpacity.toFixed(2);
-    leftOpacityCtrl.addEventListener('input', (e) => {
-      leftWallOpacity = parseFloat(e.target.value);
-      document.getElementById('val-left-opacity').textContent = leftWallOpacity.toFixed(2);
-      if (leftProjectionMaterial) {
-        leftProjectionMaterial.opacity = leftWallOpacity;
-      }
-    });
-  }
-  
-  // Right wall visible toggle
-  const rightVisibleCtrl = document.getElementById('ctrl-right-visible');
-  if (rightVisibleCtrl) {
-    rightVisibleCtrl.checked = rightWallVisible;
-    rightVisibleCtrl.addEventListener('change', (e) => {
-      rightWallVisible = e.target.checked;
-      if (rightProjectionPlane) {
-        rightProjectionPlane.visible = rightWallVisible;
-      }
-    });
-  }
-  
-  // Right wall opacity
-  const rightOpacityCtrl = document.getElementById('ctrl-right-opacity');
-  if (rightOpacityCtrl) {
-    rightOpacityCtrl.value = rightWallOpacity;
-    document.getElementById('val-right-opacity').textContent = rightWallOpacity.toFixed(2);
-    rightOpacityCtrl.addEventListener('input', (e) => {
-      rightWallOpacity = parseFloat(e.target.value);
-      document.getElementById('val-right-opacity').textContent = rightWallOpacity.toFixed(2);
-      if (rightProjectionMaterial) {
-        rightProjectionMaterial.opacity = rightWallOpacity;
-      }
-    });
-  }
-  
-  // Left wall particle size
-  const leftSizeCtrl = document.getElementById('ctrl-left-size');
-  if (leftSizeCtrl) {
-    leftSizeCtrl.value = leftParticleSize;
-    document.getElementById('val-left-size').textContent = leftParticleSize.toFixed(3);
-    leftSizeCtrl.addEventListener('input', (e) => {
-      leftParticleSize = parseFloat(e.target.value);
-      document.getElementById('val-left-size').textContent = leftParticleSize.toFixed(3);
-      if (leftProjectionMaterial) {
-        leftProjectionMaterial.size = leftParticleSize;
-      }
-    });
-  }
-  
-  // Left wall particle speed
-  const leftSpeedCtrl = document.getElementById('ctrl-left-speed');
-  if (leftSpeedCtrl) {
-    leftSpeedCtrl.value = leftParticleSpeed;
-    document.getElementById('val-left-speed').textContent = leftParticleSpeed.toFixed(2);
-    leftSpeedCtrl.addEventListener('input', (e) => {
-      leftParticleSpeed = parseFloat(e.target.value);
-      document.getElementById('val-left-speed').textContent = leftParticleSpeed.toFixed(2);
-    });
-  }
-  
-  // Right wall particle size
-  const rightSizeCtrl = document.getElementById('ctrl-right-size');
-  if (rightSizeCtrl) {
-    rightSizeCtrl.value = rightParticleSize;
-    document.getElementById('val-right-size').textContent = rightParticleSize.toFixed(3);
-    rightSizeCtrl.addEventListener('input', (e) => {
-      rightParticleSize = parseFloat(e.target.value);
-      document.getElementById('val-right-size').textContent = rightParticleSize.toFixed(3);
-      if (rightProjectionMaterial) {
-        rightProjectionMaterial.size = rightParticleSize;
-      }
-    });
-  }
-  
-  // Right wall particle speed
-  const rightSpeedCtrl = document.getElementById('ctrl-right-speed');
-  if (rightSpeedCtrl) {
-    rightSpeedCtrl.value = rightParticleSpeed;
-    document.getElementById('val-right-speed').textContent = rightParticleSpeed.toFixed(2);
-    rightSpeedCtrl.addEventListener('input', (e) => {
-      rightParticleSpeed = parseFloat(e.target.value);
-      document.getElementById('val-right-speed').textContent = rightParticleSpeed.toFixed(2);
-    });
-  }
-  
-  // Debug view toggle
-  const debugViewCtrl = document.getElementById('ctrl-debug-view');
-  if (debugViewCtrl) {
-    debugViewCtrl.addEventListener('change', (e) => {
-      debugView = e.target.checked;
-      const debugWebcam = document.getElementById('debug-webcam');
-      if (debugWebcam) {
-        debugWebcam.style.display = debugView ? 'block' : 'none';
-      }
-    });
-  }
-  
-  // Pure B&W view toggle
-  const showBWCtrl = document.getElementById('ctrl-show-bw');
-  if (showBWCtrl) {
-    showBWCtrl.addEventListener('change', (e) => {
-      showPureBW = e.target.checked;
-    });
-  }
-}
-
 // Global functions for buttons
 window.toggleRoomControls = function() {
   const panel = document.getElementById('room-controls');
@@ -2021,10 +1581,8 @@ window.resetRoomSettings = function() {
   });
   floor.material.color.set(defaults.floorColor);
   ceiling.material.color.set(defaults.ceilingColor);
-  if (leftProjectionPlane) leftProjectionPlane.visible = defaults.projectionOn;
-  if (rightProjectionPlane) rightProjectionPlane.visible = defaults.projectionOn;
-  if (leftProjectionMaterial) leftProjectionMaterial.opacity = defaults.projectionIntensity;
-  if (rightProjectionMaterial) rightProjectionMaterial.opacity = defaults.projectionIntensity;
+  projectionPlane.visible = defaults.projectionOn;
+  projectionMaterial.opacity = defaults.projectionIntensity;
   acrylicPanels.forEach(panel => panel.material.opacity = defaults.panelOpacity);
   updatePanelThickness(defaults.thickness);
   updatePanelSpacing(defaults.hSpread, defaults.vSpread, defaults.zOffset);
@@ -2052,169 +1610,55 @@ if (localStorage.getItem('installationHintDismissed')) {
 // Update Projection Animation
 // ============================================
 function updateProjection(time) {
-  if (!roomSettings.projectionOn) return;
+  if (!projectionPlane || !roomSettings.projectionOn) return;
   
-  // Update LEFT wall projection (particles in DARK areas - webcam-driven or fallback)
-  if (leftProjectionPlane) {
-    const leftPositions = leftProjectionPlane.geometry.attributes.position.array;
+  const positions = projectionPlane.geometry.attributes.position.array;
+  
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const p = particlePositions[i];
     
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      const p = leftParticlePositions[i];
-      
-      const noiseX = Math.sin(time * 0.4 + p.baseY * 2) * 0.25;
-      const noiseY = Math.cos(time * 0.25 + p.baseX * 2) * 0.15;
-      
-      p.x += p.vx + noiseX * 0.008;
-      p.y += p.vy + noiseY * 0.008;
-      
-      let shouldRespawn = false;
-      
-      if (hasWebcamAccess) {
-        // WEBCAM MODE: Sample B&W threshold
-        // Left wall = particles INSIDE silhouette (WHITE areas in B&W / bright areas)
-        const isBright = sampleThreshold(p.x, p.y); // true = white/255, false = black/0
-        if (isBright === false) {
-          // Particle is OUTSIDE silhouette (in black), but we want it INSIDE for left wall
-          // Gently nudge it back instead of hard respawn to prevent flickering
-          const nudgeStrength = 0.02;
-          p.vx += (Math.random() - 0.5) * nudgeStrength;
-          p.vy += (Math.random() - 0.5) * nudgeStrength;
-          
-          // Only hard respawn if way too far out of bounds
-          if (Math.abs(p.x) > 3 || p.y < 0 || p.y > 4) {
-            shouldRespawn = true;
-          }
-        }
+    const noiseX = Math.sin(time * 0.4 + p.baseY * 2) * 0.25;
+    const noiseY = Math.cos(time * 0.25 + p.baseX * 2) * 0.15;
+    
+    p.x += p.vx + noiseX * 0.008;
+    p.y += p.vy + noiseY * 0.008;
+    
+    const centerY = 2;
+    const centerX = 0;
+    const headRadiusX = 1;
+    const headRadiusY = 1.3;
+    const headCenterY = centerY + 0.4;
+    
+    const inHead = Math.pow((p.x - centerX) / headRadiusX, 2) + 
+                   Math.pow((p.y - headCenterY) / headRadiusY, 2) < 1;
+    
+    const bodyTop = centerY - 0.7;
+    const inBody = p.y < bodyTop && p.y > 0.3 &&
+                   Math.abs(p.x) < 1.8 - (bodyTop - p.y) * 0.4;
+    
+    if (!inHead && !inBody) {
+      if (Math.random() > 0.5) {
+        const angle = Math.random() * Math.PI * 2;
+        const r = Math.random();
+        p.x = centerX + Math.cos(angle) * headRadiusX * r;
+        p.y = headCenterY + Math.sin(angle) * headRadiusY * r;
       } else {
-        // FALLBACK MODE: Use programmatic shape
-        const centerY = 2;
-        const centerX = 0;
-        const headRadiusX = 1;
-        const headRadiusY = 1.3;
-        const headCenterY = centerY + 0.4;
-        
-        const inHead = Math.pow((p.x - centerX) / headRadiusX, 2) + 
-                       Math.pow((p.y - headCenterY) / headRadiusY, 2) < 1;
-        
-        const bodyTop = centerY - 0.7;
-        const inBody = p.y < bodyTop && p.y > 0.3 &&
-                       Math.abs(p.x) < 1.8 - (bodyTop - p.y) * 0.4;
-        
-        // ORIGINAL LOGIC: If particle is OUTSIDE silhouette, respawn it INSIDE
-        if (!inHead && !inBody) {
-          shouldRespawn = true;
-        }
+        p.x = (Math.random() - 0.5) * 2.5;
+        p.y = Math.random() * (bodyTop - 0.3) + 0.3;
       }
-      
-      if (shouldRespawn) {
-        // Respawn in a random position with lower velocity to reduce flickering
-        p.x = (Math.random() - 0.5) * 5;
-        p.y = Math.random() * 3 + 0.5;
-        p.vx = (Math.random() - 0.5) * 0.004;
-        p.vy = (Math.random() - 0.5) * 0.004;
-      }
-      
-      p.baseX = p.x;
-      p.baseY = p.y;
-      
-      leftPositions[i * 3] = p.x;
-      leftPositions[i * 3 + 1] = p.y;
-      leftPositions[i * 3 + 2] = Math.sin(time + i * 0.001) * 0.03;
+      p.vx = (Math.random() - 0.5) * 0.008;
+      p.vy = (Math.random() - 0.5) * 0.008;
     }
     
-    leftProjectionPlane.geometry.attributes.position.needsUpdate = true;
+    p.baseX = p.x;
+    p.baseY = p.y;
+    
+    positions[i * 3] = p.x;
+    positions[i * 3 + 1] = p.y;
+    positions[i * 3 + 2] = Math.sin(time + i * 0.001) * 0.03;
   }
   
-  // Update RIGHT wall projection (particles in BRIGHT areas - webcam-driven or fallback)
-  if (rightProjectionPlane) {
-    const rightPositions = rightProjectionPlane.geometry.attributes.position.array;
-    
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      const p = rightParticlePositions[i];
-      
-      const noiseX = Math.sin(time * 0.4 + p.baseY * 2) * 0.25;
-      const noiseY = Math.cos(time * 0.25 + p.baseX * 2) * 0.15;
-      
-      p.x += (p.vx + noiseX * 0.008) * rightParticleSpeed;
-      p.y += (p.vy + noiseY * 0.008) * rightParticleSpeed;
-      
-      let shouldRespawn = false;
-      
-      if (hasWebcamAccess) {
-        // WEBCAM MODE: Sample B&W threshold
-        // Right wall = particles OUTSIDE silhouette (BLACK areas in B&W / dark areas/background)
-        const isBright = sampleThreshold(p.x, p.y); // true = white/255, false = black/0
-        if (isBright === true) {
-          // Particle is INSIDE silhouette (in white), but we want it OUTSIDE for right wall
-          // Gently nudge it back instead of hard respawn to prevent flickering
-          const nudgeStrength = 0.02;
-          p.vx += (Math.random() - 0.5) * nudgeStrength;
-          p.vy += (Math.random() - 0.5) * nudgeStrength;
-          
-          // Only hard respawn if way too far out of bounds
-          if (Math.abs(p.x) > 3 || p.y < 0 || p.y > 4) {
-            shouldRespawn = true;
-          }
-        }
-      } else {
-        // FALLBACK MODE: Use programmatic shape
-        const centerY = 2;
-        const centerX = 0;
-        const headRadiusX = 1;
-        const headRadiusY = 1.3;
-        const headCenterY = centerY + 0.4;
-        
-        const inHead = Math.pow((p.x - centerX) / headRadiusX, 2) + 
-                       Math.pow((p.y - headCenterY) / headRadiusY, 2) < 1;
-        
-        const bodyTop = centerY - 0.7;
-        const inBody = p.y < bodyTop && p.y > 0.3 &&
-                       Math.abs(p.x) < 1.8 - (bodyTop - p.y) * 0.4;
-        
-        // INVERTED LOGIC: If particle is INSIDE silhouette, respawn it OUTSIDE
-        if (inHead || inBody) {
-          shouldRespawn = true;
-        }
-      }
-      
-      if (shouldRespawn) {
-        if (hasWebcamAccess) {
-          // Respawn in a random position with lower velocity
-          p.x = (Math.random() - 0.5) * 5;
-          p.y = Math.random() * 3 + 0.5;
-        } else {
-          // Respawn inside the programmatic shape
-          const centerY = 2;
-          const centerX = 0;
-          const headRadiusX = 1;
-          const headRadiusY = 1.3;
-          const headCenterY = centerY + 0.4;
-          const bodyTop = centerY - 0.7;
-          
-          if (Math.random() > 0.5) {
-            const angle = Math.random() * Math.PI * 2;
-            const r = Math.random();
-            p.x = centerX + Math.cos(angle) * headRadiusX * r;
-            p.y = headCenterY + Math.sin(angle) * headRadiusY * r;
-          } else {
-            p.x = (Math.random() - 0.5) * 2.5;
-            p.y = Math.random() * (bodyTop - 0.3) + 0.3;
-          }
-        }
-        p.vx = (Math.random() - 0.5) * 0.004;
-        p.vy = (Math.random() - 0.5) * 0.004;
-      }
-      
-      p.baseX = p.x;
-      p.baseY = p.y;
-      
-      rightPositions[i * 3] = p.x;
-      rightPositions[i * 3 + 1] = p.y;
-      rightPositions[i * 3 + 2] = Math.sin(time + i * 0.001) * 0.03;
-    }
-    
-    rightProjectionPlane.geometry.attributes.position.needsUpdate = true;
-  }
+  projectionPlane.geometry.attributes.position.needsUpdate = true;
 }
 
 // ============================================

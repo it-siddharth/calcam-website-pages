@@ -141,8 +141,8 @@
     <button class="panel-close" onclick="closeAnchorPanel()">×</button>
     <h3 class="panel-title">LEFT WALL</h3>
     <div class="panel-description">
-      <p>Your webcam silhouette is reconstructed from thousands of particles. Your body, face, and gestures are formed from light.</p>
-      <p>You are made visible through data. Move, and watch yourself dissolve and reform in real time.</p>
+      <p>A particle projection dances on this wall, forming a human silhouette from thousands of points of light.</p>
+      <p>It represents the fragmented nature of digital identity—how we exist as data points in the modern world.</p>
     </div>
   </div>
   
@@ -150,8 +150,8 @@
     <button class="panel-close" onclick="closeAnchorPanel()">×</button>
     <h3 class="panel-title">RIGHT WALL</h3>
     <div class="panel-description">
-      <p>Through the webcam, your silhouette is captured and inverted. Particles fill the background around you, defining you by absence.</p>
-      <p>You appear as a void carved from light. The space you occupy becomes emptiness, and what surrounds you defines your form.</p>
+      <p>The opposite perspective. A mirror to the projection, this wall holds the space where your shadow would fall.</p>
+      <p>In the contrast between light and dark, we find the boundaries of self.</p>
     </div>
   </div>
 
@@ -195,133 +195,6 @@
   <audio id="bg-music" loop preload="auto">
     <source src="assets/Ambient Synth Pad E Minor 140 BPM.wav" type="audio/wav">
   </audio>
-
-  <!-- Controls Toggle Button -->
-  <button id="controls-toggle" class="controls-toggle" onclick="toggleRoomControls()" aria-label="Toggle controls">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="3"></circle>
-      <path d="M12 1v6m0 6v6m8-11h-6m-6 0H1m20 8h-6m-6 0H1"></path>
-    </svg>
-  </button>
-
-  <!-- Room Controls Panel -->
-  <div id="room-controls" class="room-controls">
-    <div class="controls-header">
-      <h3>Wall Projections</h3>
-      <button onclick="toggleRoomControls()" class="close-btn">×</button>
-    </div>
-    
-    <div class="controls-content">
-      <!-- Global Threshold -->
-      <div class="control-group">
-        <label for="ctrl-threshold">
-          <span>Threshold</span>
-          <span class="control-value" id="val-threshold">127</span>
-        </label>
-        <input type="range" id="ctrl-threshold" min="0" max="255" value="127" step="1">
-        <small style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 4px; display: block;">Brightness cutoff for B&W conversion</small>
-      </div>
-      
-      <!-- Left Wall Controls -->
-      <div class="control-section">
-        <h4>Left Wall (Your Silhouette)</h4>
-        
-        <div class="control-group">
-          <label>
-            <input type="checkbox" id="ctrl-left-visible" checked>
-            <span>Show Left Wall</span>
-          </label>
-        </div>
-        
-        <div class="control-group">
-          <label for="ctrl-left-opacity">
-            <span>Opacity</span>
-            <span class="control-value" id="val-left-opacity">0.8</span>
-          </label>
-          <input type="range" id="ctrl-left-opacity" min="0" max="1" value="0.8" step="0.05">
-        </div>
-        
-        <div class="control-group">
-          <label for="ctrl-left-size">
-            <span>Particle Size</span>
-            <span class="control-value" id="val-left-size">0.035</span>
-          </label>
-          <input type="range" id="ctrl-left-size" min="0.01" max="0.1" value="0.035" step="0.005">
-        </div>
-        
-        <div class="control-group">
-          <label for="ctrl-left-speed">
-            <span>Movement Speed</span>
-            <span class="control-value" id="val-left-speed">1.00</span>
-          </label>
-          <input type="range" id="ctrl-left-speed" min="0" max="3" value="1.0" step="0.1">
-        </div>
-      </div>
-      
-      <!-- Right Wall Controls -->
-      <div class="control-section">
-        <h4>Right Wall (Background)</h4>
-        
-        <div class="control-group">
-          <label>
-            <input type="checkbox" id="ctrl-right-visible" checked>
-            <span>Show Right Wall</span>
-          </label>
-        </div>
-        
-        <div class="control-group">
-          <label for="ctrl-right-opacity">
-            <span>Opacity</span>
-            <span class="control-value" id="val-right-opacity">0.8</span>
-          </label>
-          <input type="range" id="ctrl-right-opacity" min="0" max="1" value="0.8" step="0.05">
-        </div>
-        
-        <div class="control-group">
-          <label for="ctrl-right-size">
-            <span>Particle Size</span>
-            <span class="control-value" id="val-right-size">0.035</span>
-          </label>
-          <input type="range" id="ctrl-right-size" min="0.01" max="0.1" value="0.035" step="0.005">
-        </div>
-        
-        <div class="control-group">
-          <label for="ctrl-right-speed">
-            <span>Movement Speed</span>
-            <span class="control-value" id="val-right-speed">1.00</span>
-          </label>
-          <input type="range" id="ctrl-right-speed" min="0" max="3" value="1.0" step="0.1">
-        </div>
-      </div>
-      
-      <!-- Webcam Status -->
-      <div class="control-group status-group">
-        <span>Webcam Status:</span>
-        <span id="webcam-status" class="status-indicator">Checking...</span>
-      </div>
-      
-      <!-- Debug View -->
-      <div class="control-group">
-        <label>
-          <input type="checkbox" id="ctrl-debug-view">
-          <span>Show Debug View</span>
-        </label>
-      </div>
-      
-      <div class="control-group">
-        <label>
-          <input type="checkbox" id="ctrl-show-bw">
-          <span>Show Pure B&W Output</span>
-        </label>
-        <small style="color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 4px; display: block;">Shows raw binary thresholding (0 or 255 only)</small>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Debug Webcam View -->
-  <div id="debug-webcam" style="position: fixed; top: 20px; left: 20px; display: none; z-index: 200; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; overflow: hidden; background: #000;">
-    <canvas id="debug-canvas" width="320" height="240"></canvas>
-  </div>
 
   <!-- Music Toggle Button -->
   <button id="music-toggle" class="music-toggle" aria-label="Toggle background music">
