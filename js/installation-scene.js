@@ -1902,9 +1902,11 @@ function updateProjection(time) {
       let shouldRespawn = false;
       
       if (hasWebcamAccess) {
-        // WEBCAM MODE: Sample threshold, respawn if particle is in BRIGHT area
-        const isBright = sampleThreshold(p.x, p.y);
-        if (isBright === true) {
+        // WEBCAM MODE: Sample threshold to detect silhouette
+        // Left wall = particles OUTSIDE silhouette (in background/dark areas)
+        const isInSilhouette = sampleThreshold(p.x, p.y);
+        if (isInSilhouette === true) {
+          // Particle is inside silhouette, but we want it outside for left wall
           shouldRespawn = true;
         }
       } else {
@@ -1963,9 +1965,11 @@ function updateProjection(time) {
       let shouldRespawn = false;
       
       if (hasWebcamAccess) {
-        // WEBCAM MODE: Sample threshold, respawn if particle is in DARK area
-        const isBright = sampleThreshold(p.x, p.y);
-        if (isBright === false) {
+        // WEBCAM MODE: Sample threshold to detect silhouette
+        // Right wall = particles INSIDE silhouette (forming your shape)
+        const isInSilhouette = sampleThreshold(p.x, p.y);
+        if (isInSilhouette === false) {
+          // Particle is outside silhouette, but we want it inside for right wall
           shouldRespawn = true;
         }
       } else {
