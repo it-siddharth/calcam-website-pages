@@ -114,6 +114,10 @@ let leftWallVisible = true;
 let rightWallVisible = true;
 let leftWallOpacity = 0.8;
 let rightWallOpacity = 0.8;
+let leftParticleSize = 0.035;
+let rightParticleSize = 0.035;
+let leftParticleSpeed = 1.0;
+let rightParticleSpeed = 1.0;
 let debugView = false;
 let debugCanvas = null;
 let debugCtx = null;
@@ -1109,7 +1113,7 @@ function createProjection() {
   leftGeometry.setAttribute('size', new THREE.BufferAttribute(leftSizes, 1));
   
   leftProjectionMaterial = new THREE.PointsMaterial({
-    size: 0.035,
+    size: leftParticleSize,
     vertexColors: true,
     transparent: true,
     opacity: leftWallOpacity,
@@ -1147,7 +1151,7 @@ function createProjection() {
   rightGeometry.setAttribute('size', new THREE.BufferAttribute(rightSizes, 1));
   
   rightProjectionMaterial = new THREE.PointsMaterial({
-    size: 0.035,
+    size: rightParticleSize,
     vertexColors: true,
     transparent: true,
     opacity: rightWallOpacity,
@@ -1835,6 +1839,56 @@ function setupWallProjectionControls() {
     });
   }
   
+  // Left wall particle size
+  const leftSizeCtrl = document.getElementById('ctrl-left-size');
+  if (leftSizeCtrl) {
+    leftSizeCtrl.value = leftParticleSize;
+    document.getElementById('val-left-size').textContent = leftParticleSize.toFixed(3);
+    leftSizeCtrl.addEventListener('input', (e) => {
+      leftParticleSize = parseFloat(e.target.value);
+      document.getElementById('val-left-size').textContent = leftParticleSize.toFixed(3);
+      if (leftProjectionMaterial) {
+        leftProjectionMaterial.size = leftParticleSize;
+      }
+    });
+  }
+  
+  // Left wall particle speed
+  const leftSpeedCtrl = document.getElementById('ctrl-left-speed');
+  if (leftSpeedCtrl) {
+    leftSpeedCtrl.value = leftParticleSpeed;
+    document.getElementById('val-left-speed').textContent = leftParticleSpeed.toFixed(2);
+    leftSpeedCtrl.addEventListener('input', (e) => {
+      leftParticleSpeed = parseFloat(e.target.value);
+      document.getElementById('val-left-speed').textContent = leftParticleSpeed.toFixed(2);
+    });
+  }
+  
+  // Right wall particle size
+  const rightSizeCtrl = document.getElementById('ctrl-right-size');
+  if (rightSizeCtrl) {
+    rightSizeCtrl.value = rightParticleSize;
+    document.getElementById('val-right-size').textContent = rightParticleSize.toFixed(3);
+    rightSizeCtrl.addEventListener('input', (e) => {
+      rightParticleSize = parseFloat(e.target.value);
+      document.getElementById('val-right-size').textContent = rightParticleSize.toFixed(3);
+      if (rightProjectionMaterial) {
+        rightProjectionMaterial.size = rightParticleSize;
+      }
+    });
+  }
+  
+  // Right wall particle speed
+  const rightSpeedCtrl = document.getElementById('ctrl-right-speed');
+  if (rightSpeedCtrl) {
+    rightSpeedCtrl.value = rightParticleSpeed;
+    document.getElementById('val-right-speed').textContent = rightParticleSpeed.toFixed(2);
+    rightSpeedCtrl.addEventListener('input', (e) => {
+      rightParticleSpeed = parseFloat(e.target.value);
+      document.getElementById('val-right-speed').textContent = rightParticleSpeed.toFixed(2);
+    });
+  }
+  
   // Debug view toggle
   const debugViewCtrl = document.getElementById('ctrl-debug-view');
   if (debugViewCtrl) {
@@ -1982,11 +2036,19 @@ function updateProjection(time) {
       
       if (hasWebcamAccess) {
         // WEBCAM MODE: Sample threshold to detect silhouette
-        // Left wall = particles INSIDE silhouette (forming your shape) - FIXED/SWAPPED
+        // Left wall = particles INSIDE silhouette (forming your shape)
         const isInSilhouette = sampleThreshold(p.x, p.y, leftWallThreshold);
         if (isInSilhouette === false) {
-          // Particle is outside silhouette, but we want it inside for left wall
-          shouldRespawn = true;
+          // Particle is outside silhouette - gently nudge it back instead of hard respawn
+          // This prevents flickering
+          const nudgeStrength = 0.02 * leftParticleSpeed;
+          p.vx += (Math.random() - 0.5) * nudgeStrength;
+          p.vy += (Math.random() - 0.5) * nudgeStrength;
+          
+          // Only hard respawn if way too far out of bounds
+          if (Math.abs(p.x) > 3 || p.y < 0 || p.y > 4) {
+            shouldRespawn = true;
+          }
         }
       } else {
         // FALLBACK MODE: Use programmatic shape
@@ -2010,11 +2072,11 @@ function updateProjection(time) {
       }
       
       if (shouldRespawn) {
-        // Respawn in a random position
+        // Respawn in a random position with lower velocity to reduce flickering
         p.x = (Math.random() - 0.5) * 5;
         p.y = Math.random() * 3 + 0.5;
-        p.vx = (Math.random() - 0.5) * 0.008;
-        p.vy = (Math.random() - 0.5) * 0.008;
+        p.vx = (Math.random() - 0.5) * 0.004;
+        p.vy = (Math.random() - 0.5) * 0.004;
       }
       
       p.baseX = p.x;
@@ -2038,18 +2100,26 @@ function updateProjection(time) {
       const noiseX = Math.sin(time * 0.4 + p.baseY * 2) * 0.25;
       const noiseY = Math.cos(time * 0.25 + p.baseX * 2) * 0.15;
       
-      p.x += p.vx + noiseX * 0.008;
-      p.y += p.vy + noiseY * 0.008;
+      p.x += (p.vx + noiseX * 0.008) * rightParticleSpeed;
+      p.y += (p.vy + noiseY * 0.008) * rightParticleSpeed;
       
       let shouldRespawn = false;
       
       if (hasWebcamAccess) {
         // WEBCAM MODE: Sample threshold to detect silhouette
-        // Right wall = particles OUTSIDE silhouette (background) - FIXED/SWAPPED
+        // Right wall = particles OUTSIDE silhouette (background)
         const isInSilhouette = sampleThreshold(p.x, p.y, rightWallThreshold);
         if (isInSilhouette === true) {
-          // Particle is inside silhouette, but we want it outside for right wall
-          shouldRespawn = true;
+          // Particle is inside silhouette - gently nudge it away instead of hard respawn
+          // This prevents flickering
+          const nudgeStrength = 0.02 * rightParticleSpeed;
+          p.vx += (Math.random() - 0.5) * nudgeStrength;
+          p.vy += (Math.random() - 0.5) * nudgeStrength;
+          
+          // Only hard respawn if way too far out of bounds
+          if (Math.abs(p.x) > 3 || p.y < 0 || p.y > 4) {
+            shouldRespawn = true;
+          }
         }
       } else {
         // FALLBACK MODE: Use programmatic shape
@@ -2074,7 +2144,7 @@ function updateProjection(time) {
       
       if (shouldRespawn) {
         if (hasWebcamAccess) {
-          // Respawn in a random position (will naturally settle in correct areas)
+          // Respawn in a random position with lower velocity
           p.x = (Math.random() - 0.5) * 5;
           p.y = Math.random() * 3 + 0.5;
         } else {
@@ -2096,8 +2166,8 @@ function updateProjection(time) {
             p.y = Math.random() * (bodyTop - 0.3) + 0.3;
           }
         }
-        p.vx = (Math.random() - 0.5) * 0.008;
-        p.vy = (Math.random() - 0.5) * 0.008;
+        p.vx = (Math.random() - 0.5) * 0.004;
+        p.vy = (Math.random() - 0.5) * 0.004;
       }
       
       p.baseX = p.x;
