@@ -1306,6 +1306,9 @@ function processWebcamFrame() {
     webcamCtx.drawImage(webcamVideo, -webcamCanvas.width, 0, webcamCanvas.width, webcamCanvas.height);
     webcamCtx.restore();
     
+    // Update black & white threshold data for both walls
+    updateBlackWhiteThresholds();
+    
     // Draw to debug canvas if enabled
     if (debugView && debugCtx) {
       debugCtx.save();
@@ -1313,32 +1316,36 @@ function processWebcamFrame() {
       debugCtx.drawImage(webcamVideo, -debugCanvas.width, 0, debugCanvas.width, debugCanvas.height);
       debugCtx.restore();
       
-      // Show threshold visualization using average of both thresholds for debug view only
-      const avgThreshold = (leftWallThreshold + rightWallThreshold) / 2;
-      const imageData = debugCtx.getImageData(0, 0, debugCanvas.width, debugCanvas.height);
-      const pixels = imageData.data;
-      
-      for (let i = 0; i < pixels.length; i += 4) {
-        const r = pixels[i];
-        const g = pixels[i + 1];
-        const b = pixels[i + 2];
-        const brightness = (r + g + b) / 3;
+      // Show B&W threshold visualization (split screen: left wall on left, right wall on right)
+      if (leftWallBWData && rightWallBWData) {
+        const imageData = debugCtx.createImageData(debugCanvas.width, debugCanvas.height);
+        const pixels = imageData.data;
         
-        // Overlay color based on threshold
-        if (brightness > avgThreshold) {
-          // Bright area (silhouette) - red tint
-          pixels[i] = Math.min(255, pixels[i] + 40);
-          pixels[i + 1] = Math.max(0, pixels[i + 1] - 20);
-          pixels[i + 2] = Math.max(0, pixels[i + 2] - 20);
-        } else {
-          // Dark area (background) - blue tint
-          pixels[i] = Math.max(0, pixels[i] - 20);
-          pixels[i + 1] = Math.max(0, pixels[i + 1] - 20);
-          pixels[i + 2] = Math.min(255, pixels[i + 2] + 40);
+        for (let i = 0; i < leftWallBWData.length; i++) {
+          const x = i % debugCanvas.width;
+          
+          // Left half shows left wall B&W, right half shows right wall B&W
+          const bwValue = x < debugCanvas.width / 2 ? leftWallBWData[i] : rightWallBWData[i];
+          
+          pixels[i * 4] = bwValue;     // R
+          pixels[i * 4 + 1] = bwValue; // G
+          pixels[i * 4 + 2] = bwValue; // B
+          pixels[i * 4 + 3] = 255;     // A
         }
+        
+        // Blend 50% with original
+        debugCtx.globalAlpha = 0.5;
+        debugCtx.putImageData(imageData, 0, 0);
+        debugCtx.globalAlpha = 1.0;
+        
+        // Draw divider line
+        debugCtx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+        debugCtx.lineWidth = 2;
+        debugCtx.beginPath();
+        debugCtx.moveTo(debugCanvas.width / 2, 0);
+        debugCtx.lineTo(debugCanvas.width / 2, debugCanvas.height);
+        debugCtx.stroke();
       }
-      
-      debugCtx.putImageData(imageData, 0, 0);
     }
   } catch (e) {
     console.error('Error drawing webcam frame:', e);
@@ -1348,10 +1355,54 @@ function processWebcamFrame() {
   requestAnimationFrame(processWebcamFrame);
 }
 
-// Sample brightness from webcam and apply wall-specific threshold
-function sampleThreshold(normalizedX, normalizedY, thresholdValue) {
+// Black & white threshold data for each wall
+let leftWallBWData = null;
+let rightWallBWData = null;
+
+// Create black & white threshold images for each wall
+function updateBlackWhiteThresholds() {
   if (!hasWebcamAccess || !webcamCanvas || !webcamCtx) {
+    return;
+  }
+  
+  try {
+    // Get webcam image data
+    const imageData = webcamCtx.getImageData(0, 0, webcamCanvas.width, webcamCanvas.height);
+    const pixels = imageData.data;
+    const pixelCount = webcamCanvas.width * webcamCanvas.height;
+    
+    // Create separate B&W arrays for each wall
+    leftWallBWData = new Uint8Array(pixelCount);
+    rightWallBWData = new Uint8Array(pixelCount);
+    
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i];
+      const g = pixels[i + 1];
+      const b = pixels[i + 2];
+      
+      // Calculate brightness (grayscale)
+      const brightness = (r + g + b) / 3;
+      
+      // Apply LEFT wall threshold -> pure B&W
+      leftWallBWData[i / 4] = brightness > leftWallThreshold ? 255 : 0;
+      
+      // Apply RIGHT wall threshold -> pure B&W
+      rightWallBWData[i / 4] = brightness > rightWallThreshold ? 255 : 0;
+    }
+  } catch (e) {
+    console.error('Error creating B&W thresholds:', e);
+  }
+}
+
+// Sample from black & white threshold data
+function sampleThreshold(normalizedX, normalizedY, wallSide) {
+  if (!hasWebcamAccess || !webcamCanvas) {
     return null; // Will trigger fallback logic
+  }
+  
+  const bwData = wallSide === 'left' ? leftWallBWData : rightWallBWData;
+  if (!bwData) {
+    return null;
   }
   
   try {
@@ -1364,17 +1415,12 @@ function sampleThreshold(normalizedX, normalizedY, thresholdValue) {
     const x = Math.max(0, Math.min(webcamCanvas.width - 1, canvasX));
     const y = Math.max(0, Math.min(webcamCanvas.height - 1, canvasY));
     
-    // Sample pixel from webcam directly
-    const imageData = webcamCtx.getImageData(x, y, 1, 1);
-    const r = imageData.data[0];
-    const g = imageData.data[1];
-    const b = imageData.data[2];
+    // Sample from B&W data
+    const index = y * webcamCanvas.width + x;
+    const bwValue = bwData[index];
     
-    // Calculate brightness (grayscale)
-    const brightness = (r + g + b) / 3;
-    
-    // Apply THIS wall's specific threshold
-    return brightness > thresholdValue; // true = bright (silhouette), false = dark (background)
+    // Return true if white (bright/silhouette), false if black (dark/background)
+    return bwValue === 255;
   } catch (e) {
     return null; // Error sampling, use fallback
   }
@@ -2012,11 +2058,11 @@ function updateProjection(time) {
       if (hasWebcamAccess) {
         // WEBCAM MODE: Sample threshold to detect silhouette
         // Left wall = particles INSIDE silhouette (forming your shape)
-        const isInSilhouette = sampleThreshold(p.x, p.y, leftWallThreshold);
+        const isInSilhouette = sampleThreshold(p.x, p.y, 'left');
         if (isInSilhouette === false) {
           // Particle is outside silhouette - gently nudge it back instead of hard respawn
           // This prevents flickering
-          const nudgeStrength = 0.02 * leftParticleSpeed;
+          const nudgeStrength = 0.02;
           p.vx += (Math.random() - 0.5) * nudgeStrength;
           p.vy += (Math.random() - 0.5) * nudgeStrength;
           
@@ -2083,11 +2129,11 @@ function updateProjection(time) {
       if (hasWebcamAccess) {
         // WEBCAM MODE: Sample threshold to detect silhouette
         // Right wall = particles OUTSIDE silhouette (background)
-        const isInSilhouette = sampleThreshold(p.x, p.y, rightWallThreshold);
+        const isInSilhouette = sampleThreshold(p.x, p.y, 'right');
         if (isInSilhouette === true) {
           // Particle is inside silhouette - gently nudge it away instead of hard respawn
           // This prevents flickering
-          const nudgeStrength = 0.02 * rightParticleSpeed;
+          const nudgeStrength = 0.02;
           p.vx += (Math.random() - 0.5) * nudgeStrength;
           p.vy += (Math.random() - 0.5) * nudgeStrength;
           
