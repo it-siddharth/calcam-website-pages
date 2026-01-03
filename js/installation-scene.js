@@ -119,6 +119,7 @@ let rightParticleSize = 0.035;
 let leftParticleSpeed = 1.0;
 let rightParticleSpeed = 1.0;
 let debugView = false;
+let showPureBW = false;
 let debugCanvas = null;
 let debugCtx = null;
 
@@ -1316,48 +1317,82 @@ function processWebcamFrame() {
       debugCtx.drawImage(webcamVideo, -debugCanvas.width, 0, debugCanvas.width, debugCanvas.height);
       debugCtx.restore();
       
-      // Show B&W threshold visualization
-      // Color overlay: Green = detected in both, Red = left only, Blue = right only, Black = neither
       if (leftWallBWData && rightWallBWData) {
-        const imageData = debugCtx.getImageData(0, 0, debugCanvas.width, debugCanvas.height);
-        const pixels = imageData.data;
-        
-        for (let i = 0; i < leftWallBWData.length; i++) {
-          const leftBW = leftWallBWData[i];
-          const rightBW = rightWallBWData[i];
+        if (showPureBW) {
+          // Show PURE B&W output (split screen: left wall | right wall)
+          const imageData = debugCtx.createImageData(debugCanvas.width, debugCanvas.height);
+          const pixels = imageData.data;
           
-          // Color overlay based on detection
-          if (leftBW === 255 && rightBW === 255) {
-            // Both detect silhouette - Green tint
-            pixels[i * 4] = Math.max(0, pixels[i * 4] - 30);
-            pixels[i * 4 + 1] = Math.min(255, pixels[i * 4 + 1] + 60);
-            pixels[i * 4 + 2] = Math.max(0, pixels[i * 4 + 2] - 30);
-          } else if (leftBW === 255) {
-            // Only left wall detects - Red tint
-            pixels[i * 4] = Math.min(255, pixels[i * 4] + 60);
-            pixels[i * 4 + 1] = Math.max(0, pixels[i * 4 + 1] - 30);
-            pixels[i * 4 + 2] = Math.max(0, pixels[i * 4 + 2] - 30);
-          } else if (rightBW === 255) {
-            // Only right wall detects - Blue tint
-            pixels[i * 4] = Math.max(0, pixels[i * 4] - 30);
-            pixels[i * 4 + 1] = Math.max(0, pixels[i * 4 + 1] - 30);
-            pixels[i * 4 + 2] = Math.min(255, pixels[i * 4 + 2] + 60);
+          for (let i = 0; i < leftWallBWData.length; i++) {
+            const x = i % debugCanvas.width;
+            const halfWidth = debugCanvas.width / 2;
+            
+            // Left half shows left wall B&W, right half shows right wall B&W
+            const bwValue = x < halfWidth ? leftWallBWData[i] : rightWallBWData[i];
+            
+            pixels[i * 4] = bwValue;     // R
+            pixels[i * 4 + 1] = bwValue; // G
+            pixels[i * 4 + 2] = bwValue; // B
+            pixels[i * 4 + 3] = 255;     // A
           }
-          // else: neither detects, leave original color
+          
+          debugCtx.putImageData(imageData, 0, 0);
+          
+          // Draw divider line
+          debugCtx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+          debugCtx.lineWidth = 2;
+          debugCtx.beginPath();
+          debugCtx.moveTo(debugCanvas.width / 2, 0);
+          debugCtx.lineTo(debugCanvas.width / 2, debugCanvas.height);
+          debugCtx.stroke();
+          
+          // Labels
+          debugCtx.font = '12px monospace';
+          debugCtx.fillStyle = 'rgba(255, 0, 0, 0.9)';
+          debugCtx.fillText('LEFT WALL B&W', 10, 20);
+          debugCtx.fillText('RIGHT WALL B&W', debugCanvas.width / 2 + 10, 20);
+        } else {
+          // Show color-coded overlay
+          const imageData = debugCtx.getImageData(0, 0, debugCanvas.width, debugCanvas.height);
+          const pixels = imageData.data;
+          
+          for (let i = 0; i < leftWallBWData.length; i++) {
+            const leftBW = leftWallBWData[i];
+            const rightBW = rightWallBWData[i];
+            
+            // Color overlay based on detection
+            if (leftBW === 255 && rightBW === 255) {
+              // Both detect silhouette - Green tint
+              pixels[i * 4] = Math.max(0, pixels[i * 4] - 30);
+              pixels[i * 4 + 1] = Math.min(255, pixels[i * 4 + 1] + 60);
+              pixels[i * 4 + 2] = Math.max(0, pixels[i * 4 + 2] - 30);
+            } else if (leftBW === 255) {
+              // Only left wall detects - Red tint
+              pixels[i * 4] = Math.min(255, pixels[i * 4] + 60);
+              pixels[i * 4 + 1] = Math.max(0, pixels[i * 4 + 1] - 30);
+              pixels[i * 4 + 2] = Math.max(0, pixels[i * 4 + 2] - 30);
+            } else if (rightBW === 255) {
+              // Only right wall detects - Blue tint
+              pixels[i * 4] = Math.max(0, pixels[i * 4] - 30);
+              pixels[i * 4 + 1] = Math.max(0, pixels[i * 4 + 1] - 30);
+              pixels[i * 4 + 2] = Math.min(255, pixels[i * 4 + 2] + 60);
+            }
+            // else: neither detects, leave original color
+          }
+          
+          debugCtx.putImageData(imageData, 0, 0);
+          
+          // Add legend
+          debugCtx.font = '11px monospace';
+          debugCtx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+          debugCtx.fillRect(5, 5, 150, 60);
+          debugCtx.fillStyle = '#00ff00';
+          debugCtx.fillText('Green: Both walls', 10, 20);
+          debugCtx.fillStyle = '#ff0000';
+          debugCtx.fillText('Red: Left wall only', 10, 35);
+          debugCtx.fillStyle = '#0000ff';
+          debugCtx.fillText('Blue: Right wall only', 10, 50);
         }
-        
-        debugCtx.putImageData(imageData, 0, 0);
-        
-        // Add legend
-        debugCtx.font = '11px monospace';
-        debugCtx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        debugCtx.fillRect(5, 5, 150, 60);
-        debugCtx.fillStyle = '#00ff00';
-        debugCtx.fillText('Green: Both walls', 10, 20);
-        debugCtx.fillStyle = '#ff0000';
-        debugCtx.fillText('Red: Left wall only', 10, 35);
-        debugCtx.fillStyle = '#0000ff';
-        debugCtx.fillText('Blue: Right wall only', 10, 50);
       }
     }
   } catch (e) {
@@ -1373,6 +1408,7 @@ let leftWallBWData = null;
 let rightWallBWData = null;
 
 // Create black & white threshold images for each wall
+// ALWAYS use pure binary Black & White thresholding (0 or 255 only, no grayscale)
 function updateBlackWhiteThresholds() {
   if (!hasWebcamAccess || !webcamCanvas || !webcamCtx) {
     return;
@@ -1388,18 +1424,19 @@ function updateBlackWhiteThresholds() {
     leftWallBWData = new Uint8Array(pixelCount);
     rightWallBWData = new Uint8Array(pixelCount);
     
+    // BINARY THRESHOLDING ONLY - No grayscale, only pure black (0) or white (255)
     for (let i = 0; i < pixels.length; i += 4) {
       const r = pixels[i];
       const g = pixels[i + 1];
       const b = pixels[i + 2];
       
-      // Calculate brightness (grayscale)
+      // Calculate brightness (grayscale conversion)
       const brightness = (r + g + b) / 3;
       
-      // Apply LEFT wall threshold -> pure B&W
+      // Apply LEFT wall threshold -> PURE BINARY (0 or 255 ONLY)
       leftWallBWData[i / 4] = brightness > leftWallThreshold ? 255 : 0;
       
-      // Apply RIGHT wall threshold -> pure B&W
+      // Apply RIGHT wall threshold -> PURE BINARY (0 or 255 ONLY)
       rightWallBWData[i / 4] = brightness > rightWallThreshold ? 255 : 0;
     }
   } catch (e) {
@@ -1932,6 +1969,14 @@ function setupWallProjectionControls() {
       if (debugWebcam) {
         debugWebcam.style.display = debugView ? 'block' : 'none';
       }
+    });
+  }
+  
+  // Pure B&W view toggle
+  const showBWCtrl = document.getElementById('ctrl-show-bw');
+  if (showBWCtrl) {
+    showBWCtrl.addEventListener('change', (e) => {
+      showPureBW = e.target.checked;
     });
   }
 }
