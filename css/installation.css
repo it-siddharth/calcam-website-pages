@@ -240,7 +240,6 @@ body {
   font-size: var(--label-size);
   font-weight: 500;
   line-height: var(--label-line-height);
-  text-transform: uppercase;
 }
 
 .btn-arrow {
@@ -871,8 +870,8 @@ body:not(.cinematic-intro) .skip-hint {
     --title-line-height: 52px;
     --title-letter-spacing: -2px;
     
-    --body-size: 14px;
-    --body-line-height: 20px;
+    --body-size: 16px;
+    --body-line-height: 24px;
     
     --label-size: 12px;
     --arrow-size: 14px;
