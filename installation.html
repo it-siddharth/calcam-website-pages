@@ -196,6 +196,79 @@
     <source src="assets/Ambient Synth Pad E Minor 140 BPM.wav" type="audio/wav">
   </audio>
 
+  <!-- Controls Toggle Button -->
+  <button id="controls-toggle" class="controls-toggle" onclick="toggleRoomControls()" aria-label="Toggle controls">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M12 1v6m0 6v6m8-11h-6m-6 0H1m20 8h-6m-6 0H1"></path>
+    </svg>
+  </button>
+
+  <!-- Room Controls Panel -->
+  <div id="room-controls" class="room-controls">
+    <div class="controls-header">
+      <h3>Wall Projections</h3>
+      <button onclick="toggleRoomControls()" class="close-btn">×</button>
+    </div>
+    
+    <div class="controls-content">
+      <!-- Webcam Threshold -->
+      <div class="control-group">
+        <label for="ctrl-threshold">
+          <span>Threshold</span>
+          <span class="control-value" id="val-threshold">127</span>
+        </label>
+        <input type="range" id="ctrl-threshold" min="0" max="255" value="127" step="1">
+      </div>
+      
+      <!-- Left Wall Controls -->
+      <div class="control-section">
+        <h4>Left Wall (Dark Areas)</h4>
+        
+        <div class="control-group">
+          <label>
+            <input type="checkbox" id="ctrl-left-visible" checked>
+            <span>Show Left Wall</span>
+          </label>
+        </div>
+        
+        <div class="control-group">
+          <label for="ctrl-left-opacity">
+            <span>Opacity</span>
+            <span class="control-value" id="val-left-opacity">0.8</span>
+          </label>
+          <input type="range" id="ctrl-left-opacity" min="0" max="1" value="0.8" step="0.05">
+        </div>
+      </div>
+      
+      <!-- Right Wall Controls -->
+      <div class="control-section">
+        <h4>Right Wall (Bright Areas)</h4>
+        
+        <div class="control-group">
+          <label>
+            <input type="checkbox" id="ctrl-right-visible" checked>
+            <span>Show Right Wall</span>
+          </label>
+        </div>
+        
+        <div class="control-group">
+          <label for="ctrl-right-opacity">
+            <span>Opacity</span>
+            <span class="control-value" id="val-right-opacity">0.8</span>
+          </label>
+          <input type="range" id="ctrl-right-opacity" min="0" max="1" value="0.8" step="0.05">
+        </div>
+      </div>
+      
+      <!-- Webcam Status -->
+      <div class="control-group status-group">
+        <span>Webcam Status:</span>
+        <span id="webcam-status" class="status-indicator">Checking...</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Music Toggle Button -->
   <button id="music-toggle" class="music-toggle" aria-label="Toggle background music">
     <svg class="music-icon music-on" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

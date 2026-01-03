@@ -108,7 +108,11 @@ let thresholdCanvas, thresholdCtx;
 let webcamStream = null;
 let webcamVideo = null;
 let hasWebcamAccess = false;
-const THRESHOLD_VALUE = 127; // 50% brightness (0-255 range)
+let THRESHOLD_VALUE = 127; // 50% brightness (0-255 range) - now mutable
+let leftWallVisible = true;
+let rightWallVisible = true;
+let leftWallOpacity = 0.8;
+let rightWallOpacity = 0.8;
 
 // Movement
 let moveForward = false, moveBackward = false;
@@ -1104,7 +1108,7 @@ function createProjection() {
     size: 0.035,
     vertexColors: true,
     transparent: true,
-    opacity: roomSettings.projectionIntensity,
+    opacity: leftWallOpacity,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
     sizeAttenuation: true
@@ -1113,7 +1117,7 @@ function createProjection() {
   leftProjectionPlane = new THREE.Points(leftGeometry, leftProjectionMaterial);
   leftProjectionPlane.position.set(-CONFIG.room.width / 2 + 0.1, 0, -1);
   leftProjectionPlane.rotation.y = Math.PI / 2;
-  leftProjectionPlane.visible = roomSettings.projectionOn;
+  leftProjectionPlane.visible = leftWallVisible;
   scene.add(leftProjectionPlane);
   
   // Right wall projection (particles inside silhouette)
@@ -1142,7 +1146,7 @@ function createProjection() {
     size: 0.035,
     vertexColors: true,
     transparent: true,
-    opacity: roomSettings.projectionIntensity,
+    opacity: rightWallOpacity,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
     sizeAttenuation: true
@@ -1151,8 +1155,11 @@ function createProjection() {
   rightProjectionPlane = new THREE.Points(rightGeometry, rightProjectionMaterial);
   rightProjectionPlane.position.set(CONFIG.room.width / 2 - 0.1, 0, -1);
   rightProjectionPlane.rotation.y = -Math.PI / 2;
-  rightProjectionPlane.visible = roomSettings.projectionOn;
+  rightProjectionPlane.visible = rightWallVisible;
   scene.add(rightProjectionPlane);
+  
+  // Setup wall projection controls after creating projections
+  setupWallProjectionControls();
 }
 
 // ============================================
@@ -1243,6 +1250,7 @@ function setupWebcamThreshold() {
       webcamVideo.srcObject = stream;
       hasWebcamAccess = true;
       console.log('Webcam access granted for wall projections');
+      updateWebcamStatus(true);
       
       // Start processing webcam frames
       processWebcamFrame();
@@ -1250,10 +1258,25 @@ function setupWebcamThreshold() {
     .catch(err => {
       console.log('Webcam access denied or unavailable, using fallback shape:', err);
       hasWebcamAccess = false;
+      updateWebcamStatus(false);
     });
   } else {
     console.log('getUserMedia not supported, using fallback shape');
     hasWebcamAccess = false;
+    updateWebcamStatus(false);
+  }
+}
+
+function updateWebcamStatus(active) {
+  const statusEl = document.getElementById('webcam-status');
+  if (statusEl) {
+    if (active) {
+      statusEl.textContent = 'Active';
+      statusEl.className = 'status-indicator active';
+    } else {
+      statusEl.textContent = 'Fallback Mode';
+      statusEl.className = 'status-indicator inactive';
+    }
   }
 }
 
@@ -1674,6 +1697,74 @@ function setupModelControls() {
       const v = parseInt(e.target.value);
       document.getElementById('val-rotz').textContent = v + '°';
       installationGroup.rotation.z = THREE.MathUtils.degToRad(v);
+    });
+  }
+}
+
+// ============================================
+// Setup Wall Projection Controls
+// ============================================
+function setupWallProjectionControls() {
+  // Threshold control
+  const thresholdCtrl = document.getElementById('ctrl-threshold');
+  if (thresholdCtrl) {
+    thresholdCtrl.value = THRESHOLD_VALUE;
+    document.getElementById('val-threshold').textContent = THRESHOLD_VALUE;
+    thresholdCtrl.addEventListener('input', (e) => {
+      THRESHOLD_VALUE = parseInt(e.target.value);
+      document.getElementById('val-threshold').textContent = THRESHOLD_VALUE;
+    });
+  }
+  
+  // Left wall visible toggle
+  const leftVisibleCtrl = document.getElementById('ctrl-left-visible');
+  if (leftVisibleCtrl) {
+    leftVisibleCtrl.checked = leftWallVisible;
+    leftVisibleCtrl.addEventListener('change', (e) => {
+      leftWallVisible = e.target.checked;
+      if (leftProjectionPlane) {
+        leftProjectionPlane.visible = leftWallVisible;
+      }
+    });
+  }
+  
+  // Left wall opacity
+  const leftOpacityCtrl = document.getElementById('ctrl-left-opacity');
+  if (leftOpacityCtrl) {
+    leftOpacityCtrl.value = leftWallOpacity;
+    document.getElementById('val-left-opacity').textContent = leftWallOpacity.toFixed(2);
+    leftOpacityCtrl.addEventListener('input', (e) => {
+      leftWallOpacity = parseFloat(e.target.value);
+      document.getElementById('val-left-opacity').textContent = leftWallOpacity.toFixed(2);
+      if (leftProjectionMaterial) {
+        leftProjectionMaterial.opacity = leftWallOpacity;
+      }
+    });
+  }
+  
+  // Right wall visible toggle
+  const rightVisibleCtrl = document.getElementById('ctrl-right-visible');
+  if (rightVisibleCtrl) {
+    rightVisibleCtrl.checked = rightWallVisible;
+    rightVisibleCtrl.addEventListener('change', (e) => {
+      rightWallVisible = e.target.checked;
+      if (rightProjectionPlane) {
+        rightProjectionPlane.visible = rightWallVisible;
+      }
+    });
+  }
+  
+  // Right wall opacity
+  const rightOpacityCtrl = document.getElementById('ctrl-right-opacity');
+  if (rightOpacityCtrl) {
+    rightOpacityCtrl.value = rightWallOpacity;
+    document.getElementById('val-right-opacity').textContent = rightWallOpacity.toFixed(2);
+    rightOpacityCtrl.addEventListener('input', (e) => {
+      rightWallOpacity = parseFloat(e.target.value);
+      document.getElementById('val-right-opacity').textContent = rightWallOpacity.toFixed(2);
+      if (rightProjectionMaterial) {
+        rightProjectionMaterial.opacity = rightWallOpacity;
+      }
     });
   }
 }
