@@ -1316,35 +1316,48 @@ function processWebcamFrame() {
       debugCtx.drawImage(webcamVideo, -debugCanvas.width, 0, debugCanvas.width, debugCanvas.height);
       debugCtx.restore();
       
-      // Show B&W threshold visualization (split screen: left wall on left, right wall on right)
+      // Show B&W threshold visualization
+      // Color overlay: Green = detected in both, Red = left only, Blue = right only, Black = neither
       if (leftWallBWData && rightWallBWData) {
-        const imageData = debugCtx.createImageData(debugCanvas.width, debugCanvas.height);
+        const imageData = debugCtx.getImageData(0, 0, debugCanvas.width, debugCanvas.height);
         const pixels = imageData.data;
         
         for (let i = 0; i < leftWallBWData.length; i++) {
-          const x = i % debugCanvas.width;
+          const leftBW = leftWallBWData[i];
+          const rightBW = rightWallBWData[i];
           
-          // Left half shows left wall B&W, right half shows right wall B&W
-          const bwValue = x < debugCanvas.width / 2 ? leftWallBWData[i] : rightWallBWData[i];
-          
-          pixels[i * 4] = bwValue;     // R
-          pixels[i * 4 + 1] = bwValue; // G
-          pixels[i * 4 + 2] = bwValue; // B
-          pixels[i * 4 + 3] = 255;     // A
+          // Color overlay based on detection
+          if (leftBW === 255 && rightBW === 255) {
+            // Both detect silhouette - Green tint
+            pixels[i * 4] = Math.max(0, pixels[i * 4] - 30);
+            pixels[i * 4 + 1] = Math.min(255, pixels[i * 4 + 1] + 60);
+            pixels[i * 4 + 2] = Math.max(0, pixels[i * 4 + 2] - 30);
+          } else if (leftBW === 255) {
+            // Only left wall detects - Red tint
+            pixels[i * 4] = Math.min(255, pixels[i * 4] + 60);
+            pixels[i * 4 + 1] = Math.max(0, pixels[i * 4 + 1] - 30);
+            pixels[i * 4 + 2] = Math.max(0, pixels[i * 4 + 2] - 30);
+          } else if (rightBW === 255) {
+            // Only right wall detects - Blue tint
+            pixels[i * 4] = Math.max(0, pixels[i * 4] - 30);
+            pixels[i * 4 + 1] = Math.max(0, pixels[i * 4 + 1] - 30);
+            pixels[i * 4 + 2] = Math.min(255, pixels[i * 4 + 2] + 60);
+          }
+          // else: neither detects, leave original color
         }
         
-        // Blend 50% with original
-        debugCtx.globalAlpha = 0.5;
         debugCtx.putImageData(imageData, 0, 0);
-        debugCtx.globalAlpha = 1.0;
         
-        // Draw divider line
-        debugCtx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
-        debugCtx.lineWidth = 2;
-        debugCtx.beginPath();
-        debugCtx.moveTo(debugCanvas.width / 2, 0);
-        debugCtx.lineTo(debugCanvas.width / 2, debugCanvas.height);
-        debugCtx.stroke();
+        // Add legend
+        debugCtx.font = '11px monospace';
+        debugCtx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        debugCtx.fillRect(5, 5, 150, 60);
+        debugCtx.fillStyle = '#00ff00';
+        debugCtx.fillText('Green: Both walls', 10, 20);
+        debugCtx.fillStyle = '#ff0000';
+        debugCtx.fillText('Red: Left wall only', 10, 35);
+        debugCtx.fillStyle = '#0000ff';
+        debugCtx.fillText('Blue: Right wall only', 10, 50);
       }
     }
   } catch (e) {
