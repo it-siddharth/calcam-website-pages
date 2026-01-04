@@ -217,10 +217,13 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: nowrap;
 }
 
 .cta-primary-row .cta-text {
   margin-bottom: 0;
+  display: inline;
+  white-space: nowrap;
 }
 
 .cta-arrow {

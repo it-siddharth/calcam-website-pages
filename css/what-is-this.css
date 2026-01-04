@@ -366,12 +366,14 @@ body:has(.what-is-this-page) {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   overflow: visible;
 }
 
 .cta-row .cta-label {
   margin-bottom: 0;
+  display: inline;
+  white-space: nowrap;
 }
 
 .cta-arrow {
