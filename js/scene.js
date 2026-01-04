@@ -1709,7 +1709,7 @@ function adjustCameraForViewport(width, height) {
   
   if (isMobileView) {
     // Mobile: center the model - fit full model without cropping
-    scaleFactor = 0.85;
+    scaleFactor = 0.8;
     cameraY = 0.5;
     cameraTargetY = 0.5;
     cameraOffsetX = 0;
