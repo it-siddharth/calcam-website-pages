@@ -188,6 +188,8 @@ body:has(.what-is-this-page) {
   -webkit-backdrop-filter: blur(4px);
   transition: all 0.2s ease;
   width: fit-content;
+  flex-shrink: 0;
+  white-space: nowrap;
   margin-bottom: 20px;
 }
 
@@ -200,6 +202,7 @@ body:has(.what-is-this-page) {
   font-family: var(--font-arrow);
   font-size: 16px;
   font-style: italic;
+  flex-shrink: 0;
 }
 
 /* ============================================
@@ -363,7 +366,8 @@ body:has(.what-is-this-page) {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  overflow: visible;
 }
 
 .cta-arrow {
@@ -379,7 +383,8 @@ body:has(.what-is-this-page) {
   flex-direction: row !important;
   align-items: center;
   gap: 10px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  overflow: visible;
 }
 
 @media screen and (min-width: 769px) {
@@ -397,9 +402,11 @@ body:has(.what-is-this-page) {
   padding: 8px 14px;
   border-radius: 30px;
   text-decoration: none;
-  overflow: hidden;
   white-space: nowrap;
   transition: all 0.2s ease;
+  width: fit-content;
+  flex-shrink: 0;
+  overflow: visible;
 }
 
 .btn:hover {
@@ -420,7 +427,7 @@ body:has(.what-is-this-page) {
   font-size: var(--arrow-size);
   font-style: italic;
   line-height: 1;
-  margin-right: -2px;
+  flex-shrink: 0;
 }
 
 .btn-primary {
@@ -893,20 +900,40 @@ body:has(.what-is-this-page) {
     height: 15px;
   }
   
+  .cta-block {
+    gap: 10px;
+  }
+  
   .cta-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    gap: 2px;
   }
   
   .cta-arrow {
-    display: none;
+    font-size: 12px;
   }
   
   .nav-pills {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 8px;
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: 6px;
+  }
+  
+  .nav-pills .btn {
+    padding: 5px 10px;
+    width: fit-content;
+    flex-shrink: 0;
+    overflow: visible;
+  }
+  
+  .nav-pills .btn-text {
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  
+  .nav-pills .btn-arrow {
+    font-size: 12px;
+    flex-shrink: 0;
   }
   
   .day-card {
@@ -944,16 +971,20 @@ body:has(.what-is-this-page) {
     --body-line-height: 24px;
   }
   
-  .btn {
+  .nav-pills {
+    gap: 5px;
+  }
+  
+  .nav-pills .btn {
     padding: 4px 8px;
   }
   
-  .btn-text {
-    font-size: 11px;
+  .nav-pills .btn-text {
+    font-size: 10px;
   }
   
-  .btn-arrow {
-    font-size: 12px;
+  .nav-pills .btn-arrow {
+    font-size: 11px;
   }
   
   .day-cards {
