@@ -31,7 +31,13 @@
         video.load();
         video.addEventListener('loadeddata', () => {
           video.muted = true;
+          // Add loaded class to stop shimmer and reveal video
+          video.parentElement?.classList.add('video-loaded');
           video.play().catch(() => {});
+        }, { once: true });
+        video.addEventListener('error', () => {
+          // Still mark as loaded to stop shimmer on error
+          video.parentElement?.classList.add('video-loaded');
         }, { once: true });
       }
     });
