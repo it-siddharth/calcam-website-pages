@@ -768,6 +768,10 @@ body:has(.what-is-this-page) {
     padding-top: 60px;
   }
   
+  .hero-right {
+    display: none;
+  }
+  
   .space-images {
     flex-direction: column;
   }
@@ -841,6 +845,7 @@ body:has(.what-is-this-page) {
   }
   
   .hero-right {
+    display: block !important;
     position: relative !important;
     right: auto !important;
     bottom: auto !important;
