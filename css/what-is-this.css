@@ -276,8 +276,8 @@ body:has(.what-is-this-page) {
   flex: 1;
   gap: 60px;
   align-items: stretch;
-  padding: 35px 30px;
-  padding-top: 35px;
+  padding: 30px;
+  padding-top: 70px; /* Space for back button on desktop */
 }
 
 .hero-left {
@@ -865,7 +865,7 @@ body:has(.what-is-this-page) {
     position: relative !important;
     top: auto !important;
     left: auto !important;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
     padding: 6px 12px;
     font-size: 12px;
   }
