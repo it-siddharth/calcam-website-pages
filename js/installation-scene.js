@@ -80,6 +80,7 @@ const roomSettings = {
   tvHeight: 2.25       // TV center height from floor
 };
 
+// Enhanced image settings with all WORD SILHOUETTE controls
 // Panel base positions (matching home page)
 const panelBasePositions = [
   { x: -0.45, y: 0.75, z: 0.10 },
@@ -325,8 +326,8 @@ function setupAnchorPoints() {
     center: {
       // Position of the anchor indicator in 3D space
       position: new THREE.Vector3(0, roomSettings.tvHeight, -CONFIG.room.depth / 2 + 0.5),
-      // Where the camera should move to when focused
-      cameraPosition: new THREE.Vector3(0, roomSettings.cameraHeight, 1.5),
+      // Where the camera should move to when focused (closer for more zoom)
+      cameraPosition: new THREE.Vector3(0, roomSettings.cameraHeight, -1.75),
       // Where the camera should look at
       lookAt: new THREE.Vector3(0, roomSettings.tvHeight, -CONFIG.room.depth / 2),
       // DOM elements
@@ -353,19 +354,30 @@ function setupAnchorPoints() {
     }
   };
   
-  // Add click handlers to anchor indicators
+  // Add click and touch handlers to anchor indicators
   Object.keys(anchorPoints).forEach(key => {
     const anchor = anchorPoints[key];
     if (anchor.indicator) {
+      // Click handler for desktop
       anchor.indicator.addEventListener('click', (e) => {
         e.stopPropagation();
+        e.preventDefault();
         focusOnAnchor(key);
       });
+      
+      // Touch handler for mobile - ensures taps work reliably
+      anchor.indicator.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        focusOnAnchor(key);
+      }, { passive: false });
     }
   });
   
-  // Click anywhere on the scene to unfocus (when not in pointer lock)
-  document.getElementById('three-container').addEventListener('click', (e) => {
+  // Click/tap anywhere on the scene to unfocus (when not in pointer lock)
+  const threeContainer = document.getElementById('three-container');
+  
+  function handleUnfocus(e) {
     // Don't trigger if clicking an anchor, panel, or if pointer lock is active
     if (isAnchorFocused && 
         !e.target.closest('.anchor-indicator') && 
@@ -373,6 +385,13 @@ function setupAnchorPoints() {
         !controls.isLocked) {
       closeAnchorPanel();
     }
+  }
+  
+  threeContainer.addEventListener('click', handleUnfocus);
+  // Also handle touch for mobile
+  threeContainer.addEventListener('touchend', (e) => {
+    // Small delay to let anchor touch handlers fire first
+    setTimeout(() => handleUnfocus(e), 50);
   });
   
   // Ensure anchors are initially visible
@@ -628,8 +647,9 @@ function init() {
   renderer.toneMapping = THREE.NoToneMapping;
   container.appendChild(renderer.domElement);
   
-  // Detect mobile/touch device
-  isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  // Detect mobile/touch device (also check for narrow viewport for Chrome emulator)
+  isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth <= 768;
+  console.log('isMobile detected:', isMobile, 'width:', window.innerWidth);
   
   // Pointer Lock Controls (desktop only)
   controls = new PointerLockControls(camera, document.body);
@@ -637,8 +657,7 @@ function init() {
   if (isMobile) {
     // Mobile: use touch controls instead of pointer lock
     setupTouchControls(container);
-    // Add pointer-locked class to hide UI on mobile too
-    document.body.classList.add('pointer-locked');
+    // Don't add pointer-locked class on mobile - keeps anchor indicators interactive
   } else {
     // Desktop: click to enable pointer lock
     container.addEventListener('click', () => {
@@ -1242,6 +1261,89 @@ function setupKeyboardControls() {
         break;
     }
   });
+  
+  // Setup mobile arrow button controls
+  setupMobileArrowControls();
+}
+
+// ============================================
+// Setup Mobile Arrow Controls
+// ============================================
+function setupMobileArrowControls() {
+  const mobileControls = document.getElementById('mobile-controls');
+  if (!mobileControls) {
+    console.log('Mobile controls not found');
+    return;
+  }
+  
+  const buttons = mobileControls.querySelectorAll('.arrow-btn');
+  console.log('Setting up mobile arrow controls, found', buttons.length, 'buttons');
+  
+  buttons.forEach(btn => {
+    const direction = btn.dataset.direction;
+    
+    // Handle touch start - begin movement
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      btn.classList.add('pressed');
+      setMovementDirection(direction, true);
+      console.log('Touch start:', direction);
+    }, { passive: false });
+    
+    // Handle touch end - stop movement
+    btn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      btn.classList.remove('pressed');
+      setMovementDirection(direction, false);
+      console.log('Touch end:', direction);
+    }, { passive: false });
+    
+    // Handle touch cancel
+    btn.addEventListener('touchcancel', (e) => {
+      e.stopPropagation();
+      btn.classList.remove('pressed');
+      setMovementDirection(direction, false);
+    });
+    
+    // Also handle mouse for testing on desktop
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      btn.classList.add('pressed');
+      setMovementDirection(direction, true);
+    });
+    
+    btn.addEventListener('mouseup', (e) => {
+      e.stopPropagation();
+      btn.classList.remove('pressed');
+      setMovementDirection(direction, false);
+    });
+    
+    btn.addEventListener('mouseleave', (e) => {
+      btn.classList.remove('pressed');
+      setMovementDirection(direction, false);
+    });
+  });
+}
+
+function setMovementDirection(direction, active) {
+  console.log('setMovementDirection:', direction, active, 'isMobile:', isMobile);
+  switch (direction) {
+    case 'forward':
+      moveForward = active;
+      break;
+    case 'backward':
+      moveBackward = active;
+      break;
+    case 'left':
+      moveLeft = active;
+      break;
+    case 'right':
+      moveRight = active;
+      break;
+  }
 }
 
 // ============================================
@@ -1672,6 +1774,11 @@ function updateMovement(delta) {
   const inputX = Number(moveRight) - Number(moveLeft);
   
   if (inputZ === 0 && inputX === 0) return;
+  
+  // Debug: log when actually moving
+  if (inputZ !== 0 || inputX !== 0) {
+    console.log('Moving:', { inputZ, inputX, isMobile });
+  }
   
   // Get camera's forward direction using getWorldDirection (handles matrix updates)
   const forward = new THREE.Vector3();

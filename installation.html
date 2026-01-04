@@ -86,33 +86,10 @@
       <h1 class="title">THE<br>INSTALLATION</h1>
     </header>
 
-    <!-- Instructions & Navigation -->
+    <!-- Instructions (centered at bottom) -->
     <footer class="installation-footer">
-      <p class="instruction-text">Use your arrow keys and mouse to move around and explore the room.</p>
-      <p class="cta-text">Curious? See the 3d installation for yourself</p>
-      
-      <div class="cta-primary-row">
-        <span class="cta-arrow">↳</span>
-        <a href="installation.html" class="btn btn-primary">
-          <span class="btn-text">EXPERIENCE IT YOURSELF</span>
-          <span class="btn-arrow">→</span>
-        </a>
-      </div>
-      
-      <nav class="nav-links">
-        <a href="what-is-this.html" class="btn btn-secondary">
-          <span class="btn-text">what is this</span>
-          <span class="btn-arrow">→</span>
-        </a>
-        <a href="journal.html" class="btn btn-secondary">
-          <span class="btn-text">viewer journal</span>
-          <span class="btn-arrow">→</span>
-        </a>
-        <a href="gallery.html" class="btn btn-secondary">
-          <span class="btn-text">gallery</span>
-          <span class="btn-arrow">→</span>
-        </a>
-      </nav>
+      <p class="instruction-text desktop-only">Use your arrow keys and mouse to move around and explore the room.</p>
+      <p class="instruction-text mobile-only">Swipe to look around. Use the arrow buttons below to move.</p>
     </footer>
   </main>
 
@@ -195,6 +172,32 @@
   <audio id="bg-music" loop preload="auto">
     <source src="assets/Ambient Synth Pad E Minor 140 BPM.wav" type="audio/wav">
   </audio>
+
+  <!-- Mobile Arrow Controls -->
+  <div class="mobile-controls" id="mobile-controls">
+    <button class="arrow-btn arrow-up" data-direction="forward" aria-label="Move forward">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 19V5M5 12l7-7 7 7"/>
+      </svg>
+    </button>
+    <div class="arrow-row">
+      <button class="arrow-btn arrow-left" data-direction="left" aria-label="Move left">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+      </button>
+      <button class="arrow-btn arrow-down" data-direction="backward" aria-label="Move backward">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12l7 7 7-7"/>
+        </svg>
+      </button>
+      <button class="arrow-btn arrow-right" data-direction="right" aria-label="Move right">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 
   <!-- Music Toggle Button -->
   <button id="music-toggle" class="music-toggle" aria-label="Toggle background music">
@@ -313,23 +316,6 @@
     style="position: fixed; left: -9999px; top: 0; width: 640px; height: 480px; border: none;"
   ></iframe>
 
-  <!-- Debug instrumentation -->
-  <script>
-    // #region agent log
-    window.addEventListener('DOMContentLoaded', function() {
-      const btn = document.querySelector('.btn');
-      if (btn) {
-        const cs = getComputedStyle(btn);
-        const text = btn.querySelector('.btn-text');
-        const arrow = btn.querySelector('.btn-arrow');
-        const textCs = text ? getComputedStyle(text) : null;
-        const arrowCs = arrow ? getComputedStyle(arrow) : null;
-        fetch('http://127.0.0.1:7243/ingest/b2a87bc5-0f45-4c1a-95fa-5aa2d366c868',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'installation.html',message:'CTA computed styles',data:{page:'installation',viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,btnPadding:cs.padding,btnGap:cs.gap,textFontSize:textCs?.fontSize,arrowFontSize:arrowCs?.fontSize},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C'})}).catch(()=>{});
-      }
-    });
-    // #endregion
-  </script>
-  
   <!-- Three.js and dependencies -->
   <script type="importmap">
     {

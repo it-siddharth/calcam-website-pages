@@ -188,10 +188,15 @@ body {
   white-space: nowrap;
 }
 
-/* Footer Section */
+/* Footer Section - Centered Instructions */
 .installation-footer {
   pointer-events: auto;
-  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
 .instruction-text {
@@ -199,18 +204,20 @@ body {
   font-size: var(--body-size);
   font-weight: 700;
   line-height: var(--body-line-height);
-  margin-bottom: 8px;
+  margin-bottom: 0;
+  opacity: 0.8;
 }
 
-.learn-more {
-  font-family: var(--font-body);
-  font-size: var(--body-size);
-  font-weight: 700;
-  line-height: var(--body-line-height);
-  margin-bottom: 20px;
+/* Show/hide based on device */
+.mobile-only {
+  display: none;
 }
 
-/* Navigation Buttons */
+.desktop-only {
+  display: block;
+}
+
+/* Navigation Buttons (kept for back button styling) */
 .nav-links {
   display: flex;
   gap: 10px;
@@ -266,31 +273,6 @@ body {
 
 .btn-secondary.active {
   background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* CTA Styles */
-.cta-text {
-  font-family: var(--font-body);
-  font-size: var(--body-size);
-  font-weight: 700;
-  line-height: var(--body-line-height);
-  margin-bottom: 22px;
-  white-space: nowrap;
-}
-
-.cta-primary-row {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-bottom: 22px;
-}
-
-.cta-arrow {
-  font-family: var(--font-body);
-  font-size: var(--body-size);
-  font-weight: 700;
-  color: var(--color-text);
-  line-height: var(--body-line-height);
 }
 
 /* ============================================
@@ -911,6 +893,20 @@ body:not(.cinematic-intro) .skip-hint {
     --corner-size: 15px;
   }
   
+  /* Show/hide based on device */
+  .mobile-only {
+    display: block;
+  }
+  
+  .desktop-only {
+    display: none;
+  }
+  
+  /* Show mobile arrow controls */
+  .mobile-controls {
+    display: flex !important;
+  }
+  
   /* Hide keyboard controls hint on mobile */
   .controls-hint {
     display: none !important;
@@ -933,38 +929,15 @@ body:not(.cinematic-intro) .skip-hint {
   }
   
   .installation-footer {
-    max-width: 100%;
+    width: 100%;
+    padding-bottom: 100px; /* Space for mobile controls */
   }
   
   .instruction-text {
-    font-size: var(--body-size);
-    line-height: var(--body-line-height);
-    margin-bottom: 4px;
-  }
-  
-  .learn-more {
-    font-size: var(--body-size);
-    line-height: var(--body-line-height);
-    margin-bottom: 16px;
-  }
-  
-  .nav-links {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
-  .btn {
-    padding: 6px 12px;
-  }
-  
-  .btn-text {
-    font-size: 12px;
-  }
-  
-  .btn-arrow {
     font-size: 14px;
+    line-height: 20px;
+    margin-bottom: 0;
+    max-width: 280px;
   }
   
   .back-button {
@@ -1411,6 +1384,77 @@ body.anchor-focused .anchor-indicator:not(.active) {
   .anchor-info-panel .panel-description {
     font-size: 12px;
   }
+}
+
+/* ============================================
+   Mobile Arrow Controls
+   ============================================ */
+.mobile-controls {
+  display: none; /* Hidden on desktop */
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.arrow-row {
+  display: flex;
+  gap: 4px;
+}
+
+.arrow-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.arrow-btn:active,
+.arrow-btn.pressed {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #fff;
+  transform: scale(0.95);
+}
+
+.arrow-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Hide mobile controls during cinematic intro */
+body.cinematic-intro .mobile-controls {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+body.cinematic-revealed .mobile-controls {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.35s ease-out;
+  transition-delay: 0.3s;
+}
+
+/* Hide mobile controls when anchor panel is focused */
+body.anchor-focused .mobile-controls {
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 /* ============================================

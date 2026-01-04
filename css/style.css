@@ -314,21 +314,27 @@ body {
    Settings Toggle Button
    ============================================ */
 .settings-toggle {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  font-size: 20px;
-  cursor: pointer;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.2s ease;
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #fff !important;
+  font-size: 20px !important;
+  cursor: pointer !important;
+  z-index: 10000 !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
 .settings-toggle:hover {
@@ -452,15 +458,22 @@ body {
 .setting-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 14px;
   padding: 0 2px;
+  min-width: 0;
+  width: 100%;
 }
 
 .setting-row label {
-  flex: 0 0 75px;
-  font-size: 12px;
+  flex: 0 0 68px;
+  min-width: 68px;
+  max-width: 68px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Color picker */
@@ -492,8 +505,33 @@ body {
   border-radius: 4px;
 }
 
+/* Select dropdown */
+.setting-row select {
+  flex: 1;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.setting-row select:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.setting-row select:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #64d2ff;
+}
+
 .setting-row input[type="range"] {
   flex: 1;
+  min-width: 0;
   height: 5px;
   -webkit-appearance: none;
   appearance: none;
@@ -522,12 +560,17 @@ body {
 }
 
 .setting-row .value {
-  flex: 0 0 38px;
+  flex: 0 0 50px;
+  min-width: 50px;
+  max-width: 50px;
   font-size: 11px;
   color: #64d2ff;
   text-align: right;
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  white-space: nowrap;
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Buttons */
@@ -554,6 +597,24 @@ body {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.15);
   color: #fff;
+}
+
+/* Words List Styling */
+#wordsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+#wordsList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#wordsList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+#wordsList::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .setting-buttons button:active {
@@ -750,10 +811,21 @@ body {
     font-size: 10px !important;
   }
   
-  /* Hide settings on mobile */
-  .settings-panel,
+  /* Keep settings button visible on mobile, just adjust position */
   .settings-toggle {
-    display: none !important;
+    right: 15px !important;
+    bottom: 15px !important;
+    width: 48px !important;
+    height: 48px !important;
+    z-index: 10000 !important;
+  }
+  
+  .settings-panel {
+    right: 15px !important;
+    bottom: 75px !important;
+    width: 90vw !important;
+    max-width: 320px !important;
+    max-height: 70vh !important;
   }
 }
 

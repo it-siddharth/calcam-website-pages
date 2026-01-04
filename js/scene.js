@@ -281,8 +281,8 @@ function createTV() {
   function updateVideoCanvas() {
     try {
       if (tvVideo && tvVideo.readyState >= tvVideo.HAVE_CURRENT_DATA) {
-        // Apply contrast/saturation filter for more vibrant colors
-        silhouetteCtx.filter = 'contrast(1.25) saturate(1.35) brightness(1.1)';
+        // Apply color adjustments using the settings
+        silhouetteCtx.filter = `contrast(${imageSettings.contrast}) saturate(${imageSettings.saturation}) brightness(${imageSettings.brightness})`;
         silhouetteCtx.drawImage(tvVideo, 0, 0, silhouetteCanvas.width, silhouetteCanvas.height);
         silhouetteCtx.filter = 'none';
         
@@ -537,14 +537,41 @@ function drawPlaceholderAnimation() {
 // ============================================
 // Setup GUI Controls - Simple flat list
 // ============================================
-// Image settings for WORD SILHOUETTE
+// Enhanced image settings with all WORD SILHOUETTE controls
 const imageSettings = {
-  threshold: 83,
+  // Basic image controls
+  threshold: 127,  // Mid-range from screenshot
   invert: false,
   flip: false,
-  contour: true,
-  glitch: true,
-  glitchIntensity: 20
+  portraitMode: false,
+  cellWidthMultiplier: 0,  // From screenshot
+  
+  // Contour controls
+  contour: true,  // Checked in screenshot
+  pixelSize: 2,
+  contourSensitivity: 25,  // Mid-range from screenshot
+  contourDensity: 3,  // Mid-range from screenshot
+  contourColor: '#FFFFFF',
+  
+  // Animation controls
+  enableAnimation: false,  // Unchecked in screenshot
+  animationType: 'wave',
+  animationSpeed: 10,  // Mid-range from screenshot
+  
+  // Glitch controls
+  glitch: false,  // Unchecked in screenshot
+  glitchType: 'vhstracking',
+  glitchIntensity: 100,  // High value (180 shown, capped at 100 in slider)
+  glitchSpeed: 3,  // Low-mid from screenshot
+  
+  // Text/Grid settings
+  defaultFontSize: 18,  // From screenshot
+  textDensity: 2.3,  // From screenshot (2.x)
+  
+  // Filter adjustments
+  contrast: 1.25,
+  saturation: 1.35,
+  brightness: 1.1
 };
 
 function setupGUI() {
@@ -605,32 +632,166 @@ function setupGUI() {
         <label>Border Color</label>
         <input type="color" id="ctrl-bordercolor" value="${tvSettings.borderColor}">
       </div>
-      <div class="setting-section">Image / Video</div>
+      <div class="setting-section">Video Feed - Basic Controls</div>
       <div class="setting-row">
         <label>Threshold</label>
         <input type="range" id="ctrl-threshold" min="0" max="255" step="1" value="${imageSettings.threshold}">
         <span class="value" id="val-threshold">${imageSettings.threshold}</span>
       </div>
       <div class="setting-row">
-        <label>Invert</label>
+        <label>Invert Colors</label>
         <input type="checkbox" id="ctrl-invert" ${imageSettings.invert ? 'checked' : ''}>
       </div>
       <div class="setting-row">
-        <label>Flip</label>
+        <label>Flip Video</label>
         <input type="checkbox" id="ctrl-flip" ${imageSettings.flip ? 'checked' : ''}>
       </div>
       <div class="setting-row">
-        <label>Contour</label>
+        <label>Portrait Mode</label>
+        <input type="checkbox" id="ctrl-portrait" ${imageSettings.portraitMode ? 'checked' : ''}>
+      </div>
+      <div class="setting-row">
+        <label>Cell Width</label>
+        <input type="range" id="ctrl-cellwidth" min="0" max="2" step="0.1" value="${imageSettings.cellWidthMultiplier}">
+        <span class="value" id="val-cellwidth">${imageSettings.cellWidthMultiplier}</span>
+      </div>
+      
+      <div class="setting-section">Video Feed - Contour Effects</div>
+      <div class="setting-row">
+        <label>Show Contour</label>
         <input type="checkbox" id="ctrl-contour" ${imageSettings.contour ? 'checked' : ''}>
       </div>
       <div class="setting-row">
-        <label>Glitch</label>
+        <label>Pixel Size</label>
+        <input type="range" id="ctrl-pixelsize" min="1" max="6" step="1" value="${imageSettings.pixelSize}">
+        <span class="value" id="val-pixelsize">${imageSettings.pixelSize}</span>
+      </div>
+      <div class="setting-row">
+        <label>Sensitivity</label>
+        <input type="range" id="ctrl-contoursens" min="1" max="50" step="1" value="${imageSettings.contourSensitivity}">
+        <span class="value" id="val-contoursens">${imageSettings.contourSensitivity}</span>
+      </div>
+      <div class="setting-row">
+        <label>Density</label>
+        <input type="range" id="ctrl-contourdensity" min="1" max="5" step="1" value="${imageSettings.contourDensity}">
+        <span class="value" id="val-contourdensity">${imageSettings.contourDensity}</span>
+      </div>
+      <div class="setting-row">
+        <label>Color</label>
+        <input type="color" id="ctrl-contourcolor" value="${imageSettings.contourColor}">
+      </div>
+      
+      <div class="setting-section">Video Feed - Animation</div>
+      <div class="setting-row">
+        <label>Enable Animation</label>
+        <input type="checkbox" id="ctrl-enableanim" ${imageSettings.enableAnimation ? 'checked' : ''}>
+      </div>
+      <div class="setting-row">
+        <label>Type</label>
+        <select id="ctrl-animtype">
+          <option value="wave" ${imageSettings.animationType === 'wave' ? 'selected' : ''}>Wave</option>
+          <option value="pulse" ${imageSettings.animationType === 'pulse' ? 'selected' : ''}>Pulse</option>
+          <option value="rotate" ${imageSettings.animationType === 'rotate' ? 'selected' : ''}>Rotate</option>
+          <option value="bounce" ${imageSettings.animationType === 'bounce' ? 'selected' : ''}>Bounce</option>
+          <option value="flicker" ${imageSettings.animationType === 'flicker' ? 'selected' : ''}>Flicker</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <label>Speed</label>
+        <input type="range" id="ctrl-animspeed" min="1" max="20" step="1" value="${imageSettings.animationSpeed}">
+        <span class="value" id="val-animspeed">${imageSettings.animationSpeed}</span>
+      </div>
+      
+      <div class="setting-section">Video Feed - Glitch Effects</div>
+      <div class="setting-row">
+        <label>Enable Glitch</label>
         <input type="checkbox" id="ctrl-glitch" ${imageSettings.glitch ? 'checked' : ''}>
       </div>
       <div class="setting-row">
-        <label>Glitch %</label>
-        <input type="range" id="ctrl-glitchamt" min="0" max="100" step="5" value="${imageSettings.glitchIntensity}">
-        <span class="value" id="val-glitchamt">${imageSettings.glitchIntensity}</span>
+        <label>Glitch Type</label>
+        <select id="ctrl-glitchtype">
+          <option value="scanlines" ${imageSettings.glitchType === 'scanlines' ? 'selected' : ''}>Scan Lines</option>
+          <option value="rgbshift" ${imageSettings.glitchType === 'rgbshift' ? 'selected' : ''}>RGB Shift</option>
+          <option value="noise" ${imageSettings.glitchType === 'noise' ? 'selected' : ''}>Noise</option>
+          <option value="blockshift" ${imageSettings.glitchType === 'blockshift' ? 'selected' : ''}>Block Shift</option>
+          <option value="pixelation" ${imageSettings.glitchType === 'pixelation' ? 'selected' : ''}>Pixelation</option>
+          <option value="wavydistortion" ${imageSettings.glitchType === 'wavydistortion' ? 'selected' : ''}>Wavy Distortion</option>
+          <option value="vhstracking" ${imageSettings.glitchType === 'vhstracking' ? 'selected' : ''}>VHS Tracking</option>
+          <option value="ghosting" ${imageSettings.glitchType === 'ghosting' ? 'selected' : ''}>Ghosting</option>
+          <option value="digitaldropout" ${imageSettings.glitchType === 'digitaldropout' ? 'selected' : ''}>Digital Dropout</option>
+          <option value="combined" ${imageSettings.glitchType === 'combined' ? 'selected' : ''}>Combined</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <label>Intensity</label>
+        <input type="range" id="ctrl-glitchamt" min="10" max="100" step="5" value="${imageSettings.glitchIntensity}">
+        <span class="value" id="val-glitchamt">${imageSettings.glitchIntensity}%</span>
+      </div>
+      <div class="setting-row">
+        <label>Speed</label>
+        <input type="range" id="ctrl-glitchspeed" min="1" max="10" step="1" value="${imageSettings.glitchSpeed}">
+        <span class="value" id="val-glitchspeed">${imageSettings.glitchSpeed}</span>
+      </div>
+      
+      <div class="setting-section">Video Feed - Text/Grid Settings</div>
+      <div class="setting-row">
+        <label>Font Size</label>
+        <input type="range" id="ctrl-fontsize" min="6" max="24" step="1" value="${imageSettings.defaultFontSize}">
+        <span class="value" id="val-fontsize">${imageSettings.defaultFontSize}px</span>
+      </div>
+      <div class="setting-row">
+        <label>Text Density</label>
+        <input type="range" id="ctrl-textdensity" min="0.5" max="3" step="0.1" value="${imageSettings.textDensity}">
+        <span class="value" id="val-textdensity">${imageSettings.textDensity}x</span>
+      </div>
+      
+      <div class="setting-section">Video Feed - Color Adjustments</div>
+      <div class="setting-row">
+        <label>Contrast</label>
+        <input type="range" id="ctrl-contrast" min="0.5" max="2" step="0.05" value="${imageSettings.contrast}">
+        <span class="value" id="val-contrast">${imageSettings.contrast}</span>
+      </div>
+      <div class="setting-row">
+        <label>Saturation</label>
+        <input type="range" id="ctrl-saturation" min="0.5" max="2" step="0.05" value="${imageSettings.saturation}">
+        <span class="value" id="val-saturation">${imageSettings.saturation}</span>
+      </div>
+      <div class="setting-row">
+        <label>Brightness</label>
+        <input type="range" id="ctrl-brightness" min="0.5" max="2" step="0.05" value="${imageSettings.brightness}">
+        <span class="value" id="val-brightness">${imageSettings.brightness}</span>
+      </div>
+      
+      <div class="setting-section">Custom Words & Colors</div>
+      <div class="word-input-group">
+        <input type="text" id="newWord" placeholder="Add new word/phrase" style="width: 100%; padding: 8px; margin-bottom: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; color: #fff; font-size: 11px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <div>
+            <label style="font-size: 10px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px;">Color</label>
+            <input type="color" id="newWordColor" value="#FFFFFF" style="width: 100%; height: 32px;">
+          </div>
+          <div>
+            <label style="font-size: 10px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px;">Font</label>
+            <select id="newWordFont" style="width: 100%; padding: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; color: #fff; font-size: 11px;">
+              <option value="monospace">Mono</option>
+              <option value="sans-serif">Sans</option>
+              <option value="serif">Serif</option>
+              <option value="fantasy">Fantasy</option>
+              <option value="cursive">Cursive</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 10px; color: rgba(255,255,255,0.5); display: block; margin-bottom: 4px;">Size</label>
+            <input type="number" id="newWordSize" value="10" min="6" max="24" style="width: 100%; padding: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; color: #fff; font-size: 11px;">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <button id="addWordBtn" style="padding: 8px; background: rgba(100,210,255,0.2); border: 1px solid rgba(100,210,255,0.3); border-radius: 6px; color: #64d2ff; font-size: 10px; cursor: pointer;">Add</button>
+          <button id="clearWordsBtn" style="padding: 8px; background: rgba(255,100,100,0.2); border: 1px solid rgba(255,100,100,0.3); border-radius: 6px; color: #ff6464; font-size: 10px; cursor: pointer;">Clear</button>
+          <button id="resetWordsBtn" style="padding: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; color: rgba(255,255,255,0.9); font-size: 10px; cursor: pointer;">Reset</button>
+          <button id="refreshWordsBtn" style="padding: 8px; background: rgba(100,255,100,0.2); border: 1px solid rgba(100,255,100,0.3); border-radius: 6px; color: #64ff64; font-size: 10px; cursor: pointer;">↻</button>
+        </div>
+        <div id="wordsList" style="max-height: 200px; overflow-y: auto;"></div>
       </div>
       
       <div class="setting-section">Rotation</div>
@@ -657,13 +818,12 @@ function setupGUI() {
   `;
   document.body.appendChild(panel);
   
-  // Create toggle button (hidden by default)
+  // Create toggle button (visible for accessing all controls)
   const toggleBtn = document.createElement('button');
   toggleBtn.id = 'settings-toggle';
   toggleBtn.className = 'settings-toggle';
   toggleBtn.innerHTML = '⚙';
   toggleBtn.onclick = toggleSettings;
-  toggleBtn.style.display = 'none';  // Hidden
   document.body.appendChild(toggleBtn);
   
   // Apply default values on init
@@ -676,19 +836,73 @@ function setupGUI() {
   
   // Setup event listeners
   setupSettingsListeners();
+  
+  // Initialize all displayed values
+  updateAllDisplayedValues();
+}
+
+// Update all displayed values to reflect current settings
+function updateAllDisplayedValues() {
+  // Acrylic Panels
+  document.getElementById('val-opacity').textContent = CONFIG.panel.opacity.toFixed(2);
+  document.getElementById('val-thickness').textContent = CONFIG.panel.depth.toFixed(2);
+  document.getElementById('val-hspread').textContent = CONFIG.defaults.hSpread.toFixed(2);
+  document.getElementById('val-vspread').textContent = CONFIG.defaults.vSpread.toFixed(2);
+  document.getElementById('val-zoffset').textContent = CONFIG.defaults.zOffset.toFixed(2);
+  
+  // TV Appearance
+  document.getElementById('val-tvsize').textContent = '1.00';
+  
+  // Rotation
+  document.getElementById('val-rotx').textContent = CONFIG.defaults.rotateX + '°';
+  document.getElementById('val-roty').textContent = CONFIG.defaults.rotateY + '°';
+  document.getElementById('val-rotz').textContent = CONFIG.defaults.rotateZ + '°';
+  
+  // Video Feed - Basic
+  document.getElementById('val-threshold').textContent = imageSettings.threshold;
+  document.getElementById('val-cellwidth').textContent = imageSettings.cellWidthMultiplier.toFixed(1);
+  
+  // Contour
+  document.getElementById('val-pixelsize').textContent = imageSettings.pixelSize;
+  document.getElementById('val-contoursens').textContent = imageSettings.contourSensitivity;
+  document.getElementById('val-contourdensity').textContent = imageSettings.contourDensity;
+  
+  // Animation
+  document.getElementById('val-animspeed').textContent = imageSettings.animationSpeed;
+  
+  // Glitch
+  document.getElementById('val-glitchamt').textContent = imageSettings.glitchIntensity + '%';
+  document.getElementById('val-glitchspeed').textContent = imageSettings.glitchSpeed;
+  
+  // Text/Grid
+  document.getElementById('val-fontsize').textContent = imageSettings.defaultFontSize + 'px';
+  document.getElementById('val-textdensity').textContent = imageSettings.textDensity.toFixed(1) + 'x';
+  
+  // Color Adjustments
+  document.getElementById('val-contrast').textContent = imageSettings.contrast.toFixed(2);
+  document.getElementById('val-saturation').textContent = imageSettings.saturation.toFixed(2);
+  document.getElementById('val-brightness').textContent = imageSettings.brightness.toFixed(2);
 }
 
 // Toggle settings panel
 window.toggleSettings = function() {
   const panel = document.getElementById('settings-panel');
   panel.classList.toggle('open');
+  
+  // Update words list when opening the panel
+  if (panel.classList.contains('open')) {
+    // Give iframe a moment to be ready
+    setTimeout(() => {
+      updateWordsListDisplay();
+    }, 100);
+  }
 };
 
-// Set camera view
 // Reset all settings
 window.resetAll = function() {
   const { defaults } = CONFIG;
   
+  // Acrylic panels
   document.getElementById('ctrl-opacity').value = CONFIG.panel.opacity;
   document.getElementById('ctrl-thickness').value = CONFIG.panel.depth;
   document.getElementById('ctrl-hspread').value = defaults.hSpread;
@@ -707,6 +921,67 @@ window.resetAll = function() {
   document.getElementById('val-roty').textContent = defaults.rotateY + '°';
   document.getElementById('val-rotz').textContent = defaults.rotateZ + '°';
   
+  // Reset image settings to defaults
+  imageSettings.threshold = 127;
+  imageSettings.invert = false;
+  imageSettings.flip = false;
+  imageSettings.portraitMode = false;
+  imageSettings.cellWidthMultiplier = 0;
+  imageSettings.contour = true;
+  imageSettings.pixelSize = 2;
+  imageSettings.contourSensitivity = 25;
+  imageSettings.contourDensity = 3;
+  imageSettings.contourColor = '#FFFFFF';
+  imageSettings.enableAnimation = false;
+  imageSettings.animationType = 'wave';
+  imageSettings.animationSpeed = 10;
+  imageSettings.glitch = false;
+  imageSettings.glitchType = 'vhstracking';
+  imageSettings.glitchIntensity = 100;
+  imageSettings.glitchSpeed = 3;
+  imageSettings.defaultFontSize = 18;
+  imageSettings.textDensity = 2.3;
+  imageSettings.contrast = 1.25;
+  imageSettings.saturation = 1.35;
+  imageSettings.brightness = 1.1;
+  
+  // Update video feed controls
+  document.getElementById('ctrl-threshold').value = 127;
+  document.getElementById('val-threshold').textContent = '127';
+  document.getElementById('ctrl-invert').checked = false;
+  document.getElementById('ctrl-flip').checked = false;
+  document.getElementById('ctrl-portrait').checked = false;
+  document.getElementById('ctrl-cellwidth').value = 0;
+  document.getElementById('val-cellwidth').textContent = '0.0';
+  document.getElementById('ctrl-contour').checked = true;
+  document.getElementById('ctrl-pixelsize').value = 2;
+  document.getElementById('val-pixelsize').textContent = '2';
+  document.getElementById('ctrl-contoursens').value = 25;
+  document.getElementById('val-contoursens').textContent = '25';
+  document.getElementById('ctrl-contourdensity').value = 3;
+  document.getElementById('val-contourdensity').textContent = '3';
+  document.getElementById('ctrl-contourcolor').value = '#FFFFFF';
+  document.getElementById('ctrl-enableanim').checked = false;
+  document.getElementById('ctrl-animtype').value = 'wave';
+  document.getElementById('ctrl-animspeed').value = 10;
+  document.getElementById('val-animspeed').textContent = '10';
+  document.getElementById('ctrl-glitch').checked = false;
+  document.getElementById('ctrl-glitchtype').value = 'vhstracking';
+  document.getElementById('ctrl-glitchamt').value = 100;
+  document.getElementById('val-glitchamt').textContent = '100%';
+  document.getElementById('ctrl-glitchspeed').value = 3;
+  document.getElementById('val-glitchspeed').textContent = '3';
+  document.getElementById('ctrl-fontsize').value = 18;
+  document.getElementById('val-fontsize').textContent = '18px';
+  document.getElementById('ctrl-textdensity').value = 2.3;
+  document.getElementById('val-textdensity').textContent = '2.3x';
+  document.getElementById('ctrl-contrast').value = 1.25;
+  document.getElementById('val-contrast').textContent = '1.25';
+  document.getElementById('ctrl-saturation').value = 1.35;
+  document.getElementById('val-saturation').textContent = '1.35';
+  document.getElementById('ctrl-brightness').value = 1.1;
+  document.getElementById('val-brightness').textContent = '1.10';
+  
   updatePanelOpacity(CONFIG.panel.opacity);
   updatePanelThickness(CONFIG.panel.depth);
   updatePanelSpacing(defaults.hSpread, defaults.vSpread, defaults.zOffset);
@@ -715,6 +990,13 @@ window.resetAll = function() {
     THREE.MathUtils.degToRad(defaults.rotateY),
     THREE.MathUtils.degToRad(defaults.rotateZ)
   );
+  
+  // Update iframe with reset settings
+  updateIframeSettings();
+  
+  // Reset words to default
+  resetWordsToDefault();
+  
   // Camera is auto-controlled, reset pan angle and zoom
   panAngle = 0;
   targetZoom = 1.0;
@@ -824,7 +1106,9 @@ function setupSettingsListeners() {
   });
   
   
-  // Image Controls - Threshold
+  // === VIDEO FEED CONTROLS ===
+  
+  // Basic Controls
   document.getElementById('ctrl-threshold').addEventListener('input', (e) => {
     const v = parseInt(e.target.value);
     document.getElementById('val-threshold').textContent = v;
@@ -832,40 +1116,413 @@ function setupSettingsListeners() {
     updateIframeSettings();
   });
   
-  // Image Controls - Invert
   document.getElementById('ctrl-invert').addEventListener('change', (e) => {
     imageSettings.invert = e.target.checked;
     updateIframeSettings();
   });
   
-  // Image Controls - Flip
   document.getElementById('ctrl-flip').addEventListener('change', (e) => {
     imageSettings.flip = e.target.checked;
     updateIframeSettings();
   });
   
-  // Image Controls - Contour
+  document.getElementById('ctrl-portrait').addEventListener('change', (e) => {
+    imageSettings.portraitMode = e.target.checked;
+    updateIframeSettings();
+  });
+  
+  document.getElementById('ctrl-cellwidth').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-cellwidth').textContent = v.toFixed(1);
+    imageSettings.cellWidthMultiplier = v;
+    updateIframeSettings();
+  });
+  
+  // Contour Controls
   document.getElementById('ctrl-contour').addEventListener('change', (e) => {
     imageSettings.contour = e.target.checked;
     updateIframeSettings();
   });
   
-  // Image Controls - Glitch
+  document.getElementById('ctrl-pixelsize').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    document.getElementById('val-pixelsize').textContent = v;
+    imageSettings.pixelSize = v;
+    updateIframeSettings();
+  });
+  
+  document.getElementById('ctrl-contoursens').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    document.getElementById('val-contoursens').textContent = v;
+    imageSettings.contourSensitivity = v;
+    updateIframeSettings();
+  });
+  
+  document.getElementById('ctrl-contourdensity').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    document.getElementById('val-contourdensity').textContent = v;
+    imageSettings.contourDensity = v;
+    updateIframeSettings();
+  });
+  
+  document.getElementById('ctrl-contourcolor').addEventListener('input', (e) => {
+    imageSettings.contourColor = e.target.value;
+    updateIframeSettings();
+  });
+  
+  // Animation Controls
+  document.getElementById('ctrl-enableanim').addEventListener('change', (e) => {
+    imageSettings.enableAnimation = e.target.checked;
+    updateIframeSettings();
+  });
+  
+  document.getElementById('ctrl-animtype').addEventListener('change', (e) => {
+    imageSettings.animationType = e.target.value;
+    updateIframeSettings();
+  });
+  
+  document.getElementById('ctrl-animspeed').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    document.getElementById('val-animspeed').textContent = v;
+    imageSettings.animationSpeed = v;
+    updateIframeSettings();
+  });
+  
+  // Glitch Controls
   document.getElementById('ctrl-glitch').addEventListener('change', (e) => {
     imageSettings.glitch = e.target.checked;
     updateIframeSettings();
   });
   
-  // Image Controls - Glitch Intensity
+  document.getElementById('ctrl-glitchtype').addEventListener('change', (e) => {
+    imageSettings.glitchType = e.target.value;
+    updateIframeSettings();
+  });
+  
   document.getElementById('ctrl-glitchamt').addEventListener('input', (e) => {
     const v = parseInt(e.target.value);
-    document.getElementById('val-glitchamt').textContent = v;
+    document.getElementById('val-glitchamt').textContent = v + '%';
     imageSettings.glitchIntensity = v;
     updateIframeSettings();
   });
+  
+  document.getElementById('ctrl-glitchspeed').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    document.getElementById('val-glitchspeed').textContent = v;
+    imageSettings.glitchSpeed = v;
+    updateIframeSettings();
+  });
+  
+  // Text/Grid Controls
+  document.getElementById('ctrl-fontsize').addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    document.getElementById('val-fontsize').textContent = v + 'px';
+    imageSettings.defaultFontSize = v;
+    updateIframeSettings();
+  });
+  
+  document.getElementById('ctrl-textdensity').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-textdensity').textContent = v.toFixed(1) + 'x';
+    imageSettings.textDensity = v;
+    updateIframeSettings();
+  });
+  
+  // Color Adjustment Controls
+  document.getElementById('ctrl-contrast').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-contrast').textContent = v.toFixed(2);
+    imageSettings.contrast = v;
+  });
+  
+  document.getElementById('ctrl-saturation').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-saturation').textContent = v.toFixed(2);
+    imageSettings.saturation = v;
+  });
+  
+  document.getElementById('ctrl-brightness').addEventListener('input', (e) => {
+    const v = parseFloat(e.target.value);
+    document.getElementById('val-brightness').textContent = v.toFixed(2);
+    imageSettings.brightness = v;
+  });
+  
+  // Custom Words Controls
+  document.getElementById('addWordBtn').addEventListener('click', function() {
+    const text = document.getElementById('newWord').value.trim();
+    if (text) {
+      const color = document.getElementById('newWordColor').value;
+      const font = document.getElementById('newWordFont').value;
+      const size = parseInt(document.getElementById('newWordSize').value);
+      
+      addCustomWord(text, color, font, size);
+      document.getElementById('newWord').value = '';
+    }
+  });
+  
+  document.getElementById('clearWordsBtn').addEventListener('click', function() {
+    clearAllWords();
+  });
+  
+  document.getElementById('resetWordsBtn').addEventListener('click', function() {
+    resetWordsToDefault();
+  });
+  
+  document.getElementById('refreshWordsBtn').addEventListener('click', function() {
+    updateWordsListDisplay();
+  });
+  
+  // Initialize words list with default values immediately
+  initializeWordsListWithDefaults();
+  
+  // Also try to update from iframe when it's ready
+  const iframe = document.getElementById('silhouette-iframe');
+  if (iframe) {
+    // Listen for iframe load event
+    iframe.addEventListener('load', function() {
+      setTimeout(() => {
+        updateWordsListDisplay();
+      }, 1000);
+    });
+  }
 }
 
-// Update iframe settings
+// Initialize words list with default words (from WORD SILHOUETTE defaults)
+function initializeWordsListWithDefaults() {
+  const wordsListElement = document.getElementById('wordsList');
+  if (!wordsListElement) return;
+  
+  // Default words from WORD SILHOUETTE file
+  const defaultWords = [
+    { text: "YOU ARE", color: "#FF0000", font: "monospace", size: 10 },
+    { text: "YOUR CHOICES", color: "#0000FF", font: "serif", size: 22 },
+    { text: "PUBLIC SELF", color: "#00FF00", font: "monospace", size: 10 },
+    { text: "POSSIBILITY", color: "#FFFF00", font: "monospace", size: 10 }
+  ];
+  
+  displayWordsList(defaultWords);
+}
+
+// Display words list from an array
+function displayWordsList(wordsData) {
+  const wordsListElement = document.getElementById('wordsList');
+  if (!wordsListElement) return;
+  
+  wordsListElement.innerHTML = '';
+  
+  if (wordsData.length === 0) {
+    wordsListElement.innerHTML = '<div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.3); font-size: 11px;">No words added yet</div>';
+    return;
+  }
+  
+  wordsData.forEach((word, index) => {
+    const wordItem = document.createElement('div');
+    wordItem.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 10px; margin-bottom: 8px;';
+    
+    wordItem.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="color: ${word.color}; font-family: ${word.font}; font-size: ${word.size}px; font-weight: 500;">${word.text}</span>
+        <button onclick="deleteWord(${index})" style="background: rgba(255,100,100,0.2); border: 1px solid rgba(255,100,100,0.3); border-radius: 4px; color: #ff6464; font-size: 16px; width: 24px; height: 24px; cursor: pointer; line-height: 1;">×</button>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+        <div>
+          <label style="font-size: 9px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px;">Color</label>
+          <input type="color" value="${word.color}" onchange="updateWordProperty(${index}, 'color', this.value)" style="width: 100%; height: 24px; border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; cursor: pointer;">
+        </div>
+        <div>
+          <label style="font-size: 9px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px;">Font</label>
+          <select onchange="updateWordProperty(${index}, 'font', this.value)" style="width: 100%; padding: 4px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: #fff; font-size: 10px;">
+            <option value="monospace" ${word.font === 'monospace' ? 'selected' : ''}>Mono</option>
+            <option value="sans-serif" ${word.font === 'sans-serif' ? 'selected' : ''}>Sans</option>
+            <option value="serif" ${word.font === 'serif' ? 'selected' : ''}>Serif</option>
+            <option value="fantasy" ${word.font === 'fantasy' ? 'selected' : ''}>Fantasy</option>
+            <option value="cursive" ${word.font === 'cursive' ? 'selected' : ''}>Cursive</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size: 9px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 3px;">Size</label>
+          <input type="number" value="${word.size}" min="6" max="24" onchange="updateWordProperty(${index}, 'size', parseInt(this.value))" style="width: 100%; padding: 4px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; color: #fff; font-size: 10px;">
+        </div>
+      </div>
+    `;
+    
+    wordsListElement.appendChild(wordItem);
+  });
+}
+
+// Custom Words Management Functions
+function addCustomWord(text, color, font, size) {
+  const iframe = document.getElementById('silhouette-iframe');
+  if (!iframe || !iframe.contentWindow) return;
+  
+  try {
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const iframeWindow = iframe.contentWindow;
+    
+    // Access the wordsData array in the iframe
+    if (iframeWindow.wordsData) {
+      iframeWindow.wordsData.push({ text, color, font, size });
+      
+      // Update the words list in the iframe
+      if (iframeWindow.updateWordsList) {
+        iframeWindow.updateWordsList();
+      }
+      
+      // Reinitialize the grid to pick up the new word
+      if (iframeWindow.initializeGrid) {
+        iframeWindow.initializeGrid();
+      }
+      
+      // Update our local display
+      setTimeout(() => {
+        updateWordsListDisplay();
+      }, 50);
+    }
+  } catch (e) {
+    console.log('Could not add word to iframe:', e.message);
+  }
+}
+
+function clearAllWords() {
+  const iframe = document.getElementById('silhouette-iframe');
+  if (!iframe || !iframe.contentWindow) return;
+  
+  try {
+    const iframeWindow = iframe.contentWindow;
+    
+    if (iframeWindow.wordsData) {
+      iframeWindow.wordsData = [];
+      
+      if (iframeWindow.updateWordsList) {
+        iframeWindow.updateWordsList();
+      }
+      
+      if (iframeWindow.initializeGrid) {
+        iframeWindow.initializeGrid();
+      }
+      
+      setTimeout(() => {
+        updateWordsListDisplay();
+      }, 50);
+    }
+  } catch (e) {
+    console.log('Could not clear words:', e.message);
+  }
+}
+
+function resetWordsToDefault() {
+  const iframe = document.getElementById('silhouette-iframe');
+  if (!iframe || !iframe.contentWindow) return;
+  
+  try {
+    const iframeWindow = iframe.contentWindow;
+    
+    if (iframeWindow.wordsData && iframeWindow.defaultWords) {
+      iframeWindow.wordsData = [...iframeWindow.defaultWords];
+      
+      if (iframeWindow.updateWordsList) {
+        iframeWindow.updateWordsList();
+      }
+      
+      if (iframeWindow.initializeGrid) {
+        iframeWindow.initializeGrid();
+      }
+      
+      setTimeout(() => {
+        updateWordsListDisplay();
+      }, 50);
+    }
+  } catch (e) {
+    console.log('Could not reset words:', e.message);
+  }
+}
+
+function deleteWord(index) {
+  const iframe = document.getElementById('silhouette-iframe');
+  if (!iframe || !iframe.contentWindow) return;
+  
+  try {
+    const iframeWindow = iframe.contentWindow;
+    
+    if (iframeWindow.wordsData) {
+      iframeWindow.wordsData.splice(index, 1);
+      
+      if (iframeWindow.updateWordsList) {
+        iframeWindow.updateWordsList();
+      }
+      
+      if (iframeWindow.initializeGrid) {
+        iframeWindow.initializeGrid();
+      }
+      
+      setTimeout(() => {
+        updateWordsListDisplay();
+      }, 50);
+    }
+  } catch (e) {
+    console.log('Could not delete word:', e.message);
+  }
+}
+
+function updateWordProperty(index, property, value) {
+  const iframe = document.getElementById('silhouette-iframe');
+  if (!iframe || !iframe.contentWindow) return;
+  
+  try {
+    const iframeWindow = iframe.contentWindow;
+    
+    if (iframeWindow.wordsData && iframeWindow.wordsData[index]) {
+      // Update the word property
+      iframeWindow.wordsData[index][property] = value;
+      
+      // Force a re-render of the words list in the iframe (updates the UI controls there)
+      if (iframeWindow.updateWordsList) {
+        iframeWindow.updateWordsList();
+      }
+      
+      // Also reinitialize the grid if the function exists (forces text to regenerate)
+      if (iframeWindow.initializeGrid) {
+        iframeWindow.initializeGrid();
+      }
+      
+      // Update our local display to reflect the change
+      setTimeout(() => {
+        updateWordsListDisplay();
+      }, 50);
+    }
+  } catch (e) {
+    console.log('Could not update word:', e.message);
+  }
+}
+
+function updateWordsListDisplay() {
+  const iframe = document.getElementById('silhouette-iframe');
+  if (!iframe || !iframe.contentWindow) {
+    console.log('Iframe not ready yet');
+    return;
+  }
+  
+  try {
+    const iframeWindow = iframe.contentWindow;
+    
+    // Check if iframe is ready
+    if (!iframeWindow.wordsData) {
+      console.log('wordsData not ready in iframe');
+      return;
+    }
+    
+    const wordsData = iframeWindow.wordsData || [];
+    displayWordsList(wordsData);
+  } catch (e) {
+    console.log('Could not update words list display:', e.message);
+  }
+}
+
+// Make functions globally accessible for inline onclick handlers
+window.deleteWord = deleteWord;
+window.updateWordProperty = updateWordProperty;
+
+// Update iframe settings - synchronizes all controls with WORD SILHOUETTE iframe
 function updateIframeSettings() {
   const iframe = document.getElementById('silhouette-iframe');
   if (!iframe || !iframe.contentWindow) return;
@@ -873,49 +1530,127 @@ function updateIframeSettings() {
   try {
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     
-    // Threshold
+    // Basic Controls
     const thresholdEl = iframeDoc.getElementById('threshold');
     if (thresholdEl) {
       thresholdEl.value = imageSettings.threshold;
       thresholdEl.dispatchEvent(new Event('input'));
     }
     
-    // Invert
     const invertEl = iframeDoc.getElementById('invertColors');
     if (invertEl) {
       invertEl.checked = imageSettings.invert;
       invertEl.dispatchEvent(new Event('change'));
     }
     
-    // Flip
     const flipEl = iframeDoc.getElementById('flipVideo');
     if (flipEl) {
       flipEl.checked = imageSettings.flip;
       flipEl.dispatchEvent(new Event('change'));
     }
     
-    // Contour
+    const portraitEl = iframeDoc.getElementById('portraitMode');
+    if (portraitEl) {
+      portraitEl.checked = imageSettings.portraitMode;
+      portraitEl.dispatchEvent(new Event('change'));
+    }
+    
+    const cellWidthEl = iframeDoc.getElementById('cellWidthMultiplier');
+    if (cellWidthEl) {
+      cellWidthEl.value = imageSettings.cellWidthMultiplier;
+      cellWidthEl.dispatchEvent(new Event('input'));
+    }
+    
+    // Contour Controls
     const contourEl = iframeDoc.getElementById('showContour');
     if (contourEl) {
       contourEl.checked = imageSettings.contour;
       contourEl.dispatchEvent(new Event('change'));
     }
     
-    // Glitch
+    const pixelSizeEl = iframeDoc.getElementById('pixelSize');
+    if (pixelSizeEl) {
+      pixelSizeEl.value = imageSettings.pixelSize;
+      pixelSizeEl.dispatchEvent(new Event('input'));
+    }
+    
+    const contourSensEl = iframeDoc.getElementById('contourSensitivity');
+    if (contourSensEl) {
+      contourSensEl.value = imageSettings.contourSensitivity;
+      contourSensEl.dispatchEvent(new Event('input'));
+    }
+    
+    const contourDensityEl = iframeDoc.getElementById('contourDensity');
+    if (contourDensityEl) {
+      contourDensityEl.value = imageSettings.contourDensity;
+      contourDensityEl.dispatchEvent(new Event('input'));
+    }
+    
+    const contourColorEl = iframeDoc.getElementById('contourColor');
+    if (contourColorEl) {
+      contourColorEl.value = imageSettings.contourColor;
+      contourColorEl.dispatchEvent(new Event('input'));
+    }
+    
+    // Animation Controls
+    const enableAnimEl = iframeDoc.getElementById('enableAnimation');
+    if (enableAnimEl) {
+      enableAnimEl.checked = imageSettings.enableAnimation;
+      enableAnimEl.dispatchEvent(new Event('change'));
+    }
+    
+    const animTypeEl = iframeDoc.getElementById('animationType');
+    if (animTypeEl) {
+      animTypeEl.value = imageSettings.animationType;
+      animTypeEl.dispatchEvent(new Event('change'));
+    }
+    
+    const animSpeedEl = iframeDoc.getElementById('animationSpeed');
+    if (animSpeedEl) {
+      animSpeedEl.value = imageSettings.animationSpeed;
+      animSpeedEl.dispatchEvent(new Event('input'));
+    }
+    
+    // Glitch Controls
     const glitchEl = iframeDoc.getElementById('enableGlitch');
     if (glitchEl) {
       glitchEl.checked = imageSettings.glitch;
       glitchEl.dispatchEvent(new Event('change'));
     }
     
-    // Glitch Intensity
+    const glitchTypeEl = iframeDoc.getElementById('glitchType');
+    if (glitchTypeEl) {
+      glitchTypeEl.value = imageSettings.glitchType;
+      glitchTypeEl.dispatchEvent(new Event('change'));
+    }
+    
     const glitchAmtEl = iframeDoc.getElementById('glitchIntensity');
     if (glitchAmtEl) {
       glitchAmtEl.value = imageSettings.glitchIntensity;
       glitchAmtEl.dispatchEvent(new Event('input'));
     }
+    
+    const glitchSpeedEl = iframeDoc.getElementById('glitchSpeed');
+    if (glitchSpeedEl) {
+      glitchSpeedEl.value = imageSettings.glitchSpeed;
+      glitchSpeedEl.dispatchEvent(new Event('input'));
+    }
+    
+    // Text/Grid Controls
+    const fontSizeEl = iframeDoc.getElementById('defaultFontSize');
+    if (fontSizeEl) {
+      fontSizeEl.value = imageSettings.defaultFontSize;
+      fontSizeEl.dispatchEvent(new Event('input'));
+    }
+    
+    const textDensityEl = iframeDoc.getElementById('textDensity');
+    if (textDensityEl) {
+      textDensityEl.value = imageSettings.textDensity;
+      textDensityEl.dispatchEvent(new Event('input'));
+    }
   } catch (e) {
-    // Cross-origin - silently fail
+    // Cross-origin or iframe not ready - silently fail
+    console.log('Could not update iframe settings:', e.message);
   }
 }
 
