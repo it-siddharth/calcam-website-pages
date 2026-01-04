@@ -33,14 +33,15 @@
   
   // Configuration
   const config = {
-    friction: 0.85,
+    friction: 0.92,
     wheelMultiplier: 1.5,
     minVelocity: 0.1,
-    touchMultiplier: 1,
+    touchMultiplier: 1.2,
     keyboardStep: 400,
     maxTranslate: 0,
     minTranslate: 0,
-    smoothing: 0.12
+    smoothing: 0.35,
+    dragSmoothing: 0.6  // Higher value for direct drag responsiveness
   };
   
   // Calculate bounds - called after all media loads
@@ -89,10 +90,12 @@
     }
     
     // Smooth interpolation to target
+    // Use higher smoothing during drag for responsiveness, lower for momentum
+    const smoothing = isDragging ? config.dragSmoothing : config.smoothing;
     const diff = targetTranslate - currentTranslate;
     
     if (Math.abs(diff) > 0.5 || Math.abs(velocity) > config.minVelocity) {
-      currentTranslate += diff * config.smoothing;
+      currentTranslate += diff * smoothing;
       applyTransform();
       rafId = requestAnimationFrame(animate);
       isAnimating = true;
