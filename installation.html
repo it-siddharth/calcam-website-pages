@@ -22,7 +22,7 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet"></noscript>
   
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="css/installation.css?v=6">
+  <link rel="stylesheet" href="css/installation.css?v=7">
   
   <!-- Critical inline styles to prevent white flash and text flash -->
   <style>
@@ -90,7 +90,7 @@
     <!-- Instructions (centered at bottom) -->
     <footer class="installation-footer">
       <p class="instruction-text desktop-only">Use W/A/S/D or arrow keys and mouse to move around and explore the room.</p>
-      <p class="instruction-text mobile-only">Swipe to look around.<br>Use the D-pad to move.</p>
+      <p class="instruction-text mobile-only">Swipe to look around.<br>Use the joystick to move.</p>
     </footer>
   </main>
 
@@ -174,30 +174,11 @@
     <source src="assets/Ambient Synth Pad E Minor 140 BPM.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Mobile Controls: Centered D-pad -->
+  <!-- Mobile Controls: Joystick -->
   <div class="mobile-controls" id="mobile-controls">
-    <div class="mobile-dpad" id="mobile-dpad">
-      <button class="arrow-btn arrow-up" data-direction="forward" aria-label="Move forward">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 19V5M5 12l7-7 7 7"/>
-        </svg>
-      </button>
-      <div class="arrow-row">
-        <button class="arrow-btn arrow-left" data-direction="left" aria-label="Move left">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-        </button>
-        <button class="arrow-btn arrow-down" data-direction="backward" aria-label="Move backward">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12l7 7 7-7"/>
-          </svg>
-        </button>
-        <button class="arrow-btn arrow-right" data-direction="right" aria-label="Move right">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </button>
+    <div class="joystick-container" id="joystick">
+      <div class="joystick-base">
+        <div class="joystick-thumb" id="joystick-thumb"></div>
       </div>
     </div>
   </div>

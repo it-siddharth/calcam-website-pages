@@ -1266,59 +1266,104 @@ function setupKeyboardControls() {
 }
 
 // ============================================
-// Setup Mobile Arrow Controls
+// Setup Mobile Joystick Controls
 // ============================================
 function setupMobileArrowControls() {
-  const mobileControls = document.getElementById('mobile-controls');
-  if (!mobileControls) return;
+  const joystick = document.getElementById('joystick');
+  const thumb = document.getElementById('joystick-thumb');
+  if (!joystick || !thumb) return;
   
-  // Setup D-pad buttons
-  const buttons = mobileControls.querySelectorAll('.arrow-btn');
+  const baseRadius = 50; // Half of joystick-base width
+  const maxDistance = 28; // Max thumb travel from center
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
   
-  buttons.forEach(btn => {
-    const direction = btn.dataset.direction;
+  function updateJoystick(clientX, clientY) {
+    const rect = joystick.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
     
-    // Handle touch start - begin movement
-    btn.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      btn.classList.add('pressed');
-      setMovementDirection(direction, true);
-    }, { passive: false });
+    let deltaX = clientX - centerX;
+    let deltaY = clientY - centerY;
     
-    // Handle touch end - stop movement
-    btn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      btn.classList.remove('pressed');
-      setMovementDirection(direction, false);
-    }, { passive: false });
+    // Clamp to max distance
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    if (distance > maxDistance) {
+      deltaX = (deltaX / distance) * maxDistance;
+      deltaY = (deltaY / distance) * maxDistance;
+    }
     
-    // Handle touch cancel
-    btn.addEventListener('touchcancel', (e) => {
-      e.stopPropagation();
-      btn.classList.remove('pressed');
-      setMovementDirection(direction, false);
-    });
+    // Move thumb visually (add center offset)
+    thumb.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
     
-    // Also handle mouse for testing on desktop
-    btn.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      btn.classList.add('pressed');
-      setMovementDirection(direction, true);
-    });
+    // Determine movement directions based on threshold
+    const threshold = 10;
+    const normalizedX = deltaX / maxDistance;
+    const normalizedY = deltaY / maxDistance;
     
-    btn.addEventListener('mouseup', (e) => {
-      e.stopPropagation();
-      btn.classList.remove('pressed');
-      setMovementDirection(direction, false);
-    });
+    // Forward/backward (Y axis - negative is forward)
+    moveForward = normalizedY < -0.3;
+    moveBackward = normalizedY > 0.3;
     
-    btn.addEventListener('mouseleave', (e) => {
-      btn.classList.remove('pressed');
-      setMovementDirection(direction, false);
-    });
+    // Left/right (X axis)
+    moveLeft = normalizedX < -0.3;
+    moveRight = normalizedX > 0.3;
+  }
+  
+  function resetJoystick() {
+    isDragging = false;
+    thumb.classList.remove('active');
+    thumb.style.transform = 'translate(-50%, -50%)';
+    moveForward = false;
+    moveBackward = false;
+    moveLeft = false;
+    moveRight = false;
+  }
+  
+  // Touch events
+  joystick.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    isDragging = true;
+    thumb.classList.add('active');
+    const touch = e.touches[0];
+    updateJoystick(touch.clientX, touch.clientY);
+  }, { passive: false });
+  
+  document.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    updateJoystick(touch.clientX, touch.clientY);
+  }, { passive: false });
+  
+  document.addEventListener('touchend', (e) => {
+    if (isDragging) {
+      resetJoystick();
+    }
+  });
+  
+  document.addEventListener('touchcancel', () => {
+    resetJoystick();
+  });
+  
+  // Mouse events for desktop testing
+  joystick.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isDragging = true;
+    thumb.classList.add('active');
+    updateJoystick(e.clientX, e.clientY);
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    updateJoystick(e.clientX, e.clientY);
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      resetJoystick();
+    }
   });
 }
 
