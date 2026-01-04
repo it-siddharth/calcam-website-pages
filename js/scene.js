@@ -1709,7 +1709,7 @@ function adjustCameraForViewport(width, height) {
   
   if (isMobileView) {
     // Mobile: center the model - CSS handles positioning the container
-    scaleFactor = 0.68;  // Zoomed in for mobile, balanced
+    scaleFactor = 0.55;  // Zoomed in for mobile
     cameraY = 0.5;
     cameraTargetY = 0.5;
     cameraOffsetX = 0;
