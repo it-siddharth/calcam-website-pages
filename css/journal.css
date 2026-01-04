@@ -140,6 +140,9 @@ body::after {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.2s ease;
+  width: fit-content;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .back-button:hover {
@@ -151,6 +154,7 @@ body::after {
   font-family: var(--font-arrow);
   font-size: 16px;
   font-style: italic;
+  flex-shrink: 0;
 }
 
 /* ============================================
@@ -219,6 +223,8 @@ body::after {
   display: flex;
   gap: 10px;
   padding-bottom: var(--page-padding);
+  flex-wrap: wrap;
+  overflow: visible;
 }
 
 .btn {
@@ -228,9 +234,11 @@ body::after {
   padding: 8px 14px;
   border-radius: 30px;
   text-decoration: none;
-  overflow: hidden;
   white-space: nowrap;
   transition: all 0.2s ease;
+  width: fit-content;
+  flex-shrink: 0;
+  overflow: visible;
 }
 
 .btn:hover {
@@ -250,7 +258,7 @@ body::after {
   font-size: var(--arrow-size);
   font-style: italic;
   line-height: 1;
-  margin-right: -2px;
+  flex-shrink: 0;
 }
 
 .btn-secondary {
@@ -516,18 +524,24 @@ body::after {
     flex-wrap: wrap;
     gap: 8px;
     padding-bottom: 0;
+    overflow: visible;
   }
   
   .btn {
     padding: 6px 12px;
+    width: fit-content;
+    flex-shrink: 0;
+    overflow: visible;
   }
   
   .btn-text {
     font-size: 12px;
+    flex-shrink: 0;
   }
   
   .btn-arrow {
     font-size: 14px;
+    flex-shrink: 0;
   }
   
   /* Back button mobile sizing */
@@ -560,14 +574,19 @@ body::after {
   
   .btn {
     padding: 5px 10px;
+    width: fit-content;
+    flex-shrink: 0;
+    overflow: visible;
   }
   
   .btn-text {
     font-size: 11px;
+    flex-shrink: 0;
   }
   
   .btn-arrow {
     font-size: 13px;
+    flex-shrink: 0;
   }
 }
 

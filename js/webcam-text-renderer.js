@@ -16,12 +16,22 @@ export class WebcamTextRenderer {
     this.video.height = height;
     this.video.autoplay = true;
     this.video.playsInline = true;
+    this.video.muted = true; // Required for iOS Safari autoplay
+    this.video.setAttribute('playsinline', ''); // iOS Safari
+    this.video.setAttribute('webkit-playsinline', ''); // Older iOS Safari
+    this.video.setAttribute('muted', '');
     
     // Camera state
     this.currentStream = null;
     this.currentCameraId = null;
     this.cameras = [];
     this.isInitialized = false;
+    
+    // Mobile Safari detection
+    this.isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+      (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome') && 'ontouchend' in document);
+    this.lastVideoTime = 0;
+    this.videoKeepAliveInterval = null;
     
     // Word definitions with CORRECT colors
     this.words = [
@@ -144,9 +154,15 @@ export class WebcamTextRenderer {
    */
   async switchCamera(deviceId) {
     try {
-      // Stop current stream
+      // Stop current stream and cleanup
       if (this.currentStream) {
         this.currentStream.getTracks().forEach(track => track.stop());
+      }
+      
+      // Clear any existing keep-alive interval
+      if (this.videoKeepAliveInterval) {
+        clearInterval(this.videoKeepAliveInterval);
+        this.videoKeepAliveInterval = null;
       }
       
       // Get new stream
@@ -159,13 +175,22 @@ export class WebcamTextRenderer {
       this.video.srcObject = this.currentStream;
       this.currentCameraId = deviceId;
       
+      // Ensure Safari mobile attributes are set
+      this.video.muted = true;
+      this.video.playsInline = true;
+      
       // Wait for video to be ready
       await new Promise(resolve => {
         this.video.onloadedmetadata = () => {
-          this.video.play();
+          this.video.play().catch(() => {});
           resolve();
         };
       });
+      
+      // Setup Safari mobile keep-alive workaround
+      if (this.isIOSSafari) {
+        this.setupSafariKeepAlive();
+      }
       
       console.log('✅ Camera switched:', deviceId || 'default');
       
@@ -176,6 +201,56 @@ export class WebcamTextRenderer {
       this.drawErrorMessage('Camera access denied. Please allow camera access and refresh.');
       return false;
     }
+  }
+  
+  /**
+   * Setup Safari mobile video keep-alive mechanism
+   */
+  setupSafariKeepAlive() {
+    // Periodically ensure video is playing
+    this.videoKeepAliveInterval = setInterval(() => {
+      if (this.video && this.video.paused) {
+        this.video.play().catch(() => {});
+      }
+      
+      // Check for stalled video (same currentTime)
+      if (this.video && this.video.currentTime === this.lastVideoTime && this.currentStream) {
+        const tracks = this.currentStream.getVideoTracks();
+        if (tracks.length > 0 && tracks[0].enabled) {
+          // Toggle track to force refresh on Safari
+          tracks[0].enabled = false;
+          setTimeout(() => {
+            tracks[0].enabled = true;
+          }, 10);
+        }
+      }
+      this.lastVideoTime = this.video ? this.video.currentTime : 0;
+    }, 500);
+    
+    // Handle visibility changes
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && this.video) {
+        setTimeout(() => {
+          if (this.video.paused) {
+            this.video.play().catch(() => {});
+          }
+        }, 100);
+      }
+    });
+    
+    // Handle video stall events
+    this.video.addEventListener('stalled', () => {
+      console.log('Video stalled, recovering...');
+      this.video.play().catch(() => {});
+    });
+    
+    this.video.addEventListener('suspend', () => {
+      setTimeout(() => {
+        if (this.video.paused) {
+          this.video.play().catch(() => {});
+        }
+      }, 100);
+    });
   }
   
   /**
@@ -227,13 +302,20 @@ export class WebcamTextRenderer {
    * Main render method - called every frame
    */
   render() {
-    // Check if video is ready
-    const videoReady = this.video && this.video.readyState === 4;
+    // Check if video is ready (readyState >= 2 means HAVE_CURRENT_DATA or better)
+    const videoReady = this.video && this.video.readyState >= 2;
     
     if (!videoReady) {
       // Show placeholder with colored text
       this.drawPlaceholder();
       return;
+    }
+    
+    // Safari mobile: ensure video is playing
+    if (this.isIOSSafari && this.video) {
+      if (this.video.paused || this.video.ended) {
+        this.video.play().catch(() => {});
+      }
     }
     
     try {
@@ -706,6 +788,13 @@ export class WebcamTextRenderer {
    * Cleanup resources
    */
   dispose() {
+    // Stop keep-alive interval
+    if (this.videoKeepAliveInterval) {
+      clearInterval(this.videoKeepAliveInterval);
+      this.videoKeepAliveInterval = null;
+    }
+    
+    // Stop all tracks
     if (this.currentStream) {
       this.currentStream.getTracks().forEach(track => track.stop());
     }

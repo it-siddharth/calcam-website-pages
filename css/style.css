@@ -127,6 +127,7 @@ body {
   position: relative;
   z-index: 10;
   height: 100vh;
+  overflow: visible;
 }
 
 /* Title */
@@ -200,6 +201,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 22px;
+  overflow: visible;
 }
 
 .cta-text {
@@ -233,9 +235,11 @@ body {
   padding: 8px 14px;
   border-radius: 30px;
   text-decoration: none;
-  overflow: hidden;
   white-space: nowrap;
   transition: all 0.2s ease;
+  width: fit-content;
+  flex-shrink: 0;
+  overflow: visible;
 }
 
 .btn:hover {
@@ -256,7 +260,7 @@ body {
   font-size: var(--arrow-size);
   font-style: italic;
   line-height: 1;
-  margin-right: -2px;
+  flex-shrink: 0;
 }
 
 .btn-primary {
@@ -280,6 +284,7 @@ body {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  overflow: visible;
 }
 
 /* ============================================
@@ -640,9 +645,9 @@ body {
     --title-letter-spacing: -3px;
   }
   
-  /* Prevent overflow clipping at tablet sizes */
+  /* Allow content to display at tablet sizes */
   .landing-page {
-    overflow: hidden;
+    overflow: visible;
   }
   
   .content-section {
@@ -826,18 +831,24 @@ body {
   .nav-links {
     flex-wrap: wrap !important;
     gap: 8px !important;
+    overflow: visible !important;
   }
   
   .btn {
     padding: 6px 12px !important;
+    width: fit-content !important;
+    flex-shrink: 0 !important;
+    overflow: visible !important;
   }
   
   .btn-text {
     font-size: 12px !important;
+    flex-shrink: 0 !important;
   }
   
   .btn-arrow {
     font-size: 14px !important;
+    flex-shrink: 0 !important;
   }
   
   /* Credit - in the 3D section area */
@@ -885,14 +896,19 @@ body {
   
   .btn {
     padding: 5px 10px !important;
+    width: fit-content !important;
+    flex-shrink: 0 !important;
+    overflow: visible !important;
   }
   
   .btn-text {
     font-size: 11px !important;
+    flex-shrink: 0 !important;
   }
   
   .btn-arrow {
     font-size: 13px !important;
+    flex-shrink: 0 !important;
   }
 }
 

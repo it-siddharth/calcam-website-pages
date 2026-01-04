@@ -691,7 +691,7 @@
       <div id="book-container"></div>
       
       <div class="book-controls">
-        <p class="book-hint">Click on pages to flip</p>
+        <p class="book-hint">Drag to rotate • Click to flip pages</p>
         <div class="controls-row">
           <button id="btn-prev" title="Previous page">◀</button>
           <span class="page-indicator"><span id="current-page">1</span> / <span id="total-pages">12</span></span>
@@ -1209,23 +1209,44 @@
 
     // Levitation animation
     let levitationTime = 0;
-    const LEVITATION_HEIGHT = 0.06;
-    const LEVITATION_TILT = 0.025;
+    const LEVITATION_HEIGHT = 0.04;
+    const LEVITATION_TILT = 0.015;
     
     // Random seeds for organic movement
     const randomSeed1 = Math.random() * 100;
     const randomSeed2 = Math.random() * 100;
     const randomSeed3 = Math.random() * 100;
 
-    // Mouse tracking
-    let mouseX = 0;
-    let mouseY = 0;
-    let targetRotationX = 0;
-    let targetRotationY = 0;
-    let currentRotationX = 0;
-    let currentRotationY = 0;
-    const MOUSE_SENSITIVITY = 0.15;
-    const MOUSE_SMOOTHING = 0.08;
+    // ============================================
+    // Interactive Rotation Controls
+    // ============================================
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let dragStartTime = 0;
+    let totalDragDistance = 0;
+    
+    // User-controlled rotation (persists)
+    let userRotationX = 0.3; // Start with slight tilt down to see book better
+    let userRotationY = 0;
+    
+    // Velocity for inertia
+    let velocityX = 0;
+    let velocityY = 0;
+    
+    // Previous positions for velocity calculation
+    let prevDragX = 0;
+    let prevDragY = 0;
+    
+    const DRAG_SENSITIVITY = 0.008;
+    const INERTIA_FRICTION = 0.95;
+    const INERTIA_THRESHOLD = 0.0001;
+    const CLICK_THRESHOLD = 15; // pixels - max movement for a click (more forgiving)
+    const CLICK_TIME_THRESHOLD = 400; // ms - max time for a click
+    
+    // Rotation limits
+    const MAX_ROTATION_X = Math.PI / 2.5; // How much you can tilt up/down
+    const MIN_ROTATION_X = -0.2;
 
     // ============================================
     // Responsive Camera Adjustment
@@ -1286,11 +1307,11 @@
       renderer.setSize(w, h);
     }
 
-    function onMouseClick(event) {
+    function tryFlipPage(clientX, clientY) {
       const rect = renderer.domElement.getBoundingClientRect();
       const mouse = new THREE.Vector2();
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
       const raycaster = new THREE.Raycaster();
       raycaster.setFromCamera(mouse, camera);
@@ -1306,10 +1327,117 @@
           book.flipPage(obj);
           playFlipSound();
           updatePageIndicator();
+          return true;
         }
+      }
+      return false;
+    }
+
+    // ============================================
+    // Mouse Drag Controls
+    // ============================================
+    function onMouseDown(event) {
+      isDragging = true;
+      dragStartX = event.clientX;
+      dragStartY = event.clientY;
+      prevDragX = event.clientX;
+      prevDragY = event.clientY;
+      dragStartTime = Date.now();
+      totalDragDistance = 0;
+      velocityX = 0;
+      velocityY = 0;
+      renderer.domElement.style.cursor = 'grabbing';
+    }
+
+    function onMouseMove(event) {
+      if (!isDragging) return;
+      
+      const deltaX = event.clientX - prevDragX;
+      const deltaY = event.clientY - prevDragY;
+      
+      // Update total drag distance for click detection
+      totalDragDistance += Math.abs(deltaX) + Math.abs(deltaY);
+      
+      // Update rotation based on drag
+      userRotationY += deltaX * DRAG_SENSITIVITY;
+      userRotationX += deltaY * DRAG_SENSITIVITY;
+      
+      // Clamp X rotation
+      userRotationX = Math.max(MIN_ROTATION_X, Math.min(MAX_ROTATION_X, userRotationX));
+      
+      // Calculate velocity for inertia
+      velocityX = deltaY * DRAG_SENSITIVITY;
+      velocityY = deltaX * DRAG_SENSITIVITY;
+      
+      prevDragX = event.clientX;
+      prevDragY = event.clientY;
+    }
+
+    function onMouseUp(event) {
+      if (!isDragging) return;
+      isDragging = false;
+      renderer.domElement.style.cursor = 'grab';
+      // Page flipping is now handled by the click event listener
+    }
+
+    // ============================================
+    // Touch Controls for Mobile
+    // ============================================
+    function onTouchStart(event) {
+      if (event.touches.length === 1) {
+        const touch = event.touches[0];
+        isDragging = true;
+        dragStartX = touch.clientX;
+        dragStartY = touch.clientY;
+        prevDragX = touch.clientX;
+        prevDragY = touch.clientY;
+        dragStartTime = Date.now();
+        totalDragDistance = 0;
+        velocityX = 0;
+        velocityY = 0;
       }
     }
 
+    function onTouchMove(event) {
+      if (!isDragging || event.touches.length !== 1) return;
+      
+      event.preventDefault(); // Prevent scrolling while rotating
+      
+      const touch = event.touches[0];
+      const deltaX = touch.clientX - prevDragX;
+      const deltaY = touch.clientY - prevDragY;
+      
+      // Update total drag distance for click detection
+      totalDragDistance += Math.abs(deltaX) + Math.abs(deltaY);
+      
+      // Update rotation based on drag
+      userRotationY += deltaX * DRAG_SENSITIVITY;
+      userRotationX += deltaY * DRAG_SENSITIVITY;
+      
+      // Clamp X rotation
+      userRotationX = Math.max(MIN_ROTATION_X, Math.min(MAX_ROTATION_X, userRotationX));
+      
+      // Calculate velocity for inertia
+      velocityX = deltaY * DRAG_SENSITIVITY;
+      velocityY = deltaX * DRAG_SENSITIVITY;
+      
+      prevDragX = touch.clientX;
+      prevDragY = touch.clientY;
+    }
+
+    function onTouchEnd(event) {
+      if (!isDragging) return;
+      
+      const dragDuration = Date.now() - dragStartTime;
+      const wasClick = totalDragDistance < CLICK_THRESHOLD && dragDuration < CLICK_TIME_THRESHOLD;
+      
+      isDragging = false;
+      
+      // If it was a tap (not a drag), try to flip page using the ORIGINAL touch position
+      if (wasClick) {
+        tryFlipPage(dragStartX, dragStartY);
+      }
+    }
 
     function updatePageIndicator() {
       const currentPageNum = book.currentPage + 1;
@@ -1321,7 +1449,7 @@
     }
 
     // ============================================
-    // Controls
+    // Button Controls
     // ============================================
     document.getElementById('btn-prev').addEventListener('click', () => {
       if (book.currentPage > 0) {
@@ -1355,19 +1483,43 @@
       }
     });
 
-    function onMouseMove(event) {
-      // Get mouse position relative to the center of the screen
-      mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-      mouseY = (event.clientY / window.innerHeight) * 2 - 1;
-      
-      // Set target rotation based on mouse position
-      targetRotationY = mouseX * MOUSE_SENSITIVITY;
-      targetRotationX = mouseY * MOUSE_SENSITIVITY * 0.5;
-    }
-
+    // ============================================
+    // Event Listeners
+    // ============================================
     window.addEventListener('resize', onWindowResize);
-    renderer.domElement.addEventListener('click', onMouseClick);
-    window.addEventListener('mousemove', onMouseMove);
+    
+    // Track if last interaction was a drag (to prevent click from firing after drag)
+    let wasDragged = false;
+    
+    // Mouse events for rotation
+    renderer.domElement.addEventListener('mousedown', (event) => {
+      onMouseDown(event);
+      wasDragged = false;
+    });
+    window.addEventListener('mousemove', (event) => {
+      if (isDragging && totalDragDistance > CLICK_THRESHOLD) {
+        wasDragged = true;
+      }
+      onMouseMove(event);
+    });
+    window.addEventListener('mouseup', onMouseUp);
+    
+    // Click handler for page flipping
+    renderer.domElement.addEventListener('click', (event) => {
+      // Only flip page if it wasn't a drag
+      if (!wasDragged) {
+        tryFlipPage(event.clientX, event.clientY);
+      }
+      wasDragged = false;
+    });
+    
+    // Touch events
+    renderer.domElement.addEventListener('touchstart', onTouchStart, { passive: false });
+    renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
+    renderer.domElement.addEventListener('touchend', onTouchEnd);
+    
+    // Set initial cursor
+    renderer.domElement.style.cursor = 'grab';
 
     // ============================================
     // Animation Loop
@@ -1381,27 +1533,35 @@
       // Update time
       levitationTime += delta;
       
-      // Random organic levitation using multiple sine waves at different frequencies
+      // Apply inertia when not dragging
+      if (!isDragging) {
+        if (Math.abs(velocityX) > INERTIA_THRESHOLD || Math.abs(velocityY) > INERTIA_THRESHOLD) {
+          userRotationX += velocityX;
+          userRotationY += velocityY;
+          
+          // Clamp X rotation
+          userRotationX = Math.max(MIN_ROTATION_X, Math.min(MAX_ROTATION_X, userRotationX));
+          
+          // Apply friction
+          velocityX *= INERTIA_FRICTION;
+          velocityY *= INERTIA_FRICTION;
+        }
+      }
+      
+      // Subtle organic levitation (reduced when user is interacting)
+      const interactionDamping = isDragging ? 0.3 : 1;
       const floatY = 
-        Math.sin(levitationTime * 1.2 + randomSeed1) * LEVITATION_HEIGHT * 0.6 +
-        Math.sin(levitationTime * 0.7 + randomSeed2) * LEVITATION_HEIGHT * 0.3 +
-        Math.sin(levitationTime * 2.1 + randomSeed3) * LEVITATION_HEIGHT * 0.1;
+        Math.sin(levitationTime * 1.2 + randomSeed1) * LEVITATION_HEIGHT * 0.6 * interactionDamping +
+        Math.sin(levitationTime * 0.7 + randomSeed2) * LEVITATION_HEIGHT * 0.3 * interactionDamping +
+        Math.sin(levitationTime * 2.1 + randomSeed3) * LEVITATION_HEIGHT * 0.1 * interactionDamping;
       
-      // Organic tilt variations
-      const baseTiltX = Math.sin(levitationTime * 0.8 + randomSeed1) * LEVITATION_TILT;
-      const baseTiltZ = Math.cos(levitationTime * 0.6 + randomSeed2) * LEVITATION_TILT * 0.7;
+      // Very subtle organic tilt variations (reduced for user control)
+      const baseTiltZ = Math.cos(levitationTime * 0.6 + randomSeed2) * LEVITATION_TILT * 0.5 * interactionDamping;
       
-      // Left/right rotation (Y-axis) - subtle swaying
-      const baseRotationY = Math.sin(levitationTime * 0.4 + randomSeed3) * 0.03;
-      
-      // Smooth mouse tracking interpolation
-      currentRotationX += (targetRotationX - currentRotationX) * MOUSE_SMOOTHING;
-      currentRotationY += (targetRotationY - currentRotationY) * MOUSE_SMOOTHING;
-      
-      // Apply combined rotations: base levitation + mouse tracking
+      // Apply combined rotations: user rotation + subtle levitation
       book.position.y = floatY;
-      book.rotation.x = baseTiltX + currentRotationX;
-      book.rotation.y = baseRotationY + currentRotationY;
+      book.rotation.x = userRotationX;
+      book.rotation.y = userRotationY;
       book.rotation.z = baseTiltZ;
       
       renderer.render(scene, camera);
