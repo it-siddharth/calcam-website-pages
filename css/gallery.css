@@ -300,6 +300,7 @@ body {
   user-select: none;
   will-change: transform;
   transition: transform 0.05s ease-out;
+  touch-action: pan-y pinch-zoom; /* Allow vertical scroll, handle horizontal ourselves */
 }
 
 .carousel-track:active {
@@ -393,13 +394,24 @@ body {
 }
 
 /* ============================================
+   Responsive - Tablet (1024px and below)
+   ============================================ */
+@media screen and (max-width: 1024px) {
+  :root {
+    --title-size: 90px;
+    --title-line-height: 86px;
+    --title-letter-spacing: -3px;
+  }
+}
+
+/* ============================================
    Mobile Responsive Styles
    ============================================ */
 @media screen and (max-width: 768px) {
   :root {
-    --title-size: 56px;
-    --title-line-height: 52px;
-    --title-letter-spacing: -2px;
+    --title-size: 42px;
+    --title-line-height: 40px;
+    --title-letter-spacing: -1px;
     
     --body-size: 15px;
     --body-line-height: 24px;
@@ -466,6 +478,7 @@ body {
     gap: var(--carousel-gap);
     align-items: center;
     height: 100%;
+    touch-action: pan-y pinch-zoom; /* Critical for mobile swipe to work */
   }
   
   /* On mobile, carousel items should fit within container */
@@ -564,7 +577,7 @@ body {
 }
 
 /* Extra small screens */
-@media screen and (max-width: 390px) {
+@media screen and (max-width: 480px) {
   :root {
     --title-size: 48px;
     --title-line-height: 44px;

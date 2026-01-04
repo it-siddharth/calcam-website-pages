@@ -386,13 +386,24 @@ body::after {
 }
 
 /* ============================================
+   Responsive - Tablet (1024px and below)
+   ============================================ */
+@media screen and (max-width: 1024px) {
+  :root {
+    --title-size: 90px;
+    --title-line-height: 86px;
+    --title-letter-spacing: -3px;
+  }
+}
+
+/* ============================================
    Mobile Responsive Styles
    ============================================ */
 @media screen and (max-width: 768px) {
   :root {
-    --title-size: 56px;
-    --title-line-height: 52px;
-    --title-letter-spacing: -2px;
+    --title-size: 42px;
+    --title-line-height: 40px;
+    --title-letter-spacing: -1px;
     
     --body-size: 15px;
     --body-line-height: 24px;
@@ -533,7 +544,7 @@ body::after {
 }
 
 /* Extra small screens */
-@media screen and (max-width: 390px) {
+@media screen and (max-width: 480px) {
   :root {
     --title-size: 48px;
     --title-line-height: 44px;
