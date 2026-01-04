@@ -959,11 +959,12 @@ body:not(.cinematic-intro) .skip-hint {
   }
   
   .instruction-text {
-    font-size: 12px;
-    line-height: 1.5;
-    max-width: 260px;
+    font-family: var(--font-body);
+    font-size: var(--body-size);
+    font-weight: 700;
+    line-height: var(--body-line-height);
     text-align: center;
-    opacity: 0.5;
+    opacity: 0.6;
   }
   
   .back-button {
