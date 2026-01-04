@@ -370,6 +370,33 @@ body {
   border-radius: 2px;
 }
 
+/* Video loading state */
+.item-media.video-loading {
+  position: relative;
+  min-width: 300px;
+  min-height: 200px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.item-media.video-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: videoSpinner 0.8s linear infinite;
+}
+
+@keyframes videoSpinner {
+  to { transform: rotate(360deg); }
+}
+
 /* ============================================
    Scroll Indicators (optional subtle hint)
    ============================================ */

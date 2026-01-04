@@ -417,22 +417,24 @@
     }
   }
   
-  // Lazy load videos
+  // Lazy load videos using Intersection Observer for better performance
+  const videoObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        loadVideo(entry.target);
+      }
+    });
+  }, {
+    root: wrapper,
+    rootMargin: '200px', // Start loading 200px before visible
+    threshold: 0
+  });
+  
   function checkLazyVideos() {
     const videos = track.querySelectorAll('video[data-src]');
-    const wrapperRect = wrapper.getBoundingClientRect();
-    
     videos.forEach(video => {
-      if (loadedVideos.has(video)) return;
-      
-      const videoRect = video.getBoundingClientRect();
-      const isNearViewport = (
-        videoRect.right > wrapperRect.left - 500 &&
-        videoRect.left < wrapperRect.right + 500
-      );
-      
-      if (isNearViewport) {
-        loadVideo(video);
+      if (!loadedVideos.has(video)) {
+        videoObserver.observe(video);
       }
     });
   }
@@ -442,14 +444,24 @@
     if (!src || loadedVideos.has(video)) return;
     
     loadedVideos.add(video);
+    videoObserver.unobserve(video);
+    
+    // Add loading state
+    video.parentElement?.classList.add('video-loading');
+    
     video.src = src;
     video.removeAttribute('data-src');
     video.load();
     
     video.addEventListener('loadeddata', () => {
       video.muted = true;
+      video.parentElement?.classList.remove('video-loading');
       video.play().catch(() => {});
       setTimeout(updateBounds, 100);
+    }, { once: true });
+    
+    video.addEventListener('error', () => {
+      video.parentElement?.classList.remove('video-loading');
     }, { once: true });
   }
   
