@@ -330,70 +330,75 @@
       overflow: visible !important;
     }
 
-    /* Book Controls */
-    .book-controls {
-      position: fixed;
-      bottom: 30px;
+    /* ============================================
+       Page Controls (D-pad style)
+       ============================================ */
+    .page-controls {
+      position: absolute;
+      bottom: 68px;
       left: 50%;
       transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
       z-index: 100;
     }
 
-    .book-hint {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.5);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 4px;
-    }
-
-    .controls-row {
+    .page-dpad {
       display: flex;
       align-items: center;
-      gap: 16px;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 10px 20px;
-      border-radius: 50px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      gap: 12px;
     }
 
-    .book-controls button {
-      background: transparent;
-      border: none;
-      color: white;
+    .arrow-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1.5px solid rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.9);
       cursor: pointer;
-      width: 36px;
-      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0.6;
-      transition: all 0.2s ease;
-      font-size: 16px;
-      border-radius: 50%;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: all 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    .book-controls button:hover {
-      opacity: 1;
-      background: rgba(255, 255, 255, 0.1);
+    .arrow-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.7);
     }
 
-    .book-controls button:disabled {
-      opacity: 0.2;
+    .arrow-btn:active,
+    .arrow-btn.pressed {
+      background: rgba(255, 255, 255, 0.35);
+      border-color: rgba(255, 255, 255, 0.8);
+      color: #fff;
+      transform: scale(0.92);
+    }
+
+    .arrow-btn:disabled {
+      opacity: 0.3;
       cursor: not-allowed;
+    }
+
+    .arrow-btn:disabled:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: none;
+    }
+
+    .arrow-btn svg {
+      width: 20px;
+      height: 20px;
     }
 
     .page-indicator {
       font-family: var(--font-mono);
       font-size: 13px;
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(255, 255, 255, 0.7);
       min-width: 50px;
       text-align: center;
       letter-spacing: 1px;
@@ -434,9 +439,36 @@
 
     /* Desktop/Mobile visibility */
     .desktop-only { display: block; }
-    .mobile-only { display: none; }
+    .mobile-only { display: none !important; }
     .journal-footer-mobile { display: none; }
     .journal-footer-mobile .nav-links { display: none; }
+
+    /* ============================================
+       Instruction Footer (matches installation page)
+       ============================================ */
+    .journal-footer {
+      pointer-events: auto;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: absolute;
+      bottom: 32px;
+      left: 0;
+      right: 0;
+      z-index: 90;
+    }
+
+    .instruction-text {
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      font-weight: 700;
+      line-height: var(--body-line-height);
+      margin-bottom: 0;
+      opacity: 0.8;
+      white-space: nowrap;
+    }
 
     /* ============================================
        Responsive - Tablet (1024px and below)
@@ -463,6 +495,15 @@
         --corner-size: 15px;
       }
       
+      /* Show/hide based on device */
+      .mobile-only {
+        display: block !important;
+      }
+      
+      .desktop-only {
+        display: none !important;
+      }
+      
       .journal-page {
         flex-direction: column;
         height: 100vh;
@@ -485,8 +526,7 @@
       }
       
       .journal-content .journal-info,
-      .journal-content .journal-description,
-      .desktop-only {
+      .journal-content .journal-description {
         display: none !important;
       }
       
@@ -529,14 +569,7 @@
         justify-content: center;
         order: 3;
         position: relative;
-        padding-bottom: 20px;
-      }
-      
-      .book-controls {
-        position: absolute;
-        bottom: 5px;
-        left: 50%;
-        transform: translateX(-50%);
+        padding-bottom: 100px; /* Space for controls + footer */
       }
       
       #book-container {
@@ -547,22 +580,26 @@
         position: relative;
       }
       
-      .book-controls {
-        bottom: 15px;
-        gap: 6px;
-        width: auto;
+      /* Page controls mobile adjustments */
+      .page-controls {
+        position: fixed;
+        bottom: 55px;
+        left: 50%;
+        transform: translateX(-50%);
       }
       
-      .controls-row {
-        padding: 6px 14px;
+      .page-dpad {
         gap: 10px;
-        width: auto;
       }
       
-      .book-controls button {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
+      .arrow-btn {
+        width: 40px;
+        height: 40px;
+      }
+      
+      .arrow-btn svg {
+        width: 18px;
+        height: 18px;
       }
       
       .page-indicator {
@@ -570,20 +607,25 @@
         min-width: 40px;
       }
       
-      .book-hint {
-        font-size: 10px;
+      /* Journal footer mobile adjustments (matches installation page) */
+      .journal-footer {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 16px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: auto !important;
+        padding: 0 !important;
+        z-index: 90;
       }
       
-      .btn {
-        padding: 6px 12px;
-      }
-      
-      .btn-text {
-        font-size: 12px;
-      }
-      
-      .btn-arrow {
-        font-size: 14px;
+      .instruction-text {
+        font-family: var(--font-body);
+        font-size: var(--body-size);
+        font-weight: 700;
+        line-height: var(--body-line-height);
+        text-align: center;
+        opacity: 0.6;
       }
       
       .back-button {
@@ -603,7 +645,7 @@
       }
       
       .nav-links {
-        gap: 6px;
+        gap: 5px;
       }
       
       .btn {
@@ -611,11 +653,21 @@
       }
       
       .btn-text {
-        font-size: 11px;
+        font-size: 10px;
       }
       
       .btn-arrow {
-        font-size: 13px;
+        font-size: 12px;
+      }
+      
+      .arrow-btn {
+        width: 36px;
+        height: 36px;
+      }
+      
+      .arrow-btn svg {
+        width: 16px;
+        height: 16px;
       }
     }
 
@@ -697,14 +749,27 @@
       
       <div id="book-container"></div>
       
-      <div class="book-controls">
-        <p class="book-hint">Drag to rotate • Click to flip pages</p>
-        <div class="controls-row">
-          <button id="btn-prev" title="Previous page">◀</button>
+      <!-- Page Controls (D-pad style) -->
+      <div class="page-controls" id="page-controls">
+        <div class="page-dpad">
+          <button class="arrow-btn arrow-left" id="btn-prev" aria-label="Previous page">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 5l-7 7 7 7"/>
+            </svg>
+          </button>
           <span class="page-indicator"><span id="current-page">1</span> / <span id="total-pages">12</span></span>
-          <button id="btn-next" title="Next page">▶</button>
+          <button class="arrow-btn arrow-right" id="btn-next" aria-label="Next page">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
         </div>
       </div>
+
+      <!-- Instruction Footer -->
+      <footer class="journal-footer">
+        <p class="instruction-text">Swipe to rotate. Tap pages to flip.</p>
+      </footer>
     </section>
     
     <!-- Mobile Description -->
