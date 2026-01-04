@@ -1692,19 +1692,20 @@ let isMobileView = false;
 function adjustCameraForViewport(width, height) {
   if (!camera) return;
   
-  // Model scales with available space - prevent cutoff at all sizes
+  // Original camera distance
   const baseDist = 6;
   let scaleFactor;
   
-  // Check if mobile layout (matches CSS breakpoint)
-  isMobileView = width <= 768;
+  // Check if mobile layout using VIEWPORT width (not container width)
+  const viewportWidth = window.innerWidth;
+  isMobileView = viewportWidth <= 768;
   
   if (isMobileView) {
     // Mobile: center the model - CSS handles positioning the container
-    scaleFactor = 1.2;    // Slightly further back to fit container
-    cameraY = 0.5;        // Normal camera height
-    cameraTargetY = 0.5;  // Look at center of model
-    cameraOffsetX = 0;    // Center horizontally
+    scaleFactor = 0.96;  // 20% more zoomed in (1.2 * 0.8)
+    cameraY = 0.5;
+    cameraTargetY = 0.5;
+    cameraOffsetX = 0;
   } else if (width >= 1400) {
     scaleFactor = 0.9;
     cameraY = 0.5;
@@ -1730,6 +1731,11 @@ function adjustCameraForViewport(width, height) {
     cameraY = 0.5;
     cameraTargetY = 0.5;
     cameraOffsetX = 0.3;
+  }
+  
+  // Reset model scale to default
+  if (installationGroup) {
+    installationGroup.scale.set(1, 1, 1);
   }
   
   cameraDistance = baseDist * scaleFactor;

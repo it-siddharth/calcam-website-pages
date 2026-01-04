@@ -188,15 +188,6 @@ body {
   white-space: nowrap;
 }
 
-.instruction-subtitle {
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 12px;
-  max-width: 280px;
-}
 
 /* Footer Section - Centered Instructions (Desktop) */
 .installation-footer {
@@ -894,7 +885,7 @@ body:not(.cinematic-intro) .skip-hint {
     --title-line-height: 52px;
     --title-letter-spacing: -2px;
     
-    --body-size: 16px;
+    --body-size: 15px;
     --body-line-height: 24px;
     
     --label-size: 12px;
@@ -913,12 +904,6 @@ body:not(.cinematic-intro) .skip-hint {
     display: none !important;
   }
   
-  .instruction-subtitle {
-    font-size: 13px;
-    margin-top: 10px;
-    max-width: 240px;
-    color: rgba(255, 255, 255, 0.5);
-  }
   
   /* Show mobile arrow controls */
   .mobile-controls {
@@ -947,7 +932,14 @@ body:not(.cinematic-intro) .skip-hint {
   }
   
   .installation-footer {
-    display: none !important;
+    display: flex !important;
+    padding-bottom: 140px; /* Space for D-pad */
+  }
+  
+  .instruction-text {
+    font-size: var(--body-size);
+    line-height: var(--body-line-height);
+    max-width: 280px;
   }
   
   .back-button {
@@ -968,8 +960,8 @@ body:not(.cinematic-intro) .skip-hint {
   }
   
   .music-toggle {
-    bottom: 165px;
-    right: 50px;
+    bottom: 24px;
+    right: 24px;
     width: 48px;
     height: 48px;
   }
@@ -1009,8 +1001,8 @@ body:not(.cinematic-intro) .skip-hint {
     --title-line-height: 44px;
     --title-letter-spacing: -1.5px;
     
-    --body-size: 13px;
-    --body-line-height: 17px;
+    --body-size: 15px;
+    --body-line-height: 24px;
   }
   
   .nav-links {
@@ -1403,17 +1395,13 @@ body.anchor-focused .anchor-indicator:not(.active) {
   display: none; /* Hidden on desktop */
   position: fixed;
   bottom: 24px;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 100;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding: 0 24px;
   pointer-events: none; /* Allow clicks to pass through container */
 }
 
-/* D-pad on left */
+/* Centered D-pad */
 .mobile-dpad {
   display: flex;
   flex-direction: column;
@@ -1458,49 +1446,6 @@ body.anchor-focused .anchor-indicator:not(.active) {
   height: 20px;
 }
 
-/* Joystick on right */
-.mobile-joystick {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  pointer-events: auto;
-}
-
-.joystick-base {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  touch-action: none;
-}
-
-.joystick-thumb {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
-  border: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  position: absolute;
-  transition: transform 0.05s ease-out;
-  pointer-events: none;
-}
-
-.joystick-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.4);
-}
 
 /* Hide mobile controls during cinematic intro */
 body.cinematic-intro .mobile-controls {

@@ -801,7 +801,7 @@ body:has(.what-is-this-page) {
     --body-large-size: 18px;
     --body-large-line-height: 28px;
     
-    --body-size: 16px;
+    --body-size: 15px;
     --body-line-height: 24px;
     
     --label-size: 12px;
@@ -934,8 +934,8 @@ body:has(.what-is-this-page) {
     --body-large-size: 16px;
     --body-large-line-height: 24px;
     
-    --body-size: 14px;
-    --body-line-height: 22px;
+    --body-size: 15px;
+    --body-line-height: 24px;
   }
   
   .btn {

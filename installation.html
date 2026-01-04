@@ -84,12 +84,12 @@
         <span class="back-text">BACK</span>
       </a>
       <h1 class="title">THE<br>INSTALLATION</h1>
-      <p class="instruction-subtitle mobile-only">Use the D-pad to move and the joystick to look around.</p>
     </header>
 
-    <!-- Instructions (centered at bottom) - Desktop only -->
-    <footer class="installation-footer desktop-only">
-      <p class="instruction-text">Use your arrow keys and mouse to move around and explore the room.</p>
+    <!-- Instructions (centered at bottom) -->
+    <footer class="installation-footer">
+      <p class="instruction-text desktop-only">Use W/A/S/D or arrow keys and mouse to move around and explore the room.</p>
+      <p class="instruction-text mobile-only">Swipe to look around. Use the D-pad to move.</p>
     </footer>
   </main>
 
@@ -173,9 +173,8 @@
     <source src="assets/Ambient Synth Pad E Minor 140 BPM.wav" type="audio/wav">
   </audio>
 
-  <!-- Mobile Controls: Arrow keys (left) + Joystick (right) -->
+  <!-- Mobile Controls: Centered D-pad -->
   <div class="mobile-controls" id="mobile-controls">
-    <!-- Left side: Movement arrows -->
     <div class="mobile-dpad" id="mobile-dpad">
       <button class="arrow-btn arrow-up" data-direction="forward" aria-label="Move forward">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -199,14 +198,6 @@
           </svg>
         </button>
       </div>
-    </div>
-    
-    <!-- Right side: Look joystick -->
-    <div class="mobile-joystick" id="mobile-joystick">
-      <div class="joystick-base">
-        <div class="joystick-thumb" id="joystick-thumb"></div>
-      </div>
-      <span class="joystick-label">Look</span>
     </div>
   </div>
 

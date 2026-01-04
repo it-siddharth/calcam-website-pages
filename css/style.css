@@ -154,6 +154,15 @@ body {
   margin-bottom: 60px;
 }
 
+/* Desktop/Mobile visibility */
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
 /* Meta Information */
 .meta-info {
   display: flex;
@@ -660,7 +669,7 @@ body {
     --title-line-height: 52px;
     --title-letter-spacing: -2px;
     
-    --body-size: 16px;
+    --body-size: 15px;
     --body-line-height: 24px;
     
     --label-size: 12px;
@@ -668,6 +677,15 @@ body {
     
     --page-padding: 20px;
     --corner-size: 15px;
+  }
+  
+  /* Show/hide based on device */
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-only {
+    display: block !important;
   }
   
   /* Keep viewport fixed - no scroll */
@@ -741,7 +759,7 @@ body {
   .description {
     max-width: 100% !important;
     margin-bottom: 12px !important;
-    font-size: 13px !important;
+    font-size: 15px !important;
   }
   
   .meta-info {
@@ -759,7 +777,7 @@ body {
   }
   
   .meta-value {
-    font-size: 12px !important;
+    font-size: 15px !important;
   }
   
   /* CTA section - stays in normal flow, compact */
@@ -773,7 +791,7 @@ body {
   }
   
   .cta-text {
-    font-size: 12px !important;
+    font-size: 15px !important;
   }
   
   .cta-primary-row {
@@ -836,8 +854,8 @@ body {
     --title-line-height: 44px;
     --title-letter-spacing: -1.5px;
     
-    --body-size: 13px;
-    --body-line-height: 17px;
+    --body-size: 15px;
+    --body-line-height: 24px;
   }
   
   .meta-info {
