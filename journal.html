@@ -1331,6 +1331,10 @@
       const width = window.innerWidth;
       const height = window.innerHeight;
       
+      // Minimum focal length to prevent book from getting too small
+      // Higher value = more zoomed in = larger book
+      const MIN_FOCAL_LENGTH = 44;
+      
       if (isMobile()) {
         // Mobile: zoom in for larger book
         camera.setFocalLength(55);
@@ -1353,14 +1357,11 @@
           // Medium-small windows
           camera.setFocalLength(42);
           camera.position.set(0, 3.2, 1.0);
-        } else if (minDimension < 850) {
-          // Medium windows
-          camera.setFocalLength(38);
-          camera.position.set(0, 3.6, 1.1);
         } else {
-          // Large windows - original desktop view
-          camera.setFocalLength(MAXFOV);
-          camera.position.set(0, 4, 1.2);
+          // Medium and large windows - use minimum focal length
+          // This prevents the book from shrinking too small
+          camera.setFocalLength(Math.max(MAXFOV, MIN_FOCAL_LENGTH));
+          camera.position.set(0, 3.6, 1.1);
         }
       }
       camera.lookAt(0, 0, 0);
