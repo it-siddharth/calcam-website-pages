@@ -365,9 +365,13 @@ body:has(.what-is-this-page) {
 .cta-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   overflow: visible;
+}
+
+.cta-row .cta-label {
+  margin-bottom: 0;
 }
 
 .cta-arrow {

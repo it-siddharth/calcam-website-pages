@@ -216,7 +216,11 @@ body {
 .cta-primary-row {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 8px;
+}
+
+.cta-primary-row .cta-text {
+  margin-bottom: 0;
 }
 
 .cta-arrow {
@@ -821,7 +825,7 @@ body {
   }
   
   .cta-primary-row {
-    gap: 2px !important;
+    gap: 6px !important;
   }
   
   .cta-arrow {

@@ -269,8 +269,12 @@ body {
 .cta-primary-row {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 8px;
   margin-bottom: 22px;
+}
+
+.cta-primary-row .cta-text {
+  margin-bottom: 0;
 }
 
 .cta-arrow {
