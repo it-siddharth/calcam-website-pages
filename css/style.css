@@ -320,36 +320,12 @@ body {
 }
 
 /* ============================================
-   Settings Toggle Button
+   Settings Toggle Button (Hidden on home page)
    ============================================ */
 .settings-toggle {
-  position: fixed !important;
-  bottom: 20px !important;
-  right: 20px !important;
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 50% !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  color: #fff !important;
-  font-size: 20px !important;
-  cursor: pointer !important;
-  z-index: 10000 !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  transition: all 0.2s ease !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  display: none !important;
 }
 
-.settings-toggle:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
-}
 
 /* ============================================
    Settings Panel
@@ -639,12 +615,6 @@ body {
     max-width: 300px;
   }
   
-  .settings-toggle {
-    right: 10px;
-    bottom: 10px;
-    width: 40px;
-    height: 40px;
-  }
 }
 
 /* ============================================
@@ -668,6 +638,46 @@ body {
     --title-size: 90px;
     --title-line-height: 86px;
     --title-letter-spacing: -3px;
+  }
+  
+  /* Prevent overflow clipping at tablet sizes */
+  .landing-page {
+    overflow: hidden;
+  }
+  
+  .content-section {
+    min-width: 420px;
+    width: 50%;
+  }
+  
+  .scene-section {
+    min-width: 0;
+    overflow: hidden;
+  }
+}
+
+/* iPad-specific breakpoint */
+@media screen and (min-width: 769px) and (max-width: 900px) {
+  :root {
+    --title-size: 72px;
+    --title-line-height: 70px;
+    --title-letter-spacing: -2px;
+    --body-size: 17px;
+    --body-line-height: 24px;
+  }
+  
+  .content-section {
+    min-width: 380px;
+    width: 48%;
+    padding: 25px;
+  }
+  
+  .meta-info {
+    gap: 60px;
+  }
+  
+  .description {
+    margin-bottom: 40px;
   }
 }
 
@@ -838,15 +848,6 @@ body {
     right: auto !important;
     z-index: 20 !important;
     font-size: 10px !important;
-  }
-  
-  /* Keep settings button visible on mobile, just adjust position */
-  .settings-toggle {
-    right: 15px !important;
-    bottom: 15px !important;
-    width: 48px !important;
-    height: 48px !important;
-    z-index: 10000 !important;
   }
   
   .settings-panel {
