@@ -277,7 +277,7 @@ body:has(.what-is-this-page) {
   gap: 60px;
   align-items: stretch;
   padding: 35px 30px;
-  padding-top: 100px;
+  padding-top: 35px;
 }
 
 .hero-left {
