@@ -456,31 +456,66 @@
         padding: 25px var(--page-padding) 0;
         height: auto;
         flex-shrink: 0;
+        order: 1;
       }
       
-      .journal-content .journal-info { display: none; }
-      .desktop-only { display: none !important; }
-      .mobile-only {
+      .journal-content .journal-info,
+      .journal-content .journal-description,
+      .desktop-only {
+        display: none !important;
+      }
+      
+      .journal-footer-mobile {
         display: block !important;
-        padding: 8px var(--page-padding) 0;
+        padding: 12px var(--page-padding) calc(var(--page-padding) + env(safe-area-inset-bottom));
+        flex-shrink: 0;
+        order: 4;
+      }
+      
+      .journal-footer-mobile .cta-text {
+        font-size: 14px;
+        line-height: 20px;
+        margin-bottom: 10px;
+      }
+      
+      .journal-footer-mobile .cta-primary-row {
+        margin-bottom: 10px;
+      }
+      
+      .journal-footer-mobile .nav-links {
+        flex-wrap: wrap;
+        gap: 6px;
+        padding-bottom: 0;
       }
       
       .journal-description.mobile-only {
         display: block !important;
-        font-size: 15px;
-        line-height: 24px;
+        font-size: 14px;
+        line-height: 22px;
         max-width: 280px;
         margin: 0;
-        opacity: 0.8;
+        padding: 4px var(--page-padding) 0;
+        opacity: 0.7;
+        flex-shrink: 0;
+        order: 2;
       }
       
       .book-section {
         flex: 1;
-        min-height: 350px;
+        min-height: 200px;
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
+        order: 3;
+        position: relative;
+      }
+      
+      .book-controls {
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
       }
       
       #book-container {
@@ -516,10 +551,6 @@
       
       .book-hint {
         font-size: 10px;
-      }
-      
-      .journal-footer-mobile {
-        display: none;
       }
       
       .btn {
