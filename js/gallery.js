@@ -166,38 +166,52 @@
   }
   
   // Touch events
+  let touchId = null; // Track active touch
+  
   function onTouchStart(e) {
-    isDragging = true;
-    velocity = 0;
-    swipeDirection = null; // Reset swipe direction detection
-    startX = e.touches[0].pageX;
-    startY = e.touches[0].pageY;
-    scrollLeft = currentTranslate;
-    lastX = e.touches[0].pageX;
-    lastTime = performance.now();
+    // Always reset state at the start of a new touch
+    if (e.touches.length === 1) {
+      touchId = e.touches[0].identifier;
+      isDragging = true;
+      velocity = 0;
+      swipeDirection = null;
+      startX = e.touches[0].pageX;
+      startY = e.touches[0].pageY;
+      scrollLeft = currentTranslate;
+      lastX = e.touches[0].pageX;
+      lastTime = performance.now();
+    }
   }
   
   function onTouchMove(e) {
-    if (!isDragging) return;
+    // Find our tracked touch
+    let touch = null;
+    for (let i = 0; i < e.touches.length; i++) {
+      if (e.touches[i].identifier === touchId) {
+        touch = e.touches[i];
+        break;
+      }
+    }
     
-    const x = e.touches[0].pageX;
-    const y = e.touches[0].pageY;
+    if (!touch || !isDragging) return;
+    
+    const x = touch.pageX;
+    const y = touch.pageY;
     const dx = x - startX;
     const dy = y - startY;
     
     // Determine swipe direction on first significant movement
-    if (swipeDirection === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
-      if (Math.abs(dx) > Math.abs(dy)) {
+    if (swipeDirection === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+      if (Math.abs(dx) >= Math.abs(dy)) {
         swipeDirection = 'horizontal';
       } else {
         swipeDirection = 'vertical';
       }
     }
     
-    // If vertical swipe, don't handle - let browser scroll normally
+    // If vertical swipe, let browser handle - but keep tracking state
     if (swipeDirection === 'vertical') {
-      isDragging = false;
-      return;
+      return; // Don't set isDragging = false, just ignore movement
     }
     
     // For horizontal swipes, prevent default and handle carousel
@@ -218,10 +232,22 @@
     }
   }
   
-  function onTouchEnd() {
-    isDragging = false;
-    swipeDirection = null;
-    startAnimation();
+  function onTouchEnd(e) {
+    // Check if our tracked touch ended
+    let touchEnded = true;
+    for (let i = 0; i < e.touches.length; i++) {
+      if (e.touches[i].identifier === touchId) {
+        touchEnded = false;
+        break;
+      }
+    }
+    
+    if (touchEnded) {
+      isDragging = false;
+      swipeDirection = null;
+      touchId = null;
+      startAnimation();
+    }
   }
   
   // Wheel event - handle both vertical and horizontal wheel
