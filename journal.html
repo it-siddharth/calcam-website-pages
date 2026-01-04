@@ -1385,6 +1385,9 @@
     // ============================================
     function onTouchStart(event) {
       if (event.touches.length === 1) {
+        // Prevent default touch behavior on the canvas for better control
+        event.preventDefault();
+        
         const touch = event.touches[0];
         isDragging = true;
         dragStartX = touch.clientX;
@@ -1435,7 +1438,14 @@
       
       // If it was a tap (not a drag), try to flip page using the ORIGINAL touch position
       if (wasClick) {
-        tryFlipPage(dragStartX, dragStartY);
+        // Prevent default to ensure our tap handler works on iOS
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Small delay to ensure raycasting works after touch release on iOS Safari
+        requestAnimationFrame(() => {
+          tryFlipPage(dragStartX, dragStartY);
+        });
       }
     }
 
@@ -1513,10 +1523,11 @@
       wasDragged = false;
     });
     
-    // Touch events
+    // Touch events - all non-passive to ensure proper handling on iOS Safari
     renderer.domElement.addEventListener('touchstart', onTouchStart, { passive: false });
     renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
-    renderer.domElement.addEventListener('touchend', onTouchEnd);
+    renderer.domElement.addEventListener('touchend', onTouchEnd, { passive: false });
+    renderer.domElement.addEventListener('touchcancel', onTouchEnd, { passive: false });
     
     // Set initial cursor
     renderer.domElement.style.cursor = 'grab';
