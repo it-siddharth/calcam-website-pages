@@ -947,7 +947,7 @@ body:has(.what-is-this-page) {
   }
   
   .cta-row {
-    gap: 2px;
+    gap: 10px;
   }
   
   .cta-arrow {

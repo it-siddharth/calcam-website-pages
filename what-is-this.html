@@ -19,7 +19,7 @@
   
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/style.css?v=3">
-  <link rel="stylesheet" href="css/what-is-this.css?v=3">
+  <link rel="stylesheet" href="css/what-is-this.css?v=4">
   
   <style>
     html, body {
@@ -167,7 +167,8 @@
         <p class="centrepiece-intro">I used p5.js to experiment with different face filters, and an RGB visual style started to emerge that I was drawn to. But I was struggling to find something that would tie the physical and digital elements together.</p>
       </div>
       <div class="centrepiece-media">
-        <video loop muted playsinline data-src="assets/videos/vid-1.mp4" preload="none">
+        <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/vid-1.mp4" preload="none">
+          <source data-src="assets/videos/vid-1.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
       </div>
@@ -236,9 +237,13 @@
     });
     
     // Lazy load videos using Intersection Observer with shimmer effect
+    // Safari-compatible version
     (function() {
       var videos = document.querySelectorAll('video[data-src]');
       if (!videos.length) return;
+      
+      var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
+                     /iPad|iPhone|iPod/.test(navigator.userAgent);
       
       var observer = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
@@ -248,19 +253,54 @@
             var src = video.dataset.src;
             
             if (src) {
+              // Ensure muted attribute is set (critical for Safari autoplay)
+              video.muted = true;
+              video.setAttribute('muted', '');
+              video.setAttribute('playsinline', '');
+              video.setAttribute('webkit-playsinline', '');
+              
+              // Find and update source element if present
+              var sourceEl = video.querySelector('source[data-src]');
+              if (sourceEl) {
+                sourceEl.src = sourceEl.dataset.src;
+                sourceEl.removeAttribute('data-src');
+              }
+              
               video.src = src;
               video.removeAttribute('data-src');
-              video.load();
               
-              video.addEventListener('loadeddata', function() {
-                // Add loaded class to stop shimmer and reveal video
+              // Use canplay event (more reliable on Safari than loadeddata)
+              video.addEventListener('canplay', function() {
+                video.muted = true;
                 if (container) container.classList.add('video-loaded');
                 video.play().catch(function() {});
+              }, { once: true });
+              
+              // Fallback for Safari: loadedmetadata
+              video.addEventListener('loadedmetadata', function() {
+                video.muted = true;
+                setTimeout(function() {
+                  if (container && !container.classList.contains('video-loaded')) {
+                    container.classList.add('video-loaded');
+                    video.play().catch(function() {});
+                  }
+                }, 100);
               }, { once: true });
               
               video.addEventListener('error', function() {
                 if (container) container.classList.add('video-loaded');
               }, { once: true });
+              
+              video.load();
+              
+              // Safari fallback timeout
+              setTimeout(function() {
+                if (container && !container.classList.contains('video-loaded')) {
+                  container.classList.add('video-loaded');
+                  video.muted = true;
+                  video.play().catch(function() {});
+                }
+              }, 2000);
             }
             observer.unobserve(video);
           }

@@ -18,7 +18,7 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet"></noscript>
   
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="css/gallery.css?v=2">
+  <link rel="stylesheet" href="css/gallery.css?v=3">
   
   <!-- Critical inline styles to prevent white flash -->
   <style>
@@ -178,7 +178,8 @@
         <article class="carousel-item video-item" data-aspect-ratio="1.78">
           <span class="item-index">10</span>
           <div class="item-media">
-            <video data-src="assets/videos/vid-3.mp4" muted loop playsinline preload="none">
+            <video muted loop playsinline webkit-playsinline autoplay preload="none" data-src="assets/videos/vid-3.mp4">
+              <source data-src="assets/videos/vid-3.mp4" type="video/mp4">
               Your browser does not support the video tag.
             </video>
           </div>

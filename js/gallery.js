@@ -19,27 +19,84 @@
     return window.innerWidth <= 768;
   }
   
+  // Safari detection
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
+                   /iPad|iPhone|iPod/.test(navigator.userAgent);
+  
+  // Helper function to load video with Safari compatibility
+  function loadVideoWithSafariSupport(video) {
+    const src = video.dataset.src;
+    if (!src) return;
+    
+    // Ensure muted attribute is set (critical for Safari autoplay)
+    video.muted = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    
+    // Find and update source element if present
+    const sourceEl = video.querySelector('source[data-src]');
+    if (sourceEl) {
+      sourceEl.src = sourceEl.dataset.src;
+      sourceEl.removeAttribute('data-src');
+    }
+    
+    // Set video src
+    video.src = src;
+    video.removeAttribute('data-src');
+    
+    // Use canplay event (more reliable on Safari than loadeddata)
+    const onCanPlay = () => {
+      video.muted = true; // Re-ensure muted
+      video.parentElement?.classList.add('video-loaded');
+      
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Autoplay failed - video still shows, just won't play
+        });
+      }
+    };
+    
+    video.addEventListener('canplay', onCanPlay, { once: true });
+    
+    // Fallback: also listen for loadedmetadata (Safari sometimes fires this first)
+    video.addEventListener('loadedmetadata', () => {
+      video.muted = true;
+      // Give Safari a moment then try to play
+      setTimeout(() => {
+        if (!video.parentElement?.classList.contains('video-loaded')) {
+          video.parentElement?.classList.add('video-loaded');
+          video.play().catch(() => {});
+        }
+      }, 100);
+    }, { once: true });
+    
+    video.addEventListener('error', (e) => {
+      console.warn('Video load error:', video.src, e);
+      // Still mark as loaded to stop shimmer on error
+      video.parentElement?.classList.add('video-loaded');
+    }, { once: true });
+    
+    // Force load
+    video.load();
+    
+    // Safari fallback: if still not loaded after 2 seconds, force show
+    setTimeout(() => {
+      if (!video.parentElement?.classList.contains('video-loaded')) {
+        video.parentElement?.classList.add('video-loaded');
+        video.muted = true;
+        video.play().catch(() => {});
+      }
+    }, 2000);
+  }
+  
   // If mobile, just load videos and exit (use native scroll)
   if (isMobile()) {
     // Load all videos immediately on mobile for smooth experience
     const videos = track.querySelectorAll('video[data-src]');
     videos.forEach(video => {
-      const src = video.dataset.src;
-      if (src) {
-        video.src = src;
-        video.removeAttribute('data-src');
-        video.load();
-        video.addEventListener('loadeddata', () => {
-          video.muted = true;
-          // Add loaded class to stop shimmer and reveal video
-          video.parentElement?.classList.add('video-loaded');
-          video.play().catch(() => {});
-        }, { once: true });
-        video.addEventListener('error', () => {
-          // Still mark as loaded to stop shimmer on error
-          video.parentElement?.classList.add('video-loaded');
-        }, { once: true });
-      }
+      loadVideoWithSafariSupport(video);
     });
     
     // Setup Intersection Observer for video autoplay on mobile
@@ -47,12 +104,27 @@
       entries.forEach(entry => {
         const video = entry.target;
         if (entry.isIntersecting) {
-          video.play().catch(() => {});
+          // Ensure muted is set before playing (Safari requirement)
+          video.muted = true;
+          video.setAttribute('muted', '');
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((err) => {
+              // On Safari, sometimes we need to reload and retry
+              if (isSafari && video.readyState < 3) {
+                video.load();
+                setTimeout(() => {
+                  video.muted = true;
+                  video.play().catch(() => {});
+                }, 100);
+              }
+            });
+          }
         } else {
           video.pause();
         }
       });
-    }, { threshold: 0.5 });
+    }, { threshold: 0.3 }); // Lower threshold for earlier trigger
     
     track.querySelectorAll('video').forEach(video => {
       observer.observe(video);
@@ -452,22 +524,59 @@
     loadedVideos.add(video);
     videoObserver.unobserve(video);
     
+    // Ensure muted attribute is set (critical for Safari autoplay)
+    video.muted = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    
+    // Find and update source element if present
+    const sourceEl = video.querySelector('source[data-src]');
+    if (sourceEl) {
+      sourceEl.src = sourceEl.dataset.src;
+      sourceEl.removeAttribute('data-src');
+    }
+    
     video.src = src;
     video.removeAttribute('data-src');
-    video.load();
     
-    video.addEventListener('loadeddata', () => {
+    // Use canplay event (more reliable on Safari than loadeddata)
+    const onCanPlay = () => {
       video.muted = true;
-      // Add loaded class to stop shimmer and reveal video
       video.parentElement?.classList.add('video-loaded');
       video.play().catch(() => {});
       setTimeout(updateBounds, 100);
+    };
+    
+    video.addEventListener('canplay', onCanPlay, { once: true });
+    
+    // Fallback for Safari: loadedmetadata
+    video.addEventListener('loadedmetadata', () => {
+      video.muted = true;
+      setTimeout(() => {
+        if (!video.parentElement?.classList.contains('video-loaded')) {
+          video.parentElement?.classList.add('video-loaded');
+          video.play().catch(() => {});
+          setTimeout(updateBounds, 100);
+        }
+      }, 100);
     }, { once: true });
     
     video.addEventListener('error', () => {
       // Still mark as loaded to stop shimmer on error
       video.parentElement?.classList.add('video-loaded');
     }, { once: true });
+    
+    video.load();
+    
+    // Safari fallback timeout
+    setTimeout(() => {
+      if (!video.parentElement?.classList.contains('video-loaded')) {
+        video.parentElement?.classList.add('video-loaded');
+        video.muted = true;
+        video.play().catch(() => {});
+      }
+    }, 2000);
   }
   
   // Wait for media to load

@@ -250,8 +250,15 @@ function createTV() {
     tvVideo.loop = true;
     tvVideo.muted = true;
     tvVideo.playsInline = true;
+    tvVideo.setAttribute('playsinline', '');
+    tvVideo.setAttribute('webkit-playsinline', '');
+    tvVideo.setAttribute('muted', '');
     tvVideo.preload = 'auto';
     document.body.appendChild(tvVideo);
+  } else {
+    // Ensure Safari-compatible attributes on existing video
+    tvVideo.setAttribute('webkit-playsinline', '');
+    tvVideo.muted = true;
   }
   
   // Create canvas for video frames (higher resolution for sharpness)
