@@ -951,7 +951,7 @@ body:not(.cinematic-intro) .skip-hint {
   .installation-footer {
     display: flex !important;
     position: fixed !important;
-    bottom: 16px !important;
+    bottom: 24px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     padding: 0 !important;
@@ -959,11 +959,11 @@ body:not(.cinematic-intro) .skip-hint {
   }
   
   .instruction-text {
-    font-size: 11px;
-    line-height: 1.4;
-    max-width: 220px;
+    font-size: 12px;
+    line-height: 1.5;
+    max-width: 260px;
     text-align: center;
-    opacity: 0.6;
+    opacity: 0.5;
   }
   
   .back-button {
@@ -1407,7 +1407,7 @@ body.anchor-focused .anchor-indicator:not(.active) {
 .mobile-controls {
   display: none; /* Hidden on desktop */
   position: fixed;
-  bottom: 70px; /* Space for instruction text below */
+  bottom: 90px; /* Space for instruction text below */
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
