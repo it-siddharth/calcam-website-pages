@@ -301,13 +301,14 @@ body:has(.what-is-this-page) {
 
 .hero-right {
   position: absolute;
-  right: 50px;
+  right: 30px;
   bottom: 50px;
+  width: clamp(280px, 40vw, 540px);
 }
 
 .hero-image {
-  width: 540px;
-  max-height: 740px;
+  width: 100%;
+  max-height: 70vh;
   overflow: hidden;
 }
 
