@@ -951,7 +951,7 @@ body:not(.cinematic-intro) .skip-hint {
   .installation-footer {
     display: flex !important;
     position: fixed !important;
-    bottom: 24px !important;
+    bottom: 12px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     padding: 0 !important;
@@ -1408,7 +1408,7 @@ body.anchor-focused .anchor-indicator:not(.active) {
 .mobile-controls {
   display: none; /* Hidden on desktop */
   position: fixed;
-  bottom: 90px; /* Space for instruction text below */
+  bottom: 115px; /* Space for instruction text below */
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
