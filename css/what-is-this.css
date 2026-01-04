@@ -277,7 +277,7 @@ body:has(.what-is-this-page) {
   gap: 60px;
   align-items: stretch;
   padding: 30px;
-  padding-top: 70px; /* Space for back button on desktop */
+  padding-top: 35px;
 }
 
 .hero-left {
