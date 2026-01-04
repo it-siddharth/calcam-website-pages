@@ -235,7 +235,7 @@
       });
     });
     
-    // Lazy load videos using Intersection Observer
+    // Lazy load videos using Intersection Observer with shimmer effect
     (function() {
       var videos = document.querySelectorAll('video[data-src]');
       if (!videos.length) return;
@@ -244,13 +244,25 @@
         entries.forEach(function(entry) {
           if (entry.isIntersecting) {
             var video = entry.target;
+            var container = video.parentElement;
             var src = video.dataset.src;
+            
             if (src) {
+              // Add shimmer loading state
+              if (container) container.classList.add('video-loading');
+              
               video.src = src;
               video.removeAttribute('data-src');
               video.load();
+              
               video.addEventListener('loadeddata', function() {
+                // Remove shimmer when loaded
+                if (container) container.classList.remove('video-loading');
                 video.play().catch(function() {});
+              }, { once: true });
+              
+              video.addEventListener('error', function() {
+                if (container) container.classList.remove('video-loading');
               }, { once: true });
             }
             observer.unobserve(video);
