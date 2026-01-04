@@ -170,34 +170,6 @@ body:has(.what-is-this-page) {
 /* ============================================
    Back Button
    ============================================ */
-.back-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 8px 14px;
-  background: transparent;
-  border: 1px solid var(--color-text);
-  border-radius: 30px;
-  color: var(--color-text);
-  text-decoration: none;
-  font-family: var(--font-mono);
-  font-size: var(--label-size);
-  font-weight: 500;
-  text-transform: uppercase;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  transition: all 0.2s ease;
-  width: fit-content;
-  flex-shrink: 0;
-  white-space: nowrap;
-  margin-bottom: 20px;
-}
-
-.back-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
 .back-arrow {
   font-family: var(--font-arrow);
   font-size: 16px;
@@ -238,12 +210,13 @@ body:has(.what-is-this-page) {
 }
 
 /* Fixed Corner Accents */
+/* Fixed Corner Accents */
 .corner-accent {
   position: fixed;
-  width: 25px;
-  height: 25px;
+  width: var(--corner-width);
+  height: var(--corner-width);
   background-color: var(--color-text);
-  z-index: 1000;
+  z-index: 100;
   pointer-events: none;
 }
 
@@ -272,8 +245,28 @@ body:has(.what-is-this-page) {
   position: fixed;
   top: 35px;
   left: 30px;
-  margin-bottom: 0;
-  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--color-text);
+  border-radius: 30px;
+  color: var(--color-text);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  font-weight: 500;
+  text-transform: uppercase;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .hero-layout {
@@ -921,13 +914,10 @@ body:has(.what-is-this-page) {
   }
   
   .back-button {
-    position: fixed !important;
     top: 20px !important;
     left: 20px !important;
-    margin-bottom: 0;
     padding: 6px 12px;
     font-size: 12px;
-    z-index: 1000;
   }
   
   .back-arrow {
@@ -943,30 +933,8 @@ body:has(.what-is-this-page) {
   }
   
   .corner-accent {
-    position: fixed !important;
-    width: 15px;
-    height: 15px;
-    z-index: 1000;
-  }
-
-  .corner-accent.top-left {
-    top: 0;
-    left: 0;
-  }
-
-  .corner-accent.top-right {
-    top: 0;
-    right: 0;
-  }
-
-  .corner-accent.bottom-left {
-    bottom: 0;
-    left: 0;
-  }
-
-  .corner-accent.bottom-right {
-    bottom: 0;
-    right: 0;
+    width: 15px !important;
+    height: 15px !important;
   }
   
   .cta-block {
