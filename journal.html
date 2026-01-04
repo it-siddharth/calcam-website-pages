@@ -1241,7 +1241,7 @@
     const DRAG_SENSITIVITY = 0.008;
     const INERTIA_FRICTION = 0.95;
     const INERTIA_THRESHOLD = 0.0001;
-    const CLICK_THRESHOLD = 15; // pixels - max movement for a click (more forgiving)
+    const CLICK_THRESHOLD = isMobile() ? 30 : 15; // pixels - max movement for a click (more forgiving on mobile)
     const CLICK_TIME_THRESHOLD = 400; // ms - max time for a click
     
     // Rotation limits
@@ -1330,6 +1330,26 @@
           return true;
         }
       }
+      
+      // Mobile fallback: if raycast missed but tap was on book area, flip based on screen position
+      if (isMobile() && book.pages.length > 0) {
+        // Calculate normalized X position within canvas
+        const normalizedX = (clientX - rect.left) / rect.width;
+        
+        // Flip forward if tapped on right side, backward if left side
+        if (normalizedX > 0.5 && book.currentPage < book.totalPages) {
+          book.nextPage();
+          playFlipSound();
+          updatePageIndicator();
+          return true;
+        } else if (normalizedX <= 0.5 && book.currentPage > 0) {
+          book.previousPage();
+          playFlipSound();
+          updatePageIndicator();
+          return true;
+        }
+      }
+      
       return false;
     }
 
