@@ -948,6 +948,10 @@ body:not(.cinematic-intro) .skip-hint {
     display: none !important;
   }
   
+  .gradient-top {
+    display: none !important;
+  }
+  
   .installation-footer {
     display: flex !important;
     position: fixed !important;
