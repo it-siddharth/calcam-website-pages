@@ -222,9 +222,9 @@
       padding: 8px 14px;
       border-radius: 30px;
       text-decoration: none;
-      overflow: hidden;
       white-space: nowrap;
       transition: all 0.2s ease;
+      width: fit-content;
     }
 
     .btn:hover {
@@ -246,6 +246,7 @@
       font-style: italic;
       line-height: 1;
       margin-right: -2px;
+      flex-shrink: 0;
     }
 
     .btn-primary {
@@ -427,6 +428,7 @@
     .desktop-only { display: block; }
     .mobile-only { display: none; }
     .journal-footer-mobile { display: none; }
+    .journal-footer-mobile .nav-links { display: none; }
 
     /* ============================================
        Responsive - Tablet (1024px and below)
@@ -470,6 +472,10 @@
         order: 1;
       }
       
+      .journal-title {
+        margin-bottom: 0 !important;
+      }
+      
       .journal-content .journal-info,
       .journal-content .journal-description,
       .desktop-only {
@@ -477,49 +483,45 @@
       }
       
       .journal-footer-mobile {
-        display: block !important;
-        padding: 12px var(--page-padding) calc(var(--page-padding) + env(safe-area-inset-bottom));
-        flex-shrink: 0;
-        order: 4;
+        display: none !important;
       }
       
       .journal-footer-mobile .cta-text {
-        font-size: 14px;
-        line-height: 20px;
-        margin-bottom: 10px;
+        display: none;
       }
       
       .journal-footer-mobile .cta-primary-row {
-        margin-bottom: 10px;
+        display: none;
       }
       
       .journal-footer-mobile .nav-links {
-        flex-wrap: wrap;
-        gap: 6px;
-        padding-bottom: 0;
+        display: none !important;
       }
       
       .journal-description.mobile-only {
         display: block !important;
-        font-size: 14px;
-        line-height: 22px;
-        max-width: 280px;
+        font-family: var(--font-body);
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 24px;
+        max-width: 315px;
         margin: 0;
-        padding: 4px var(--page-padding) 0;
-        opacity: 0.7;
+        margin-top: 8px;
+        padding: 0 var(--page-padding);
         flex-shrink: 0;
         order: 2;
       }
       
       .book-section {
         flex: 1;
-        min-height: 200px;
+        min-height: 300px;
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
         order: 3;
         position: relative;
+        padding-bottom: 20px;
       }
       
       .book-controls {
@@ -703,33 +705,8 @@
       While the installation ran, a journal sat open, inviting visitors to leave their mark.
     </p>
     
-    <!-- Mobile Footer -->
-    <footer class="journal-footer-mobile">
-      <p class="cta-text">Curious? See the 3d installation for yourself</p>
-      
-      <div class="cta-primary-row">
-        <span class="cta-arrow">↳</span>
-        <a href="installation.html" class="btn btn-primary">
-          <span class="btn-text">EXPERIENCE IT YOURSELF</span>
-          <span class="btn-arrow">→</span>
-        </a>
-      </div>
-      
-      <nav class="nav-links">
-        <a href="what-is-this.html" class="btn btn-secondary">
-          <span class="btn-text">what is this</span>
-          <span class="btn-arrow">→</span>
-        </a>
-        <a href="journal.html" class="btn btn-secondary">
-          <span class="btn-text">viewer journal</span>
-          <span class="btn-arrow">→</span>
-        </a>
-        <a href="gallery.html" class="btn btn-secondary">
-          <span class="btn-text">gallery</span>
-          <span class="btn-arrow">→</span>
-        </a>
-      </nav>
-    </footer>
+    <!-- Mobile Footer (hidden on mobile) -->
+    <footer class="journal-footer-mobile"></footer>
   </main>
 
   <!-- Load three.modifiers UMD bundle first -->
@@ -1263,8 +1240,8 @@
       
       if (isMobile()) {
         // Mobile: zoom in for larger book
-        camera.setFocalLength(45);
-        camera.position.set(0, 2.8, 0.9);
+        camera.setFocalLength(55);
+        camera.position.set(0, 2.4, 0.75);
       } else {
         // Desktop - responsive scaling based on window size
         // Use the smaller dimension to ensure book fits well
