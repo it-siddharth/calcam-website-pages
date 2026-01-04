@@ -365,7 +365,7 @@ body:has(.what-is-this-page) {
 .cta-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
   overflow: visible;
 }
