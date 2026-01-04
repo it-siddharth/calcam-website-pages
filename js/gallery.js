@@ -2,6 +2,7 @@
  * Gallery Carousel - Smooth Horizontal Scroll
  * Supports mouse drag, touch, wheel, and keyboard navigation
  * With lazy loading for videos
+ * On mobile (<=768px), uses native vertical scroll instead
  */
 
 (function() {
@@ -12,6 +13,47 @@
   const wrapper = document.querySelector('.carousel-wrapper');
   
   if (!track || !wrapper) return;
+  
+  // Check if mobile viewport
+  function isMobile() {
+    return window.innerWidth <= 768;
+  }
+  
+  // If mobile, just load videos and exit (use native scroll)
+  if (isMobile()) {
+    // Load all videos immediately on mobile for smooth experience
+    const videos = track.querySelectorAll('video[data-src]');
+    videos.forEach(video => {
+      const src = video.dataset.src;
+      if (src) {
+        video.src = src;
+        video.removeAttribute('data-src');
+        video.load();
+        video.addEventListener('loadeddata', () => {
+          video.muted = true;
+          video.play().catch(() => {});
+        }, { once: true });
+      }
+    });
+    
+    // Setup Intersection Observer for video autoplay on mobile
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const video = entry.target;
+        if (entry.isIntersecting) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      });
+    }, { threshold: 0.5 });
+    
+    track.querySelectorAll('video').forEach(video => {
+      observer.observe(video);
+    });
+    
+    return; // Exit - don't set up horizontal scroll
+  }
   
   // State
   let isDragging = false;
