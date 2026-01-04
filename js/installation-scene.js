@@ -649,7 +649,6 @@ function init() {
   
   // Detect mobile/touch device (also check for narrow viewport for Chrome emulator)
   isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth <= 768;
-  console.log('isMobile detected:', isMobile, 'width:', window.innerWidth);
   
   // Pointer Lock Controls (desktop only)
   controls = new PointerLockControls(camera, document.body);
@@ -1271,13 +1270,10 @@ function setupKeyboardControls() {
 // ============================================
 function setupMobileArrowControls() {
   const mobileControls = document.getElementById('mobile-controls');
-  if (!mobileControls) {
-    console.log('Mobile controls not found');
-    return;
-  }
+  if (!mobileControls) return;
   
+  // Setup D-pad buttons
   const buttons = mobileControls.querySelectorAll('.arrow-btn');
-  console.log('Setting up mobile arrow controls, found', buttons.length, 'buttons');
   
   buttons.forEach(btn => {
     const direction = btn.dataset.direction;
@@ -1288,7 +1284,6 @@ function setupMobileArrowControls() {
       e.stopPropagation();
       btn.classList.add('pressed');
       setMovementDirection(direction, true);
-      console.log('Touch start:', direction);
     }, { passive: false });
     
     // Handle touch end - stop movement
@@ -1297,7 +1292,6 @@ function setupMobileArrowControls() {
       e.stopPropagation();
       btn.classList.remove('pressed');
       setMovementDirection(direction, false);
-      console.log('Touch end:', direction);
     }, { passive: false });
     
     // Handle touch cancel
@@ -1326,10 +1320,128 @@ function setupMobileArrowControls() {
       setMovementDirection(direction, false);
     });
   });
+  
+  // Setup joystick for camera look
+  setupJoystick();
+}
+
+// ============================================
+// Setup Joystick for Camera Look
+// ============================================
+function setupJoystick() {
+  const joystickBase = document.querySelector('.joystick-base');
+  const joystickThumb = document.getElementById('joystick-thumb');
+  
+  if (!joystickBase || !joystickThumb) return;
+  
+  let isJoystickActive = false;
+  let joystickCenter = { x: 0, y: 0 };
+  const maxDistance = 27; // Max distance thumb can move from center
+  const lookSensitivity = 0.04; // How fast camera rotates
+  
+  function getJoystickCenter() {
+    const rect = joystickBase.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    };
+  }
+  
+  function updateJoystick(clientX, clientY) {
+    const center = joystickCenter;
+    let deltaX = clientX - center.x;
+    let deltaY = clientY - center.y;
+    
+    // Calculate distance from center
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    // Clamp to max distance
+    if (distance > maxDistance) {
+      deltaX = (deltaX / distance) * maxDistance;
+      deltaY = (deltaY / distance) * maxDistance;
+    }
+    
+    // Update thumb position
+    joystickThumb.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+    
+    // Apply camera rotation (normalized -1 to 1)
+    const normalizedX = deltaX / maxDistance;
+    const normalizedY = deltaY / maxDistance;
+    
+    // Update camera euler angles
+    cameraEuler.yaw -= normalizedX * lookSensitivity;
+    cameraEuler.pitch -= normalizedY * lookSensitivity;
+    
+    // Clamp pitch to prevent flipping
+    cameraEuler.pitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraEuler.pitch));
+    
+    // Apply to camera
+    camera.quaternion.setFromEuler(new THREE.Euler(cameraEuler.pitch, cameraEuler.yaw, 0, 'YXZ'));
+  }
+  
+  function resetJoystick() {
+    joystickThumb.style.transform = 'translate(0px, 0px)';
+    isJoystickActive = false;
+  }
+  
+  // Touch events
+  joystickBase.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isJoystickActive = true;
+    joystickCenter = getJoystickCenter();
+    
+    if (e.touches.length > 0) {
+      updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: false });
+  
+  joystickBase.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isJoystickActive && e.touches.length > 0) {
+      updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: false });
+  
+  joystickBase.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    resetJoystick();
+  }, { passive: false });
+  
+  joystickBase.addEventListener('touchcancel', (e) => {
+    e.stopPropagation();
+    resetJoystick();
+  });
+  
+  // Mouse events for desktop testing
+  joystickBase.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isJoystickActive = true;
+    joystickCenter = getJoystickCenter();
+    updateJoystick(e.clientX, e.clientY);
+    
+    const onMouseMove = (e) => {
+      if (isJoystickActive) {
+        updateJoystick(e.clientX, e.clientY);
+      }
+    };
+    
+    const onMouseUp = () => {
+      resetJoystick();
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+    
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  });
 }
 
 function setMovementDirection(direction, active) {
-  console.log('setMovementDirection:', direction, active, 'isMobile:', isMobile);
   switch (direction) {
     case 'forward':
       moveForward = active;
@@ -1774,11 +1886,6 @@ function updateMovement(delta) {
   const inputX = Number(moveRight) - Number(moveLeft);
   
   if (inputZ === 0 && inputX === 0) return;
-  
-  // Debug: log when actually moving
-  if (inputZ !== 0 || inputX !== 0) {
-    console.log('Moving:', { inputZ, inputX, isMobile });
-  }
   
   // Get camera's forward direction using getWorldDirection (handles matrix updates)
   const forward = new THREE.Vector3();
