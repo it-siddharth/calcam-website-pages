@@ -16,6 +16,7 @@
   // State
   let isDragging = false;
   let startX = 0;
+  let startY = 0;
   let scrollLeft = 0;
   let currentTranslate = 0;
   let targetTranslate = 0;
@@ -25,6 +26,7 @@
   let rafId = null;
   let hasScrolled = false;
   let isAnimating = false;
+  let swipeDirection = null; // 'horizontal', 'vertical', or null
   
   // Track loaded videos
   const loadedVideos = new Set();
@@ -167,7 +169,9 @@
   function onTouchStart(e) {
     isDragging = true;
     velocity = 0;
+    swipeDirection = null; // Reset swipe direction detection
     startX = e.touches[0].pageX;
+    startY = e.touches[0].pageY;
     scrollLeft = currentTranslate;
     lastX = e.touches[0].pageX;
     lastTime = performance.now();
@@ -177,28 +181,46 @@
     if (!isDragging) return;
     
     const x = e.touches[0].pageX;
+    const y = e.touches[0].pageY;
     const dx = x - startX;
+    const dy = y - startY;
     
-    // Calculate velocity
-    const now = performance.now();
-    const dt = now - lastTime;
-    if (dt > 0) {
-      velocity = ((x - lastX) / dt) * 16 * config.touchMultiplier;
+    // Determine swipe direction on first significant movement
+    if (swipeDirection === null && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+      if (Math.abs(dx) > Math.abs(dy)) {
+        swipeDirection = 'horizontal';
+      } else {
+        swipeDirection = 'vertical';
+      }
     }
-    lastX = x;
-    lastTime = now;
     
-    targetTranslate = clamp(scrollLeft + dx);
-    startAnimation();
+    // If vertical swipe, don't handle - let browser scroll normally
+    if (swipeDirection === 'vertical') {
+      isDragging = false;
+      return;
+    }
     
-    // Prevent vertical scroll when swiping horizontally
-    if (Math.abs(dx) > 10) {
+    // For horizontal swipes, prevent default and handle carousel
+    if (swipeDirection === 'horizontal') {
       e.preventDefault();
+      
+      // Calculate velocity
+      const now = performance.now();
+      const dt = now - lastTime;
+      if (dt > 0) {
+        velocity = ((x - lastX) / dt) * 16 * config.touchMultiplier;
+      }
+      lastX = x;
+      lastTime = now;
+      
+      targetTranslate = clamp(scrollLeft + dx);
+      startAnimation();
     }
   }
   
   function onTouchEnd() {
     isDragging = false;
+    swipeDirection = null;
     startAnimation();
   }
   
