@@ -950,13 +950,20 @@ body:not(.cinematic-intro) .skip-hint {
   
   .installation-footer {
     display: flex !important;
-    padding-bottom: 140px; /* Space for D-pad */
+    position: fixed !important;
+    bottom: 16px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    padding: 0 !important;
+    z-index: 90;
   }
   
   .instruction-text {
-    font-size: var(--body-size);
-    line-height: var(--body-line-height);
-    max-width: 280px;
+    font-size: 11px;
+    line-height: 1.4;
+    max-width: 220px;
+    text-align: center;
+    opacity: 0.6;
   }
   
   .back-button {
@@ -1400,7 +1407,7 @@ body.anchor-focused .anchor-indicator:not(.active) {
 .mobile-controls {
   display: none; /* Hidden on desktop */
   position: fixed;
-  bottom: 24px;
+  bottom: 70px; /* Space for instruction text below */
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
@@ -1412,44 +1419,45 @@ body.anchor-focused .anchor-indicator:not(.active) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   pointer-events: auto;
 }
 
 .arrow-row {
   display: flex;
-  gap: 4px;
+  gap: 3px;
 }
 
 .arrow-btn {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .arrow-btn:active,
 .arrow-btn.pressed {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.8);
   color: #fff;
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
 .arrow-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 
