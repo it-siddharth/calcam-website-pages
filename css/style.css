@@ -721,22 +721,25 @@ body {
     display: block !important;
   }
   
-  /* Keep viewport fixed - no scroll */
+  /* Allow scrolling on mobile */
   html, body {
-    overflow: hidden !important;
-    height: 100vh !important;
-    height: 100dvh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
   }
   
-  /* Stack layout - content top, 3D bottom */
+  /* Stack layout - content top, 3D bottom, scrollable */
   .landing-page {
     position: relative !important;
     display: flex !important;
     flex-direction: column !important;
-    height: 100vh !important;
-    height: 100dvh !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    height: auto !important;
     width: 100vw !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
   
   /* Content section - compact at top */
@@ -757,13 +760,14 @@ body {
     box-sizing: border-box !important;
   }
   
-  /* 3D scene takes remaining bottom space */
+  /* 3D scene takes up most of viewport height */
   .scene-section {
     position: relative !important;
-    flex: 1 !important;
     width: 100% !important;
-    min-height: 200px !important;
+    height: 80vh !important;
+    min-height: 400px !important;
     z-index: 1 !important;
+    flex-shrink: 0 !important;
   }
   
   #three-container {
@@ -793,6 +797,10 @@ body {
     max-width: 100% !important;
     margin-bottom: 12px !important;
     font-size: 15px !important;
+  }
+  
+  .description.mobile-only {
+    white-space: nowrap !important;
   }
   
   .meta-info {
