@@ -302,7 +302,7 @@ body:has(.what-is-this-page) {
 .hero-right {
   position: absolute;
   right: 30px;
-  bottom: 50px;
+  bottom: 30px;
   width: clamp(280px, 40vw, 540px);
 }
 
