@@ -232,22 +232,12 @@
     }
   }
   
-  function onTouchEnd(e) {
-    // Check if our tracked touch ended
-    let touchEnded = true;
-    for (let i = 0; i < e.touches.length; i++) {
-      if (e.touches[i].identifier === touchId) {
-        touchEnded = false;
-        break;
-      }
-    }
-    
-    if (touchEnded) {
-      isDragging = false;
-      swipeDirection = null;
-      touchId = null;
-      startAnimation();
-    }
+  function onTouchEnd() {
+    // Always reset state on touch end
+    isDragging = false;
+    swipeDirection = null;
+    touchId = null;
+    startAnimation();
   }
   
   // Wheel event - handle both vertical and horizontal wheel
