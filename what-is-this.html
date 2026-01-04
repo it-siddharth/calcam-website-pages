@@ -248,21 +248,18 @@
             var src = video.dataset.src;
             
             if (src) {
-              // Add shimmer loading state
-              if (container) container.classList.add('video-loading');
-              
               video.src = src;
               video.removeAttribute('data-src');
               video.load();
               
               video.addEventListener('loadeddata', function() {
-                // Remove shimmer when loaded
-                if (container) container.classList.remove('video-loading');
+                // Add loaded class to stop shimmer and reveal video
+                if (container) container.classList.add('video-loaded');
                 video.play().catch(function() {});
               }, { once: true });
               
               video.addEventListener('error', function() {
-                if (container) container.classList.remove('video-loading');
+                if (container) container.classList.add('video-loaded');
               }, { once: true });
             }
             observer.unobserve(video);

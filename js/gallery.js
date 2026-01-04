@@ -446,22 +446,21 @@
     loadedVideos.add(video);
     videoObserver.unobserve(video);
     
-    // Add loading state
-    video.parentElement?.classList.add('video-loading');
-    
     video.src = src;
     video.removeAttribute('data-src');
     video.load();
     
     video.addEventListener('loadeddata', () => {
       video.muted = true;
-      video.parentElement?.classList.remove('video-loading');
+      // Add loaded class to stop shimmer and reveal video
+      video.parentElement?.classList.add('video-loaded');
       video.play().catch(() => {});
       setTimeout(updateBounds, 100);
     }, { once: true });
     
     video.addEventListener('error', () => {
-      video.parentElement?.classList.remove('video-loading');
+      // Still mark as loaded to stop shimmer on error
+      video.parentElement?.classList.add('video-loaded');
     }, { once: true });
   }
   

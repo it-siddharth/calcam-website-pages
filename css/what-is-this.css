@@ -638,41 +638,39 @@ body:has(.what-is-this-page) {
   object-fit: cover;
 }
 
-/* Video loading shimmer effect */
-.centrepiece-media.video-loading {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.03) 0%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.03) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+/* Video shimmer - shows by default until loaded */
+.centrepiece-media:not(.video-loaded) {
+  background: #1a1a1a;
 }
 
-.centrepiece-media.video-loading::before {
+.centrepiece-media:not(.video-loaded)::before {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    110deg,
-    transparent 20%,
-    rgba(255, 255, 255, 0.1) 40%,
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 20%,
     rgba(255, 255, 255, 0.15) 50%,
-    rgba(255, 255, 255, 0.1) 60%,
-    transparent 80%
+    rgba(255, 255, 255, 0.08) 80%,
+    transparent 100%
   );
-  background-size: 200% 100%;
-  animation: shimmerWave 1.5s ease-in-out infinite;
+  animation: shimmerSlide 1.5s ease-in-out infinite;
   z-index: 1;
+  pointer-events: none;
 }
 
-@keyframes shimmer {
-  0%, 100% { background-position: -200% 0; }
-  50% { background-position: 200% 0; }
+/* Hide video until loaded */
+.centrepiece-media:not(.video-loaded) video {
+  opacity: 0;
 }
 
-@keyframes shimmerWave {
+.centrepiece-media.video-loaded video {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes shimmerSlide {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }

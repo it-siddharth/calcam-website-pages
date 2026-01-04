@@ -179,7 +179,6 @@ body {
 /* Instructions & Learn More */
 .gallery-info {
   margin-top: auto;
-  max-width: 375px;
 }
 
 .instruction-text {
@@ -202,7 +201,7 @@ body {
 .nav-links {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   overflow: visible;
 }
 
@@ -366,49 +365,51 @@ body {
 }
 
 /* Video items - desktop */
+.carousel-item.video-item .item-media {
+  position: relative;
+  min-width: 300px;
+  min-height: 200px;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
 .carousel-item.video-item .item-media video {
   border-radius: 2px;
 }
 
-/* Video loading state with shimmer effect */
-.item-media.video-loading {
-  position: relative;
-  min-width: 300px;
-  min-height: 200px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.03) 0%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.03) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
-  border-radius: 2px;
-  overflow: hidden;
+/* Video shimmer - shows by default for unloaded videos */
+.carousel-item.video-item .item-media:not(.video-loaded) {
+  background: #1a1a1a;
 }
 
-.item-media.video-loading::before {
+.carousel-item.video-item .item-media:not(.video-loaded)::before {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    110deg,
-    transparent 20%,
-    rgba(255, 255, 255, 0.1) 40%,
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 20%,
     rgba(255, 255, 255, 0.15) 50%,
-    rgba(255, 255, 255, 0.1) 60%,
-    transparent 80%
+    rgba(255, 255, 255, 0.08) 80%,
+    transparent 100%
   );
-  background-size: 200% 100%;
-  animation: shimmerWave 1.5s ease-in-out infinite;
+  animation: shimmerSlide 1.5s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
 }
 
-@keyframes shimmer {
-  0%, 100% { background-position: -200% 0; }
-  50% { background-position: 200% 0; }
+/* Hide video until loaded */
+.carousel-item.video-item .item-media:not(.video-loaded) video {
+  opacity: 0;
 }
 
-@keyframes shimmerWave {
+.carousel-item.video-item .item-media.video-loaded video {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes shimmerSlide {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
