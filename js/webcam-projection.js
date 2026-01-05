@@ -3,10 +3,36 @@
  * Shows pixels where the thresholded webcam feed is white (bright)
  */
 export class WebcamProjection {
+  // Detect if on mobile device
+  static isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+           || window.innerWidth <= 768;
+  }
+  
+  // Desktop defaults
+  static DESKTOP_DEFAULTS = {
+    threshold: 96,
+    pixelSize: 0.200,
+    pixelDensity: 150,
+    intensity: 0.4
+  };
+  
+  // Mobile defaults (larger pixels, higher visibility)
+  static MOBILE_DEFAULTS = {
+    threshold: 96,
+    pixelSize: 0.500,      // Much larger on mobile
+    pixelDensity: 120,     // Slightly less dense for performance
+    intensity: 0.6         // Brighter on mobile
+  };
+  
   constructor(width = 320, height = 240) {
     // Lower resolution for performance - we're sampling, not displaying
     this.width = width;
     this.height = height;
+    
+    // Detect mobile
+    this.isMobile = WebcamProjection.isMobile();
+    const defaults = this.isMobile ? WebcamProjection.MOBILE_DEFAULTS : WebcamProjection.DESKTOP_DEFAULTS;
     
     // Hidden canvas for processing
     this.canvas = document.createElement('canvas');
@@ -33,23 +59,23 @@ export class WebcamProjection {
     this.imageData = null;
     this.lastFrameTime = 0;
     
-    // Settings with defaults
+    // Settings with device-specific defaults
     this.settings = {
-      threshold: 96,           // 0-255, brightness cutoff
-      pixelSize: 0.350,        // Size of each particle (larger for mobile visibility)
-      pixelDensity: 150,       // Percentage of potential pixels to show (can go over 100%)
+      threshold: defaults.threshold,
+      pixelSize: defaults.pixelSize,
+      pixelDensity: defaults.pixelDensity,
       pixelStyle: 'glow',      // 'glow' or 'squares'
       pixelColor: '#ffffff',   // Color of pixels
       flipHorizontal: true,    // Mirror the webcam (natural for facing camera)
       invert: false,           // Invert threshold (show dark areas instead)
-      intensity: 0.5           // Overall opacity (slightly brighter)
+      intensity: defaults.intensity
     };
     
     // Sampling grid - positions where we check brightness
     this.sampleGrid = [];
-    this.maxSamples = 8000; // Increased to support higher density
+    this.maxSamples = this.isMobile ? 5000 : 8000; // Fewer samples on mobile for performance
     
-    console.log('📽️ WebcamProjection created:', width, 'x', height);
+    console.log('📽️ WebcamProjection created:', width, 'x', height, this.isMobile ? '(mobile)' : '(desktop)');
   }
   
   /**

@@ -2008,6 +2008,43 @@ function setupProjectionControls() {
     toggle.addEventListener('click', window.toggleProjectionControls);
   }
   
+  // Sync slider values with device-specific defaults from WebcamProjection
+  if (webcamProjection) {
+    const settings = webcamProjection.getSettings();
+    
+    // Update threshold
+    const thresholdEl = document.getElementById('ctrl-threshold');
+    const thresholdVal = document.getElementById('val-threshold');
+    if (thresholdEl && thresholdVal) {
+      thresholdEl.value = settings.threshold;
+      thresholdVal.textContent = settings.threshold;
+    }
+    
+    // Update pixel size
+    const pixelSizeEl = document.getElementById('ctrl-pixelsize');
+    const pixelSizeVal = document.getElementById('val-pixelsize');
+    if (pixelSizeEl && pixelSizeVal) {
+      pixelSizeEl.value = settings.pixelSize;
+      pixelSizeVal.textContent = settings.pixelSize.toFixed(3);
+    }
+    
+    // Update pixel density
+    const pixelDensityEl = document.getElementById('ctrl-pixeldensity');
+    const pixelDensityVal = document.getElementById('val-pixeldensity');
+    if (pixelDensityEl && pixelDensityVal) {
+      pixelDensityEl.value = settings.pixelDensity;
+      pixelDensityVal.textContent = settings.pixelDensity + '%';
+    }
+    
+    // Update intensity
+    const intensityEl = document.getElementById('ctrl-projintensity');
+    const intensityVal = document.getElementById('val-projintensity');
+    if (intensityEl && intensityVal) {
+      intensityEl.value = settings.intensity;
+      intensityVal.textContent = settings.intensity.toFixed(1);
+    }
+  }
+  
   // Threshold control
   const thresholdCtrl = document.getElementById('ctrl-threshold');
   if (thresholdCtrl) {
@@ -2127,6 +2164,43 @@ function setupProjectionControlsRight() {
   const toggle = document.getElementById('projection-toggle-right');
   if (toggle) {
     toggle.addEventListener('click', window.toggleProjectionControlsRight);
+  }
+  
+  // Sync slider values with device-specific defaults from WebcamProjection
+  if (webcamProjectionRight) {
+    const settings = webcamProjectionRight.getSettings();
+    
+    // Update threshold
+    const thresholdEl = document.getElementById('ctrl-threshold-right');
+    const thresholdVal = document.getElementById('val-threshold-right');
+    if (thresholdEl && thresholdVal) {
+      thresholdEl.value = settings.threshold;
+      thresholdVal.textContent = settings.threshold;
+    }
+    
+    // Update pixel size
+    const pixelSizeEl = document.getElementById('ctrl-pixelsize-right');
+    const pixelSizeVal = document.getElementById('val-pixelsize-right');
+    if (pixelSizeEl && pixelSizeVal) {
+      pixelSizeEl.value = settings.pixelSize;
+      pixelSizeVal.textContent = settings.pixelSize.toFixed(3);
+    }
+    
+    // Update pixel density
+    const pixelDensityEl = document.getElementById('ctrl-pixeldensity-right');
+    const pixelDensityVal = document.getElementById('val-pixeldensity-right');
+    if (pixelDensityEl && pixelDensityVal) {
+      pixelDensityEl.value = settings.pixelDensity;
+      pixelDensityVal.textContent = settings.pixelDensity + '%';
+    }
+    
+    // Update intensity
+    const intensityEl = document.getElementById('ctrl-projintensity-right');
+    const intensityVal = document.getElementById('val-projintensity-right');
+    if (intensityEl && intensityVal) {
+      intensityEl.value = settings.intensity;
+      intensityVal.textContent = settings.intensity.toFixed(1);
+    }
   }
   
   // Threshold control
