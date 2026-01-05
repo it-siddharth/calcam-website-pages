@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import { WebcamTextRenderer } from './webcam-text-renderer.js';
+import { WebcamProjection } from './webcam-projection.js';
 
 // ============================================
 // Scene Configuration (matching home page)
@@ -71,8 +73,10 @@ const roomSettings = {
   floorColor: '#3d3d3d',
   ceilingColor: '#3d3d3d',
   projectionOn: true,
-  projectionIntensity: 0.8,
-  panelOpacity: 0.45,
+  projectionIntensity: 0.4,
+  projectionRightOn: true,
+  projectionRightIntensity: 0.4,
+  panelOpacity: 0.30,
   tvFrameColor: '#1c1c1c',
   tvBorderVisible: false,
   tvBorderColor: '#1c1c1c',
@@ -96,11 +100,31 @@ let scene, camera, renderer, controls;
 let installationGroup, tvGroup, tvScreen, tvScreenTexture, tvFrame, screenBorder;
 let standPole;
 let acrylicPanels = [];
-let projectionPlane, projectionMaterial;
+let projectionMesh, projectionMaterial; // InstancedMesh for left wall
 let ambientLight, tvGlow;
 let walls = [], floor, ceiling, backWall;
 let speakers = [];
 let silhouetteCanvas, silhouetteCtx;
+let webcamRenderer = null; // Native webcam text renderer (Safari-compatible)
+let webcamProjection = null; // Webcam projection for left wall
+let projectionInitialized = false;
+
+// Right wall projection
+let webcamProjectionRight = null;
+let projectionMeshRight, projectionMaterialRight; // InstancedMesh for right wall
+let projectionInitializedRight = false;
+
+// Shared geometry for projection pixels
+let pixelGeometry = null;
+const PIXEL_COUNT = 5000; // Reduced for performance (was 12000)
+
+// Cached Three.js objects for performance (avoid garbage collection)
+const _tempMatrix = new THREE.Matrix4();
+const _tempPosition = new THREE.Vector3();
+const _tempScale = new THREE.Vector3();
+const _tempColor = new THREE.Color();
+const _leftWallRotation = new THREE.Quaternion();
+const _rightWallRotation = new THREE.Quaternion();
 
 // Movement
 let moveForward = false, moveBackward = false;
@@ -118,8 +142,7 @@ const TOUCH_SENSITIVITY = 0.003;
 
 // Projection animation
 let projectionTime = 0;
-let particlePositions = [];
-const PARTICLE_COUNT = 12000;
+// Removed: particlePositions and PARTICLE_COUNT - now using PIXEL_COUNT with InstancedMesh
 
 // Model control state
 let hSpread = CONFIG.defaults.hSpread;
@@ -685,6 +708,7 @@ function init() {
   createRoom();
   createInstallation();
   createProjection();
+  createProjectionRight();
   createSpeakers();
   
   // Setup silhouette texture
@@ -694,6 +718,8 @@ function init() {
   setupKeyboardControls();
   setupRoomControls();
   setupModelControls();
+  setupProjectionControls();
+  setupProjectionControlsRight();
   
   // Setup anchor point system
   setupAnchorPoints();
@@ -1057,108 +1083,286 @@ function createSpeakers() {
 }
 
 // ============================================
-// Create Wall Projection (Point Cloud Effect)
+// Create Wall Projection (Webcam-Based InstancedMesh)
 // ============================================
 function createProjection() {
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    particlePositions.push({
-      x: (Math.random() - 0.5) * 5,
-      y: Math.random() * 3 + 0.5,
-      z: 0,
-      vx: (Math.random() - 0.5) * 0.015,
-      vy: (Math.random() - 0.5) * 0.015,
-      baseX: 0,
-      baseY: 0
-    });
-  }
+  // Initialize webcam projection handler (lower resolution for performance)
+  webcamProjection = new WebcamProjection(240, 180);
   
-  const geometry = new THREE.BufferGeometry();
-  const positions = new Float32Array(PARTICLE_COUNT * 3);
-  const colors = new Float32Array(PARTICLE_COUNT * 3);
-  const sizes = new Float32Array(PARTICLE_COUNT);
+  // Initialize cached rotation quaternions
+  _leftWallRotation.setFromEuler(new THREE.Euler(0, Math.PI / 2, 0));
+  _rightWallRotation.setFromEuler(new THREE.Euler(0, -Math.PI / 2, 0));
   
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    positions[i * 3] = particlePositions[i].x;
-    positions[i * 3 + 1] = particlePositions[i].y;
-    positions[i * 3 + 2] = particlePositions[i].z;
-    
-    colors[i * 3] = 0.85 + Math.random() * 0.15;
-    colors[i * 3 + 1] = 0.8 + Math.random() * 0.15;
-    colors[i * 3 + 2] = 0.75 + Math.random() * 0.15;
-    
-    sizes[i] = Math.random() * 0.025 + 0.008;
-  }
+  // Create shared pixel geometry - small plane
+  const pixelSize = 0.1; // Base size, will be scaled per-instance
+  pixelGeometry = new THREE.PlaneGeometry(pixelSize, pixelSize);
   
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-  
-  projectionMaterial = new THREE.PointsMaterial({
-    size: 0.035,
-    vertexColors: true,
+  // Material for left wall - using MeshBasicMaterial for performance
+  projectionMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
     transparent: true,
     opacity: roomSettings.projectionIntensity,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
-    sizeAttenuation: true
+    side: THREE.DoubleSide
   });
   
-  projectionPlane = new THREE.Points(geometry, projectionMaterial);
-  projectionPlane.position.set(-CONFIG.room.width / 2 + 0.1, 0, -1);
-  projectionPlane.rotation.y = Math.PI / 2;
-  projectionPlane.visible = roomSettings.projectionOn;
-  scene.add(projectionPlane);
+  // Create InstancedMesh for left wall
+  projectionMesh = new THREE.InstancedMesh(pixelGeometry, projectionMaterial, PIXEL_COUNT);
+  projectionMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  
+  // Enable per-instance colors
+  projectionMesh.instanceColor = new THREE.InstancedBufferAttribute(
+    new Float32Array(PIXEL_COUNT * 3), 3
+  );
+  projectionMesh.instanceColor.setUsage(THREE.DynamicDrawUsage);
+  
+  // Initialize all instances as hidden (scaled to 0)
+  const tempMatrix = new THREE.Matrix4();
+  const tempPosition = new THREE.Vector3();
+  const tempQuaternion = new THREE.Quaternion();
+  const tempScale = new THREE.Vector3(0, 0, 0); // Hidden initially
+  
+  // Left wall rotation: face +X direction (into room from left wall)
+  const leftWallRotation = new THREE.Quaternion();
+  leftWallRotation.setFromEuler(new THREE.Euler(0, Math.PI / 2, 0));
+  
+  for (let i = 0; i < PIXEL_COUNT; i++) {
+    tempMatrix.compose(tempPosition, leftWallRotation, tempScale);
+    projectionMesh.setMatrixAt(i, tempMatrix);
+    projectionMesh.setColorAt(i, new THREE.Color(1, 1, 1));
+  }
+  
+  projectionMesh.instanceMatrix.needsUpdate = true;
+  projectionMesh.instanceColor.needsUpdate = true;
+  
+  // Position the mesh group at the left wall
+  projectionMesh.position.set(-CONFIG.room.width / 2 + 0.05, 0, 0);
+  projectionMesh.visible = roomSettings.projectionOn;
+  
+  scene.add(projectionMesh);
+  
+  // Setup webcam initialization on user interaction
+  setupProjectionWebcam();
+}
+
+// ============================================
+// Setup Projection Webcam (requires user gesture)
+// ============================================
+function setupProjectionWebcam() {
+  const initWebcam = async () => {
+    if (projectionInitialized && projectionInitializedRight) return;
+    
+    // Initialize left wall webcam
+    if (!projectionInitialized) {
+      console.log('📽️ Initializing left wall projection webcam...');
+      const success = await webcamProjection.init();
+      if (success) {
+        projectionInitialized = true;
+        console.log('✅ Left wall projection webcam ready');
+      } else {
+        console.warn('⚠️ Left wall projection webcam failed to initialize');
+      }
+    }
+    
+    // Initialize right wall webcam
+    if (!projectionInitializedRight) {
+      console.log('📽️ Initializing right wall projection webcam...');
+      const successRight = await webcamProjectionRight.init();
+      if (successRight) {
+        projectionInitializedRight = true;
+        console.log('✅ Right wall projection webcam ready');
+      } else {
+        console.warn('⚠️ Right wall projection webcam failed to initialize');
+      }
+    }
+  };
+  
+  // Initialize on first user interaction
+  const startOnInteraction = () => {
+    initWebcam();
+    document.removeEventListener('click', startOnInteraction);
+    document.removeEventListener('touchstart', startOnInteraction);
+    document.removeEventListener('keydown', startOnInteraction);
+  };
+  
+  document.addEventListener('click', startOnInteraction);
+  document.addEventListener('touchstart', startOnInteraction);
+  document.addEventListener('keydown', startOnInteraction);
+}
+
+// ============================================
+// Create Right Wall Projection (Webcam-Based InstancedMesh)
+// ============================================
+function createProjectionRight() {
+  // Initialize webcam projection handler (lower resolution for performance)
+  webcamProjectionRight = new WebcamProjection(240, 180);
+  
+  // Set right wall defaults (invert is true by default)
+  webcamProjectionRight.setSetting('invert', true);
+  
+  // Material for right wall
+  projectionMaterialRight = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: roomSettings.projectionRightIntensity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  });
+  
+  // Create InstancedMesh for right wall (reuse pixelGeometry)
+  projectionMeshRight = new THREE.InstancedMesh(pixelGeometry, projectionMaterialRight, PIXEL_COUNT);
+  projectionMeshRight.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  
+  // Enable per-instance colors
+  projectionMeshRight.instanceColor = new THREE.InstancedBufferAttribute(
+    new Float32Array(PIXEL_COUNT * 3), 3
+  );
+  projectionMeshRight.instanceColor.setUsage(THREE.DynamicDrawUsage);
+  
+  // Initialize all instances as hidden
+  const tempMatrix = new THREE.Matrix4();
+  const tempPosition = new THREE.Vector3();
+  const tempQuaternion = new THREE.Quaternion();
+  const tempScale = new THREE.Vector3(0, 0, 0);
+  
+  // Right wall rotation: face -X direction (into room from right wall)
+  const rightWallRotation = new THREE.Quaternion();
+  rightWallRotation.setFromEuler(new THREE.Euler(0, -Math.PI / 2, 0));
+  
+  for (let i = 0; i < PIXEL_COUNT; i++) {
+    tempMatrix.compose(tempPosition, rightWallRotation, tempScale);
+    projectionMeshRight.setMatrixAt(i, tempMatrix);
+    projectionMeshRight.setColorAt(i, new THREE.Color(1, 1, 1));
+  }
+  
+  projectionMeshRight.instanceMatrix.needsUpdate = true;
+  projectionMeshRight.instanceColor.needsUpdate = true;
+  
+  // Position the mesh group at the right wall
+  projectionMeshRight.position.set(CONFIG.room.width / 2 - 0.05, 0, 0);
+  projectionMeshRight.visible = roomSettings.projectionRightOn;
+  
+  scene.add(projectionMeshRight);
 }
 
 // ============================================
 // Setup Silhouette Texture
 // ============================================
-function setupSilhouetteTexture() {
-  const iframe = document.getElementById('silhouette-iframe');
+
+// Detect iOS Safari / mobile Safari
+const isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+  (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome') && 'ontouchend' in document);
+
+let webcamInitialized = false;
+let webcamInitializing = false;
+
+function initWebcamOnUserGesture() {
+  // Only try once
+  if (webcamInitialized || webcamInitializing) return;
+  webcamInitializing = true;
   
-  if (iframe) {
-    // Initial black fill
-    silhouetteCtx.fillStyle = '#000000';
-    silhouetteCtx.fillRect(0, 0, silhouetteCanvas.width, silhouetteCanvas.height);
+  console.log('📷 Initializing webcam after user gesture (mobile Safari)...');
+  
+  if (webcamRenderer) {
+    webcamRenderer.init().then(success => {
+      webcamInitialized = true;
+      if (success) {
+        console.log('✅ Native webcam renderer initialized');
+      } else {
+        console.log('⚠️ Webcam not available, using placeholder');
+      }
+    }).catch(err => {
+      webcamInitialized = true;
+      console.log('⚠️ Webcam init error:', err);
+    });
+  }
+}
+
+function setupSilhouetteTexture() {
+  // Initial black fill
+  silhouetteCtx.fillStyle = '#000000';
+  silhouetteCtx.fillRect(0, 0, silhouetteCanvas.width, silhouetteCanvas.height);
+  
+  // Check if we're on mobile Safari - use native renderer to avoid iframe issues
+  if (isIOSSafari) {
+    console.log('📱 Mobile Safari detected - using native WebcamTextRenderer');
     
-    // Wait for iframe to load
-    iframe.onload = () => {
-      console.log('WORD SILHOUETTE iframe loaded');
-      startCapture();
+    // Use native WebcamTextRenderer (Safari/iOS compatible)
+    webcamRenderer = new WebcamTextRenderer(640, 480);
+    
+    // iOS Safari requires user gesture to access camera
+    const startWebcamOnInteraction = () => {
+      initWebcamOnUserGesture();
+      document.removeEventListener('click', startWebcamOnInteraction);
+      document.removeEventListener('touchstart', startWebcamOnInteraction);
+      document.removeEventListener('touchend', startWebcamOnInteraction);
     };
     
-    // If iframe is already loaded
-    if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
-      startCapture();
-    }
+    document.addEventListener('click', startWebcamOnInteraction);
+    document.addEventListener('touchstart', startWebcamOnInteraction);
+    document.addEventListener('touchend', startWebcamOnInteraction);
     
-    function startCapture() {
-      // Capture iframe canvas at 30fps
-      setInterval(() => {
-        try {
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-          const iframeCanvas = iframeDoc.querySelector('canvas');
-          
-          if (iframeCanvas && iframeCanvas.width > 0) {
-            // Draw the webcam silhouette effect to our texture
-            silhouetteCtx.drawImage(
-              iframeCanvas,
-              0, 0,
-              silhouetteCanvas.width,
-              silhouetteCanvas.height
-            );
-            tvScreenTexture.needsUpdate = true;
-          }
-        } catch (e) {
-          // Cross-origin or not ready - use placeholder
-          drawPlaceholderAnimation();
+    // Render loop for mobile
+    setInterval(() => {
+      if (webcamRenderer) {
+        webcamRenderer.render();
+        const srcCanvas = webcamRenderer.getCanvas();
+        if (srcCanvas) {
+          silhouetteCtx.drawImage(srcCanvas, 0, 0, silhouetteCanvas.width, silhouetteCanvas.height);
+          tvScreenTexture.needsUpdate = true;
         }
-      }, 1000 / 30);
-    }
+      } else {
+        drawPlaceholderAnimation();
+      }
+    }, 1000 / 30);
+    
   } else {
-    // No iframe, use placeholder
-    setInterval(drawPlaceholderAnimation, 1000 / 30);
+    // Desktop: use original iframe approach (has pixel contour lines etc.)
+    console.log('🖥️ Desktop detected - using iframe for WORD SILHOUETTE');
+    
+    const iframe = document.getElementById('silhouette-iframe');
+    
+    if (iframe) {
+      iframe.onload = () => {
+        console.log('WORD SILHOUETTE iframe loaded');
+        startIframeCapture(iframe);
+      };
+      
+      // If iframe is already loaded
+      if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+        startIframeCapture(iframe);
+      }
+    } else {
+      // No iframe, use placeholder
+      setInterval(drawPlaceholderAnimation, 1000 / 30);
+    }
   }
+}
+
+function startIframeCapture(iframe) {
+  // Capture iframe canvas at 30fps (original desktop approach)
+  setInterval(() => {
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      const iframeCanvas = iframeDoc.querySelector('canvas');
+      
+      if (iframeCanvas && iframeCanvas.width > 0) {
+        // Draw the webcam silhouette effect to our texture
+        silhouetteCtx.drawImage(
+          iframeCanvas,
+          0, 0,
+          silhouetteCanvas.width,
+          silhouetteCanvas.height
+        );
+        tvScreenTexture.needsUpdate = true;
+      }
+    } catch (e) {
+      // Cross-origin or not ready - use placeholder
+      drawPlaceholderAnimation();
+    }
+  }, 1000 / 30);
 }
 
 // ============================================
@@ -1524,7 +1728,7 @@ function setupRoomControls() {
   if (projCtrl) {
     projCtrl.addEventListener('change', (e) => {
       roomSettings.projectionOn = e.target.checked;
-      projectionPlane.visible = e.target.checked;
+      if (projectionMesh) projectionMesh.visible = e.target.checked;
     });
   }
   
@@ -1651,7 +1855,7 @@ window.resetRoomSettings = function() {
     ceilingColor: '#3d3d3d',
     projectionOn: true,
     projectionIntensity: 0.8,
-    panelOpacity: 0.45,
+    panelOpacity: 0.30,
     tvFrameColor: '#1c1c1c',
     hSpread: 0.35,
     vSpread: 1,
@@ -1721,8 +1925,10 @@ window.resetRoomSettings = function() {
   });
   floor.material.color.set(defaults.floorColor);
   ceiling.material.color.set(defaults.ceilingColor);
-  projectionPlane.visible = defaults.projectionOn;
+  if (projectionMesh) projectionMesh.visible = defaults.projectionOn;
+  if (projectionMeshRight) projectionMeshRight.visible = defaults.projectionOn;
   projectionMaterial.opacity = defaults.projectionIntensity;
+  if (projectionMaterialRight) projectionMaterialRight.opacity = defaults.projectionIntensity;
   acrylicPanels.forEach(panel => panel.material.opacity = defaults.panelOpacity);
   updatePanelThickness(defaults.thickness);
   updatePanelSpacing(defaults.hSpread, defaults.vSpread, defaults.zOffset);
@@ -1747,58 +1953,473 @@ if (localStorage.getItem('installationHintDismissed')) {
 }
 
 // ============================================
-// Update Projection Animation
+// Projection Controls Toggle (Left Wall)
 // ============================================
-function updateProjection(time) {
-  if (!projectionPlane || !roomSettings.projectionOn) return;
+window.toggleProjectionControls = function() {
+  const panel = document.getElementById('projection-controls');
+  const toggle = document.getElementById('projection-toggle');
   
-  const positions = projectionPlane.geometry.attributes.position.array;
-  
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const p = particlePositions[i];
-    
-    const noiseX = Math.sin(time * 0.4 + p.baseY * 2) * 0.25;
-    const noiseY = Math.cos(time * 0.25 + p.baseX * 2) * 0.15;
-    
-    p.x += p.vx + noiseX * 0.008;
-    p.y += p.vy + noiseY * 0.008;
-    
-    const centerY = 2;
-    const centerX = 0;
-    const headRadiusX = 1;
-    const headRadiusY = 1.3;
-    const headCenterY = centerY + 0.4;
-    
-    const inHead = Math.pow((p.x - centerX) / headRadiusX, 2) + 
-                   Math.pow((p.y - headCenterY) / headRadiusY, 2) < 1;
-    
-    const bodyTop = centerY - 0.7;
-    const inBody = p.y < bodyTop && p.y > 0.3 &&
-                   Math.abs(p.x) < 1.8 - (bodyTop - p.y) * 0.4;
-    
-    if (!inHead && !inBody) {
-      if (Math.random() > 0.5) {
-        const angle = Math.random() * Math.PI * 2;
-        const r = Math.random();
-        p.x = centerX + Math.cos(angle) * headRadiusX * r;
-        p.y = headCenterY + Math.sin(angle) * headRadiusY * r;
-      } else {
-        p.x = (Math.random() - 0.5) * 2.5;
-        p.y = Math.random() * (bodyTop - 0.3) + 0.3;
-      }
-      p.vx = (Math.random() - 0.5) * 0.008;
-      p.vy = (Math.random() - 0.5) * 0.008;
+  if (panel) {
+    panel.classList.toggle('open');
+    if (toggle) {
+      toggle.classList.toggle('active', panel.classList.contains('open'));
     }
-    
-    p.baseX = p.x;
-    p.baseY = p.y;
-    
-    positions[i * 3] = p.x;
-    positions[i * 3 + 1] = p.y;
-    positions[i * 3 + 2] = Math.sin(time + i * 0.001) * 0.03;
+    // Close right panel if open
+    const panelRight = document.getElementById('projection-controls-right');
+    if (panelRight) panelRight.classList.remove('open');
+    const toggleRight = document.getElementById('projection-toggle-right');
+    if (toggleRight) toggleRight.classList.remove('active');
+  }
+};
+
+// ============================================
+// Projection Controls Toggle (Right Wall)
+// ============================================
+window.toggleProjectionControlsRight = function() {
+  const panel = document.getElementById('projection-controls-right');
+  const toggle = document.getElementById('projection-toggle-right');
+  
+  if (panel) {
+    panel.classList.toggle('open');
+    if (toggle) {
+      toggle.classList.toggle('active', panel.classList.contains('open'));
+    }
+    // Close left panel if open
+    const panelLeft = document.getElementById('projection-controls');
+    if (panelLeft) panelLeft.classList.remove('open');
+    const toggleLeft = document.getElementById('projection-toggle');
+    if (toggleLeft) toggleLeft.classList.remove('active');
+  }
+};
+
+// ============================================
+// Setup Projection Controls
+// ============================================
+function setupProjectionControls() {
+  const toggle = document.getElementById('projection-toggle');
+  if (toggle) {
+    toggle.addEventListener('click', window.toggleProjectionControls);
   }
   
-  projectionPlane.geometry.attributes.position.needsUpdate = true;
+  // Threshold control
+  const thresholdCtrl = document.getElementById('ctrl-threshold');
+  if (thresholdCtrl) {
+    thresholdCtrl.addEventListener('input', (e) => {
+      const v = parseInt(e.target.value);
+      document.getElementById('val-threshold').textContent = v;
+      if (webcamProjection) {
+        webcamProjection.setSetting('threshold', v);
+      }
+    });
+  }
+  
+  // Pixel size control
+  const pixelSizeCtrl = document.getElementById('ctrl-pixelsize');
+  if (pixelSizeCtrl) {
+    pixelSizeCtrl.addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      document.getElementById('val-pixelsize').textContent = v.toFixed(3);
+      if (webcamProjection) {
+        webcamProjection.setSetting('pixelSize', v);
+      }
+    });
+  }
+  
+  // Pixel density control
+  const pixelDensityCtrl = document.getElementById('ctrl-pixeldensity');
+  if (pixelDensityCtrl) {
+    pixelDensityCtrl.addEventListener('input', (e) => {
+      const v = parseInt(e.target.value);
+      document.getElementById('val-pixeldensity').textContent = v + '%';
+      if (webcamProjection) {
+        webcamProjection.setSetting('pixelDensity', v);
+      }
+    });
+  }
+  
+  // Projection intensity control (already exists, update for webcamProjection)
+  const projIntensityCtrl = document.getElementById('ctrl-projintensity');
+  if (projIntensityCtrl) {
+    projIntensityCtrl.addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      document.getElementById('val-projintensity').textContent = v.toFixed(1);
+      roomSettings.projectionIntensity = v;
+      if (projectionMaterial) {
+        projectionMaterial.opacity = v;
+      }
+      if (webcamProjection) {
+        webcamProjection.setSetting('intensity', v);
+      }
+    });
+  }
+  
+  // Pixel color control
+  const pixelColorCtrl = document.getElementById('ctrl-pixelcolor');
+  if (pixelColorCtrl) {
+    pixelColorCtrl.addEventListener('input', (e) => {
+      if (webcamProjection) {
+        webcamProjection.setSetting('pixelColor', e.target.value);
+      }
+    });
+  }
+  
+  // Pixel style control
+  const pixelStyleCtrl = document.getElementById('ctrl-pixelstyle');
+  if (pixelStyleCtrl) {
+    pixelStyleCtrl.addEventListener('change', (e) => {
+      if (webcamProjection) {
+        webcamProjection.setSetting('pixelStyle', e.target.value);
+      }
+      // Update material based on style
+      if (projectionMaterial) {
+        if (e.target.value === 'squares') {
+          projectionMaterial.blending = THREE.NormalBlending;
+        } else {
+          projectionMaterial.blending = THREE.AdditiveBlending;
+        }
+      }
+    });
+  }
+  
+  // Flip horizontal control
+  const flipHCtrl = document.getElementById('ctrl-fliph');
+  if (flipHCtrl) {
+    flipHCtrl.addEventListener('change', (e) => {
+      if (webcamProjection) {
+        webcamProjection.setSetting('flipHorizontal', e.target.checked);
+      }
+    });
+  }
+  
+  // Invert control
+  const invertCtrl = document.getElementById('ctrl-invert');
+  if (invertCtrl) {
+    invertCtrl.addEventListener('change', (e) => {
+      if (webcamProjection) {
+        webcamProjection.setSetting('invert', e.target.checked);
+      }
+    });
+  }
+  
+  // Projection on/off control
+  const projCtrl = document.getElementById('ctrl-projection');
+  if (projCtrl) {
+    projCtrl.addEventListener('change', (e) => {
+      roomSettings.projectionOn = e.target.checked;
+      if (projectionMesh) {
+        projectionMesh.visible = e.target.checked;
+      }
+    });
+  }
+}
+
+// ============================================
+// Setup Right Wall Projection Controls
+// ============================================
+function setupProjectionControlsRight() {
+  const toggle = document.getElementById('projection-toggle-right');
+  if (toggle) {
+    toggle.addEventListener('click', window.toggleProjectionControlsRight);
+  }
+  
+  // Threshold control
+  const thresholdCtrl = document.getElementById('ctrl-threshold-right');
+  if (thresholdCtrl) {
+    thresholdCtrl.addEventListener('input', (e) => {
+      const v = parseInt(e.target.value);
+      document.getElementById('val-threshold-right').textContent = v;
+      if (webcamProjectionRight) {
+        webcamProjectionRight.setSetting('threshold', v);
+      }
+    });
+  }
+  
+  // Pixel size control
+  const pixelSizeCtrl = document.getElementById('ctrl-pixelsize-right');
+  if (pixelSizeCtrl) {
+    pixelSizeCtrl.addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      document.getElementById('val-pixelsize-right').textContent = v.toFixed(3);
+      if (webcamProjectionRight) {
+        webcamProjectionRight.setSetting('pixelSize', v);
+      }
+    });
+  }
+  
+  // Pixel density control
+  const pixelDensityCtrl = document.getElementById('ctrl-pixeldensity-right');
+  if (pixelDensityCtrl) {
+    pixelDensityCtrl.addEventListener('input', (e) => {
+      const v = parseInt(e.target.value);
+      document.getElementById('val-pixeldensity-right').textContent = v + '%';
+      if (webcamProjectionRight) {
+        webcamProjectionRight.setSetting('pixelDensity', v);
+      }
+    });
+  }
+  
+  // Projection intensity control
+  const projIntensityCtrl = document.getElementById('ctrl-projintensity-right');
+  if (projIntensityCtrl) {
+    projIntensityCtrl.addEventListener('input', (e) => {
+      const v = parseFloat(e.target.value);
+      document.getElementById('val-projintensity-right').textContent = v.toFixed(1);
+      roomSettings.projectionRightIntensity = v;
+      if (projectionMaterialRight) {
+        projectionMaterialRight.opacity = v;
+      }
+      if (webcamProjectionRight) {
+        webcamProjectionRight.setSetting('intensity', v);
+      }
+    });
+  }
+  
+  // Pixel color control
+  const pixelColorCtrl = document.getElementById('ctrl-pixelcolor-right');
+  if (pixelColorCtrl) {
+    pixelColorCtrl.addEventListener('input', (e) => {
+      if (webcamProjectionRight) {
+        webcamProjectionRight.setSetting('pixelColor', e.target.value);
+      }
+    });
+  }
+  
+  // Pixel style control
+  const pixelStyleCtrl = document.getElementById('ctrl-pixelstyle-right');
+  if (pixelStyleCtrl) {
+    pixelStyleCtrl.addEventListener('change', (e) => {
+      if (webcamProjectionRight) {
+        webcamProjectionRight.setSetting('pixelStyle', e.target.value);
+      }
+      if (projectionMaterialRight) {
+        if (e.target.value === 'squares') {
+          projectionMaterialRight.blending = THREE.NormalBlending;
+        } else {
+          projectionMaterialRight.blending = THREE.AdditiveBlending;
+        }
+      }
+    });
+  }
+  
+  // Flip horizontal control
+  const flipHCtrl = document.getElementById('ctrl-fliph-right');
+  if (flipHCtrl) {
+    flipHCtrl.addEventListener('change', (e) => {
+      if (webcamProjectionRight) {
+        webcamProjectionRight.setSetting('flipHorizontal', e.target.checked);
+      }
+    });
+  }
+  
+  // Invert control
+  const invertCtrl = document.getElementById('ctrl-invert-right');
+  if (invertCtrl) {
+    invertCtrl.addEventListener('change', (e) => {
+      if (webcamProjectionRight) {
+        webcamProjectionRight.setSetting('invert', e.target.checked);
+      }
+    });
+  }
+  
+  // Projection on/off control
+  const projCtrl = document.getElementById('ctrl-projection-right');
+  if (projCtrl) {
+    projCtrl.addEventListener('change', (e) => {
+      roomSettings.projectionRightOn = e.target.checked;
+      if (projectionMeshRight) {
+        projectionMeshRight.visible = e.target.checked;
+      }
+    });
+  }
+}
+
+// ============================================
+// Update Projection from Webcam (InstancedMesh)
+// ============================================
+function updateProjection(time) {
+  if (!projectionMesh || !roomSettings.projectionOn) return;
+  
+  // If webcam is ready, update from webcam data
+  if (webcamProjection && webcamProjection.isReady()) {
+    const webcamPositions = webcamProjection.captureFrame();
+    const settings = webcamProjection.getSettings();
+    const color = webcamProjection.getColorRGB();
+    
+    // Update material opacity
+    projectionMaterial.opacity = settings.intensity;
+    
+    // Projection dimensions
+    const projWidth = 8;
+    const projHeight = 5;
+    const projBaseY = 0.5;
+    const projCenterZ = -1;
+    const pixelScale = settings.pixelSize;
+    
+    // Set color once (reuse cached object)
+    _tempColor.setRGB(color.r, color.g, color.b);
+    
+    const posCount = webcamPositions.length;
+    for (let i = 0; i < PIXEL_COUNT; i++) {
+      if (i < posCount) {
+        const wp = webcamPositions[i];
+        
+        _tempPosition.set(0, (1 - wp.y) * projHeight + projBaseY, (wp.x - 0.5) * projWidth + projCenterZ);
+        _tempScale.set(pixelScale, pixelScale, 1);
+        _tempMatrix.compose(_tempPosition, _leftWallRotation, _tempScale);
+        projectionMesh.setMatrixAt(i, _tempMatrix);
+        projectionMesh.setColorAt(i, _tempColor);
+      } else {
+        // Hide unused instances (scale to 0)
+        _tempScale.set(0, 0, 0);
+        _tempMatrix.compose(_tempPosition, _leftWallRotation, _tempScale);
+        projectionMesh.setMatrixAt(i, _tempMatrix);
+      }
+    }
+  } else {
+    // Webcam not ready - show placeholder shimmer
+    updateProjectionPlaceholder(time, projectionMesh, _leftWallRotation);
+  }
+  
+  projectionMesh.instanceMatrix.needsUpdate = true;
+  if (projectionMesh.instanceColor) {
+    projectionMesh.instanceColor.needsUpdate = true;
+  }
+}
+
+// ============================================
+// Update Right Wall Projection from Webcam (InstancedMesh)
+// ============================================
+function updateProjectionRight(time) {
+  if (!projectionMeshRight || !roomSettings.projectionRightOn) return;
+  
+  // If webcam is ready, update from webcam data
+  if (webcamProjectionRight && webcamProjectionRight.isReady()) {
+    const webcamPositions = webcamProjectionRight.captureFrame();
+    const settings = webcamProjectionRight.getSettings();
+    const color = webcamProjectionRight.getColorRGB();
+    
+    // Update material opacity
+    projectionMaterialRight.opacity = settings.intensity;
+    
+    // Projection dimensions
+    const projWidth = 8;
+    const projHeight = 5;
+    const projBaseY = 0.5;
+    const projCenterZ = -1;
+    const pixelScale = settings.pixelSize;
+    
+    // Set color once
+    _tempColor.setRGB(color.r, color.g, color.b);
+    
+    const posCount = webcamPositions.length;
+    for (let i = 0; i < PIXEL_COUNT; i++) {
+      if (i < posCount) {
+        const wp = webcamPositions[i];
+        
+        _tempPosition.set(0, (1 - wp.y) * projHeight + projBaseY, (wp.x - 0.5) * projWidth + projCenterZ);
+        _tempScale.set(pixelScale, pixelScale, 1);
+        _tempMatrix.compose(_tempPosition, _rightWallRotation, _tempScale);
+        projectionMeshRight.setMatrixAt(i, _tempMatrix);
+        projectionMeshRight.setColorAt(i, _tempColor);
+      } else {
+        _tempScale.set(0, 0, 0);
+        _tempMatrix.compose(_tempPosition, _rightWallRotation, _tempScale);
+        projectionMeshRight.setMatrixAt(i, _tempMatrix);
+      }
+    }
+  } else {
+    // Webcam not ready - show placeholder shimmer
+    updateProjectionPlaceholderRight(time, projectionMeshRight, _rightWallRotation);
+  }
+  
+  projectionMeshRight.instanceMatrix.needsUpdate = true;
+  if (projectionMeshRight.instanceColor) {
+    projectionMeshRight.instanceColor.needsUpdate = true;
+  }
+}
+
+// ============================================
+// Placeholder Animation for Right Wall (InstancedMesh)
+// ============================================
+function updateProjectionPlaceholderRight(time, mesh, rotation) {
+  const projWidth = 8;
+  const projHeight = 5;
+  const projBaseY = 0.5;
+  const projCenterZ = -1;
+  
+  // Reduced grid for better performance
+  const gridCols = 30;
+  const gridRows = 20;
+  const totalGridPoints = gridCols * gridRows;
+  const pixelScale = 0.1;
+  
+  for (let i = 0; i < PIXEL_COUNT; i++) {
+    if (i < totalGridPoints) {
+      const col = i % gridCols;
+      const row = Math.floor(i / gridCols);
+      
+      const baseZ = (col / gridCols - 0.5) * projWidth + projCenterZ;
+      const baseY = (row / gridRows) * projHeight + projBaseY;
+      
+      // Simplified shimmer calculation
+      const shimmer = Math.sin(time * 2.2 + col * 0.3 + row * 0.25) * 
+                      Math.sin(time * 1.7 + col * 0.2 - row * 0.15);
+      
+      if (shimmer > 0.2) {
+        _tempPosition.set(0, baseY, baseZ);
+        _tempScale.set(pixelScale, pixelScale, 1);
+      } else {
+        _tempScale.set(0, 0, 0);
+      }
+    } else {
+      _tempScale.set(0, 0, 0);
+    }
+    
+    _tempMatrix.compose(_tempPosition, rotation, _tempScale);
+    mesh.setMatrixAt(i, _tempMatrix);
+  }
+}
+
+// ============================================
+// Placeholder Animation (shimmer effect for InstancedMesh)
+// ============================================
+function updateProjectionPlaceholder(time, mesh, rotation) {
+  const projWidth = 8;
+  const projHeight = 5;
+  const projBaseY = 0.5;
+  const projCenterZ = -1;
+  
+  // Reduced grid for better performance
+  const gridCols = 30;
+  const gridRows = 20;
+  const totalGridPoints = gridCols * gridRows;
+  const pixelScale = 0.1;
+  
+  for (let i = 0; i < PIXEL_COUNT; i++) {
+    if (i < totalGridPoints) {
+      const col = i % gridCols;
+      const row = Math.floor(i / gridCols);
+      
+      const baseZ = (col / gridCols - 0.5) * projWidth + projCenterZ;
+      const baseY = (row / gridRows) * projHeight + projBaseY;
+      
+      // Simplified shimmer calculation
+      const shimmer = Math.sin(time * 2 + col * 0.3 + row * 0.2) * 
+                      Math.sin(time * 1.5 + col * 0.15 - row * 0.25);
+      
+      if (shimmer > 0.2) {
+        _tempPosition.set(0, baseY, baseZ);
+        _tempScale.set(pixelScale, pixelScale, 1);
+      } else {
+        _tempScale.set(0, 0, 0);
+      }
+    } else {
+      _tempScale.set(0, 0, 0);
+    }
+    
+    _tempMatrix.compose(_tempPosition, rotation, _tempScale);
+    mesh.setMatrixAt(i, _tempMatrix);
+  }
 }
 
 // ============================================
@@ -1872,6 +2493,7 @@ function animate() {
   
   projectionTime += delta;
   updateProjection(projectionTime);
+  updateProjectionRight(projectionTime);
   
   // Update anchor indicator positions
   updateAnchorIndicators();

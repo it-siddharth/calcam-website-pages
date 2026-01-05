@@ -158,8 +158,8 @@
       </label>
       <div id="contourControls" class="hidden">
         <label>
-          Pixel Size: <span id="pixelSizeValue">2</span>
-          <input type="range" id="pixelSize" min="1" max="6" value="2">
+          Pixel Size: <span id="pixelSizeValue">1</span>
+          <input type="range" id="pixelSize" min="1" max="6" value="1">
         </label>
         <label>
           Contour Sensitivity: <span id="contourSensitivityValue">5</span>
@@ -296,10 +296,10 @@
     let video;
     let canvas;
     let defaultWords = [
-      { text: "YOU ARE", color: "#FF0000", font: "monospace", size: 10 },
-      { text: "YOUR CHOICES", color: "#0000FF", font: "serif", size: 22 },
-      { text: "PUBLIC SELF", color: "#00FF00", font: "monospace", size: 10 },
-      { text: "POSSIBILITY", color: "#FFFF00", font: "monospace", size: 10 }
+      { text: "YOU ARE", color: "#FF0000", font: "monospace", size: 18 },
+      { text: "YOUR CHOICES", color: "#FFFF00", font: "serif", size: 22 },
+      { text: "PUBLIC SELF", color: "#0000FF", font: "monospace", size: 10 },
+      { text: "POSSIBILITY", color: "#00FF00", font: "monospace", size: 10 }
     ];
     let wordsData = [...defaultWords];
     let textGrid = [];
@@ -311,7 +311,7 @@
     let cellWidthMultiplier = 0.7;
     let fontSize = 10;
     let showContour = true;
-    let pixelSize = 2;
+    let pixelSize = 1;
     let contourSensitivity = 5;
     let contourColor = "#FFFFFF";
     let contourDensity = 2;
@@ -736,7 +736,10 @@
     
     function drawContour() {
       noStroke();
-      fill(contourColor);
+      // Apply 70% opacity to contour color
+      let c = color(contourColor);
+      c.setAlpha(178); // 70% of 255 ≈ 178
+      fill(c);
       
       for (let i = 0; i < edgePixels.length; i++) {
         const edge = edgePixels[i];

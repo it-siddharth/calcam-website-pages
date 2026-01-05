@@ -1260,7 +1260,7 @@
     });
 
     book.scale.x = 0.8;
-    book.position.x = 0; // Centered
+    book.position.x = -0.3; // Shifted left to prevent right-side clipping
     scene.add(book);
 
     book.setPages(pageImages);
@@ -1328,40 +1328,48 @@
     }
     
     function adjustCameraForDevice() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      
-      // Minimum focal length to prevent book from getting too small
-      // Higher value = more zoomed in = larger book
-      const MIN_FOCAL_LENGTH = 44;
+      // Use the book-section (parent) dimensions, not the book-container
+      // because book-container is 200% width (for overflow effects)
+      const bookSection = container.parentElement;
+      const sectionWidth = bookSection.clientWidth;
+      const sectionHeight = bookSection.clientHeight;
       
       if (isMobile()) {
         // Mobile: zoom in for larger book
         camera.setFocalLength(55);
         camera.position.set(0, 2.4, 0.75);
       } else {
-        // Desktop - responsive scaling based on window size
-        // Use the smaller dimension to ensure book fits well
-        const minDimension = Math.min(width, height);
+        // Desktop - use WINDOW width for viewport check
+        const viewportWidth = window.innerWidth;
         
-        // Zoom in more for smaller windows, keep original for large windows
-        if (minDimension < 500) {
-          // Very small windows - zoom in significantly
-          camera.setFocalLength(52);
-          camera.position.set(0, 2.6, 0.8);
-        } else if (minDimension < 600) {
-          // Small windows - zoom in more
-          camera.setFocalLength(46);
-          camera.position.set(0, 2.9, 0.9);
-        } else if (minDimension < 700) {
-          // Medium-small windows
-          camera.setFocalLength(42);
-          camera.position.set(0, 3.2, 1.0);
+        // Maximum size settings (for viewport >= 1000px) - 15% bigger
+        const MAX_FOCAL = 39;
+        const MAX_CAM_Y = 3.4;
+        const MAX_CAM_Z = 1.02;
+        
+        // Minimum size settings (for viewport ~769px, just above mobile) - 15% bigger
+        const MIN_FOCAL = 30;
+        const MIN_CAM_Y = 4.1;
+        const MIN_CAM_Z = 1.2;
+        
+        // Viewport >= 1000px: keep at max size (no scaling)
+        if (viewportWidth >= 1000) {
+          camera.setFocalLength(MAX_FOCAL);
+          camera.position.set(0, MAX_CAM_Y, MAX_CAM_Z);
         } else {
-          // Medium and large windows - use minimum focal length
-          // This prevents the book from shrinking too small
-          camera.setFocalLength(Math.max(MAXFOV, MIN_FOCAL_LENGTH));
-          camera.position.set(0, 3.6, 1.1);
+          // Viewport < 1000px: scale smoothly from max to min
+          // Linear interpolation from 1000px down to 769px (mobile breakpoint)
+          const minViewport = 769;
+          const maxViewport = 1000;
+          const t = Math.max(0, Math.min(1, (viewportWidth - minViewport) / (maxViewport - minViewport)));
+          
+          // Interpolate focal length and camera position
+          const focal = MIN_FOCAL + t * (MAX_FOCAL - MIN_FOCAL);
+          const camY = MIN_CAM_Y + t * (MAX_CAM_Y - MIN_CAM_Y);
+          const camZ = MIN_CAM_Z + t * (MAX_CAM_Z - MIN_CAM_Z);
+          
+          camera.setFocalLength(focal);
+          camera.position.set(0, camY, camZ);
         }
       }
       camera.lookAt(0, 0, 0);

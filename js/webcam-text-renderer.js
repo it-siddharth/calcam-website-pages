@@ -33,12 +33,17 @@ export class WebcamTextRenderer {
     this.lastVideoTime = 0;
     this.videoKeepAliveInterval = null;
     
+    // iOS Safari frame caching - keep last good frame when video stalls
+    this.lastGoodImageData = null;
+    this.lastFrameTime = 0;
+    this.videoHasEverWorked = false;
+    
     // Word definitions with CORRECT colors
     this.words = [
-      { text: "YOU ARE", color: "#FFFF00", font: "monospace", size: 22 },
-      { text: "YOUR CHOICES", color: "#FF0000", font: "serif", size: 22 },
-      { text: "PUBLIC SELF", color: "#00FF00", font: "monospace", size: 17 },
-      { text: "POSSIBILITY", color: "#0000FF", font: "monospace", size: 17 }
+      { text: "YOU ARE", color: "#FF0000", font: "monospace", size: 24 },
+      { text: "YOUR CHOICES", color: "#FFFF00", font: "serif", size: 22 },
+      { text: "PUBLIC SELF", color: "#0000FF", font: "monospace", size: 17 },
+      { text: "POSSIBILITY", color: "#00FF00", font: "monospace", size: 17 }
     ];
     
     // Text grid
@@ -165,11 +170,24 @@ export class WebcamTextRenderer {
         this.videoKeepAliveInterval = null;
       }
       
-      // Get new stream
+      // Get new stream with iOS-optimized constraints
+      const videoConstraints = deviceId 
+        ? { deviceId: { exact: deviceId } } 
+        : { facingMode: 'user' }; // Prefer front camera on mobile
+      
+      // For iOS Safari, use lower resolution for better performance
+      if (this.isIOSSafari) {
+        videoConstraints.width = { ideal: 480 };
+        videoConstraints.height = { ideal: 360 };
+        videoConstraints.frameRate = { ideal: 30, max: 30 };
+      }
+      
       const constraints = {
-        video: deviceId ? { deviceId: { exact: deviceId } } : true,
+        video: videoConstraints,
         audio: false
       };
+      
+      console.log('📷 Requesting camera with constraints:', JSON.stringify(constraints));
       
       this.currentStream = await navigator.mediaDevices.getUserMedia(constraints);
       this.video.srcObject = this.currentStream;
@@ -207,29 +225,59 @@ export class WebcamTextRenderer {
    * Setup Safari mobile video keep-alive mechanism
    */
   setupSafariKeepAlive() {
-    // Periodically ensure video is playing
+    console.log('🍎 Setting up iOS Safari video keep-alive...');
+    
+    let stalledFrameCount = 0;
+    
+    // More aggressive keep-alive interval (100ms instead of 500ms)
     this.videoKeepAliveInterval = setInterval(() => {
-      if (this.video && this.video.paused) {
+      if (!this.video) return;
+      
+      // Always try to play if paused
+      if (this.video.paused) {
+        console.log('🔄 Video paused, resuming...');
         this.video.play().catch(() => {});
       }
       
-      // Check for stalled video (same currentTime)
-      if (this.video && this.video.currentTime === this.lastVideoTime && this.currentStream) {
-        const tracks = this.currentStream.getVideoTracks();
-        if (tracks.length > 0 && tracks[0].enabled) {
-          // Toggle track to force refresh on Safari
-          tracks[0].enabled = false;
-          setTimeout(() => {
-            tracks[0].enabled = true;
-          }, 10);
+      // Check for stalled video (same currentTime for multiple checks)
+      if (this.video.currentTime === this.lastVideoTime && this.currentStream) {
+        stalledFrameCount++;
+        
+        // If stalled for 3+ checks (300ms), try to recover
+        if (stalledFrameCount >= 3) {
+          console.log('⚠️ Video stalled, attempting recovery...');
+          const tracks = this.currentStream.getVideoTracks();
+          if (tracks.length > 0 && tracks[0].enabled) {
+            // Toggle track to force refresh on Safari
+            tracks[0].enabled = false;
+            setTimeout(() => {
+              if (tracks[0]) tracks[0].enabled = true;
+            }, 50);
+          }
+          
+          // Also try reloading the video source
+          if (stalledFrameCount >= 10) {
+            console.log('🔁 Deep recovery - resetting video source...');
+            const stream = this.video.srcObject;
+            this.video.srcObject = null;
+            setTimeout(() => {
+              this.video.srcObject = stream;
+              this.video.play().catch(() => {});
+            }, 100);
+            stalledFrameCount = 0;
+          }
         }
+      } else {
+        stalledFrameCount = 0;
       }
-      this.lastVideoTime = this.video ? this.video.currentTime : 0;
-    }, 500);
+      
+      this.lastVideoTime = this.video.currentTime;
+    }, 100); // Check every 100ms for faster recovery
     
     // Handle visibility changes
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && this.video) {
+        console.log('👁️ Page visible, resuming video...');
         setTimeout(() => {
           if (this.video.paused) {
             this.video.play().catch(() => {});
@@ -238,18 +286,35 @@ export class WebcamTextRenderer {
       }
     });
     
+    // Handle touch events to keep video alive (iOS Safari quirk)
+    document.addEventListener('touchstart', () => {
+      if (this.video && this.video.paused) {
+        this.video.play().catch(() => {});
+      }
+    }, { passive: true });
+    
     // Handle video stall events
     this.video.addEventListener('stalled', () => {
-      console.log('Video stalled, recovering...');
+      console.log('📹 Video stalled event');
       this.video.play().catch(() => {});
     });
     
     this.video.addEventListener('suspend', () => {
+      console.log('📹 Video suspend event');
       setTimeout(() => {
-        if (this.video.paused) {
+        if (this.video && this.video.paused) {
           this.video.play().catch(() => {});
         }
       }, 100);
+    });
+    
+    this.video.addEventListener('waiting', () => {
+      console.log('📹 Video waiting for data...');
+    });
+    
+    // Log when video actually plays
+    this.video.addEventListener('playing', () => {
+      console.log('✅ Video playing');
     });
   }
   
@@ -302,32 +367,56 @@ export class WebcamTextRenderer {
    * Main render method - called every frame
    */
   render() {
-    // Check if video is ready (readyState >= 2 means HAVE_CURRENT_DATA or better)
-    const videoReady = this.video && this.video.readyState >= 2;
-    
-    if (!videoReady) {
-      // Show placeholder with colored text
-      this.drawPlaceholder();
-      return;
-    }
-    
-    // Safari mobile: ensure video is playing
+    // Safari mobile: always try to keep video playing
     if (this.isIOSSafari && this.video) {
       if (this.video.paused || this.video.ended) {
         this.video.play().catch(() => {});
       }
     }
     
+    // Check if video has any data at all (less strict for iOS Safari)
+    const hasVideoElement = this.video && this.video.videoWidth > 0 && this.video.videoHeight > 0;
+    const videoReady = hasVideoElement && this.video.readyState >= 1; // HAVE_METADATA or better
+    
+    // For iOS Safari, also accept if we've ever had a good frame
+    const canRender = videoReady || (this.isIOSSafari && this.videoHasEverWorked && this.lastGoodImageData);
+    
+    if (!canRender) {
+      this.drawPlaceholder();
+      return;
+    }
+    
     try {
-      // Clear canvas
-      this.ctx.fillStyle = this.settings.invertColors ? '#FFFFFF' : '#000000';
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      let imageData;
       
-      // Draw webcam frame (hidden, for pixel sampling)
-      this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+      // Check if we have a new video frame (iOS Safari optimization)
+      const currentVideoTime = this.video.currentTime;
+      const hasNewFrame = currentVideoTime !== this.lastFrameTime && videoReady;
       
-      // Get pixel data
-      const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+      if (hasNewFrame || !this.isIOSSafari) {
+        // Clear canvas and draw new video frame
+        this.ctx.fillStyle = this.settings.invertColors ? '#FFFFFF' : '#000000';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Draw webcam frame
+        this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+        
+        // Get pixel data
+        imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Cache this good frame for iOS Safari (in case video stalls)
+        if (this.isIOSSafari) {
+          this.lastGoodImageData = imageData;
+          this.lastFrameTime = currentVideoTime;
+          this.videoHasEverWorked = true;
+        }
+      } else if (this.isIOSSafari && this.lastGoodImageData) {
+        // iOS Safari: video stalled, use cached frame
+        imageData = this.lastGoodImageData;
+      } else {
+        this.drawPlaceholder();
+        return;
+      }
       
       // Clear for text rendering
       this.ctx.fillStyle = this.settings.invertColors ? '#FFFFFF' : '#000000';
