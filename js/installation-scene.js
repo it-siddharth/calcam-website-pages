@@ -1089,6 +1089,13 @@ function createProjection() {
   // Initialize webcam projection handler (lower resolution for performance)
   webcamProjection = new WebcamProjection(240, 180);
   
+  // On mobile, match right wall settings (invert: true) for consistent appearance
+  // Use the instance's own mobile detection for consistency
+  if (webcamProjection.isMobile) {
+    webcamProjection.setSetting('invert', true);
+    console.log('📽️ Left wall: Mobile detected, setting invert=true');
+  }
+  
   // Initialize cached rotation quaternions
   _leftWallRotation.setFromEuler(new THREE.Euler(0, Math.PI / 2, 0));
   _rightWallRotation.setFromEuler(new THREE.Euler(0, -Math.PI / 2, 0));
@@ -2148,6 +2155,11 @@ function setupProjectionControls() {
   // Invert control
   const invertCtrl = document.getElementById('ctrl-invert');
   if (invertCtrl) {
+    // Sync checkbox state with current setting (may be true on mobile)
+    if (webcamProjection) {
+      const settings = webcamProjection.getSettings();
+      invertCtrl.checked = settings.invert;
+    }
     invertCtrl.addEventListener('change', (e) => {
       if (webcamProjection) {
         webcamProjection.setSetting('invert', e.target.checked);
@@ -2351,16 +2363,15 @@ function updateProjection(time) {
     
     // Get actual webcam aspect ratio (may differ from requested)
     const webcamAspect = webcamProjection.getAspectRatio();
-    const wallWidth = CONFIG.room.depth - 1;
     const wallHeight = CONFIG.room.height;
     
     // Use full wall height, calculate width from webcam aspect
-    // This ensures the webcam feed always fills from floor to ceiling
+    // Same logic as right wall for consistency
     const projHeight = wallHeight;
     const projWidth = projHeight * webcamAspect;
     
-    const projBaseY = 0;   // Start from floor
-    const projCenterZ = 0; // Center on wall
+    const projBaseY = 0;
+    const projCenterZ = 0;
     const pixelScale = settings.pixelSize;
     
     // Set color once (reuse cached object)

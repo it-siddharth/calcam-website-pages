@@ -68,7 +68,7 @@ export class WebcamProjection {
       pixelColor: '#ffffff',   // Color of pixels
       flipHorizontal: true,    // Mirror the webcam (natural for facing camera)
       flipVertical: false,     // Flip Y axis (may be needed on some mobile devices)
-      invert: false,           // Show bright areas by default (left wall)
+      invert: this.isMobile,   // On mobile: true (show silhouette), desktop: false (show bright areas)
       intensity: defaults.intensity
     };
     
@@ -173,6 +173,8 @@ export class WebcamProjection {
     const invWidth = 1 / width;
     const invHeight = 1 / height;
     
+    // First pass: collect ALL positions that pass threshold
+    // This ensures even sampling across entire frame (no bottom cropping)
     for (let y = 0; y < height; y += baseStep) {
       // Apply vertical flip if needed (for mobile camera orientation)
       const sampleY = flipV ? (height - 1 - y) : y;
@@ -193,13 +195,20 @@ export class WebcamProjection {
             x: x * invWidth,
             y: y * invHeight
           });
-          
-          // Early exit if we have enough samples
-          if (positions.length >= maxSamples) {
-            return positions;
-          }
         }
       }
+    }
+    
+    // If we have more positions than maxSamples, downsample evenly
+    // This maintains even distribution across the entire frame
+    if (positions.length > maxSamples) {
+      const step = positions.length / maxSamples;
+      const sampled = [];
+      for (let i = 0; i < maxSamples; i++) {
+        const idx = Math.floor(i * step);
+        sampled.push(positions[idx]);
+      }
+      return sampled;
     }
     
     return positions;
