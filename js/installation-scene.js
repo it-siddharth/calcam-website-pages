@@ -2329,11 +2329,11 @@ function updateProjection(time) {
     // Update material opacity
     projectionMaterial.opacity = settings.intensity;
     
-    // Projection dimensions
-    const projWidth = 8;
-    const projHeight = 5;
-    const projBaseY = 0.5;
-    const projCenterZ = -1;
+    // Projection dimensions - cover full wall
+    const projWidth = CONFIG.room.depth - 1;  // Slightly less than full depth
+    const projHeight = CONFIG.room.height;     // Full wall height
+    const projBaseY = 0;                       // Start from floor
+    const projCenterZ = 0;                     // Center on wall
     const pixelScale = settings.pixelSize;
     
     // Set color once (reuse cached object)
@@ -2382,11 +2382,11 @@ function updateProjectionRight(time) {
     // Update material opacity
     projectionMaterialRight.opacity = settings.intensity;
     
-    // Projection dimensions
-    const projWidth = 8;
-    const projHeight = 5;
-    const projBaseY = 0.5;
-    const projCenterZ = -1;
+    // Projection dimensions - cover full wall
+    const projWidth = CONFIG.room.depth - 1;  // Slightly less than full depth
+    const projHeight = CONFIG.room.height;     // Full wall height
+    const projBaseY = 0;                       // Start from floor
+    const projCenterZ = 0;                     // Center on wall
     const pixelScale = settings.pixelSize;
     
     // Set color once
@@ -2423,10 +2423,10 @@ function updateProjectionRight(time) {
 // Placeholder Animation for Right Wall (InstancedMesh)
 // ============================================
 function updateProjectionPlaceholderRight(time, mesh, rotation) {
-  const projWidth = 8;
-  const projHeight = 5;
-  const projBaseY = 0.5;
-  const projCenterZ = -1;
+  const projWidth = CONFIG.room.depth - 1;
+  const projHeight = CONFIG.room.height;
+  const projBaseY = 0;
+  const projCenterZ = 0;
   
   // Reduced grid for better performance
   const gridCols = 30;
@@ -2465,10 +2465,10 @@ function updateProjectionPlaceholderRight(time, mesh, rotation) {
 // Placeholder Animation (shimmer effect for InstancedMesh)
 // ============================================
 function updateProjectionPlaceholder(time, mesh, rotation) {
-  const projWidth = 8;
-  const projHeight = 5;
-  const projBaseY = 0.5;
-  const projCenterZ = -1;
+  const projWidth = CONFIG.room.depth - 1;
+  const projHeight = CONFIG.room.height;
+  const projBaseY = 0;
+  const projCenterZ = 0;
   
   // Reduced grid for better performance
   const gridCols = 30;
