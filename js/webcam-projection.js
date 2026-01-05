@@ -279,6 +279,16 @@ export class WebcamProjection {
   }
   
   /**
+   * Get the actual webcam aspect ratio
+   */
+  getAspectRatio() {
+    if (this.video.videoWidth && this.video.videoHeight) {
+      return this.video.videoWidth / this.video.videoHeight;
+    }
+    return 4 / 3; // Default fallback
+  }
+  
+  /**
    * Cleanup resources
    */
   dispose() {

@@ -2329,23 +2329,15 @@ function updateProjection(time) {
     // Update material opacity
     projectionMaterial.opacity = settings.intensity;
     
-    // Projection dimensions - preserve webcam aspect ratio (4:3)
-    // Map full webcam to wall, starting from floor
-    const webcamAspect = 4 / 3;  // Standard webcam aspect ratio
+    // Get actual webcam aspect ratio (may differ from requested)
+    const webcamAspect = webcamProjection.getAspectRatio();
     const wallWidth = CONFIG.room.depth - 1;
     const wallHeight = CONFIG.room.height;
     
-    // Fit webcam to wall while preserving aspect ratio
-    let projWidth, projHeight;
-    if (wallWidth / wallHeight > webcamAspect) {
-      // Wall is wider - fit to height, center horizontally
-      projHeight = wallHeight;
-      projWidth = projHeight * webcamAspect;
-    } else {
-      // Wall is taller - fit to width
-      projWidth = wallWidth;
-      projHeight = projWidth / webcamAspect;
-    }
+    // Use full wall height, calculate width from webcam aspect
+    // This ensures the webcam feed always fills from floor to ceiling
+    const projHeight = wallHeight;
+    const projWidth = projHeight * webcamAspect;
     
     const projBaseY = 0;   // Start from floor
     const projCenterZ = 0; // Center on wall
@@ -2397,20 +2389,13 @@ function updateProjectionRight(time) {
     // Update material opacity
     projectionMaterialRight.opacity = settings.intensity;
     
-    // Projection dimensions - preserve webcam aspect ratio (4:3)
-    const webcamAspect = 4 / 3;
-    const wallWidth = CONFIG.room.depth - 1;
+    // Get actual webcam aspect ratio (may differ from requested)
+    const webcamAspect = webcamProjectionRight.getAspectRatio();
     const wallHeight = CONFIG.room.height;
     
-    // Fit webcam to wall while preserving aspect ratio
-    let projWidth, projHeight;
-    if (wallWidth / wallHeight > webcamAspect) {
-      projHeight = wallHeight;
-      projWidth = projHeight * webcamAspect;
-    } else {
-      projWidth = wallWidth;
-      projHeight = projWidth / webcamAspect;
-    }
+    // Use full wall height, calculate width from webcam aspect
+    const projHeight = wallHeight;
+    const projWidth = projHeight * webcamAspect;
     
     const projBaseY = 0;
     const projCenterZ = 0;
@@ -2450,12 +2435,10 @@ function updateProjectionRight(time) {
 // Placeholder Animation for Right Wall (InstancedMesh)
 // ============================================
 function updateProjectionPlaceholderRight(time, mesh, rotation) {
-  // Match webcam aspect ratio (4:3)
-  const webcamAspect = 4 / 3;
-  const wallWidth = CONFIG.room.depth - 1;
+  // Use full wall height for placeholder
   const wallHeight = CONFIG.room.height;
   const projHeight = wallHeight;
-  const projWidth = projHeight * webcamAspect;
+  const projWidth = projHeight * (4/3); // Assume 4:3 for placeholder
   const projBaseY = 0;
   const projCenterZ = 0;
   
@@ -2496,11 +2479,10 @@ function updateProjectionPlaceholderRight(time, mesh, rotation) {
 // Placeholder Animation (shimmer effect for InstancedMesh)
 // ============================================
 function updateProjectionPlaceholder(time, mesh, rotation) {
-  // Match webcam aspect ratio (4:3)
-  const webcamAspect = 4 / 3;
+  // Use full wall height for placeholder
   const wallHeight = CONFIG.room.height;
   const projHeight = wallHeight;
-  const projWidth = projHeight * webcamAspect;
+  const projWidth = projHeight * (4/3); // Assume 4:3 for placeholder
   const projBaseY = 0;
   const projCenterZ = 0;
   
