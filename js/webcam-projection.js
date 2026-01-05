@@ -68,7 +68,7 @@ export class WebcamProjection {
       pixelColor: '#ffffff',   // Color of pixels
       flipHorizontal: true,    // Mirror the webcam (natural for facing camera)
       flipVertical: false,     // Flip Y axis (may be needed on some mobile devices)
-      invert: true,            // Show dark areas (user silhouette) by default
+      invert: false,           // Show bright areas by default (left wall)
       intensity: defaults.intensity
     };
     
