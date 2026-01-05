@@ -67,7 +67,7 @@ export class WebcamProjection {
       pixelStyle: 'glow',      // 'glow' or 'squares'
       pixelColor: '#ffffff',   // Color of pixels
       flipHorizontal: true,    // Mirror the webcam (natural for facing camera)
-      flipVertical: true,      // Flip Y axis to align from bottom of wall
+      flipVertical: false,     // Flip Y axis (may be needed on some mobile devices)
       invert: false,           // Show bright areas by default (left wall)
       intensity: defaults.intensity
     };
