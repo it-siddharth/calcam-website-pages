@@ -116,7 +116,7 @@ let projectionInitializedRight = false;
 
 // Shared geometry for projection pixels
 let pixelGeometry = null;
-const PIXEL_COUNT = 5000; // Reduced for performance (was 12000)
+const PIXEL_COUNT = 8000; // Increased to support higher density
 
 // Cached Three.js objects for performance (avoid garbage collection)
 const _tempMatrix = new THREE.Matrix4();
@@ -1094,7 +1094,7 @@ function createProjection() {
   _rightWallRotation.setFromEuler(new THREE.Euler(0, -Math.PI / 2, 0));
   
   // Create shared pixel geometry - small plane
-  const pixelSize = 0.1; // Base size, will be scaled per-instance
+  const pixelSize = 0.2; // Base size, will be scaled per-instance
   pixelGeometry = new THREE.PlaneGeometry(pixelSize, pixelSize);
   
   // Material for left wall - using MeshBasicMaterial for performance
@@ -1147,7 +1147,7 @@ function createProjection() {
 }
 
 // ============================================
-// Setup Projection Webcam (requires user gesture)
+// Setup Projection Webcam (starts immediately, fallback on interaction)
 // ============================================
 function setupProjectionWebcam() {
   const initWebcam = async () => {
@@ -1165,7 +1165,7 @@ function setupProjectionWebcam() {
       }
     }
     
-    // Initialize right wall webcam
+    // Initialize right wall webcam (shares the same camera stream conceptually)
     if (!projectionInitializedRight) {
       console.log('📽️ Initializing right wall projection webcam...');
       const successRight = await webcamProjectionRight.init();
@@ -1178,7 +1178,14 @@ function setupProjectionWebcam() {
     }
   };
   
-  // Initialize on first user interaction
+  // Try to initialize immediately on page load
+  // Browser will show permission prompt - if user grants, webcam starts right away
+  console.log('📽️ Attempting immediate webcam initialization...');
+  initWebcam().catch(err => {
+    console.log('📽️ Immediate init failed, waiting for user interaction...', err);
+  });
+  
+  // Also setup fallback on user interaction (for browsers that require gesture)
   const startOnInteraction = () => {
     initWebcam();
     document.removeEventListener('click', startOnInteraction);

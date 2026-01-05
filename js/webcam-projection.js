@@ -36,18 +36,18 @@ export class WebcamProjection {
     // Settings with defaults
     this.settings = {
       threshold: 96,           // 0-255, brightness cutoff
-      pixelSize: 0.100,        // Size of each particle
-      pixelDensity: 100,       // Percentage of potential pixels to show (1-100)
+      pixelSize: 0.350,        // Size of each particle (larger for mobile visibility)
+      pixelDensity: 150,       // Percentage of potential pixels to show (can go over 100%)
       pixelStyle: 'glow',      // 'glow' or 'squares'
       pixelColor: '#ffffff',   // Color of pixels
       flipHorizontal: true,    // Mirror the webcam (natural for facing camera)
       invert: false,           // Invert threshold (show dark areas instead)
-      intensity: 0.4           // Overall opacity
+      intensity: 0.5           // Overall opacity (slightly brighter)
     };
     
     // Sampling grid - positions where we check brightness
     this.sampleGrid = [];
-    this.maxSamples = 5000; // Reduced for performance (was 12000)
+    this.maxSamples = 8000; // Increased to support higher density
     
     console.log('📽️ WebcamProjection created:', width, 'x', height);
   }
@@ -137,8 +137,9 @@ export class WebcamProjection {
     const maxSamples = this.maxSamples;
     
     // Calculate sample step based on density (optimized)
+    // Higher density = smaller step = more samples
     const densityFactor = this.settings.pixelDensity / 100;
-    const baseStep = Math.max(2, Math.floor(4 / densityFactor));
+    const baseStep = Math.max(1, Math.floor(3 / densityFactor));
     
     // Pre-calculate width inverse for normalization
     const invWidth = 1 / width;
