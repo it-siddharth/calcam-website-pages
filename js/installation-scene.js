@@ -2135,6 +2135,16 @@ function setupProjectionControls() {
     });
   }
   
+  // Flip vertical control
+  const flipVCtrl = document.getElementById('ctrl-flipv');
+  if (flipVCtrl) {
+    flipVCtrl.addEventListener('change', (e) => {
+      if (webcamProjection) {
+        webcamProjection.setSetting('flipVertical', e.target.checked);
+      }
+    });
+  }
+  
   // Invert control
   const invertCtrl = document.getElementById('ctrl-invert');
   if (invertCtrl) {
@@ -2283,11 +2293,21 @@ function setupProjectionControlsRight() {
   }
   
   // Flip horizontal control
-  const flipHCtrl = document.getElementById('ctrl-fliph-right');
-  if (flipHCtrl) {
-    flipHCtrl.addEventListener('change', (e) => {
+  const flipHCtrlRight = document.getElementById('ctrl-fliph-right');
+  if (flipHCtrlRight) {
+    flipHCtrlRight.addEventListener('change', (e) => {
       if (webcamProjectionRight) {
         webcamProjectionRight.setSetting('flipHorizontal', e.target.checked);
+      }
+    });
+  }
+  
+  // Flip vertical control
+  const flipVCtrlRight = document.getElementById('ctrl-flipv-right');
+  if (flipVCtrlRight) {
+    flipVCtrlRight.addEventListener('change', (e) => {
+      if (webcamProjectionRight) {
+        webcamProjectionRight.setSetting('flipVertical', e.target.checked);
       }
     });
   }

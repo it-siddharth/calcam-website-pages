@@ -67,7 +67,8 @@ export class WebcamProjection {
       pixelStyle: 'glow',      // 'glow' or 'squares'
       pixelColor: '#ffffff',   // Color of pixels
       flipHorizontal: true,    // Mirror the webcam (natural for facing camera)
-      invert: false,           // Invert threshold (show dark areas instead)
+      flipVertical: false,     // Flip Y axis (may be needed on some mobile devices)
+      invert: true,            // Show dark areas (user silhouette) by default
       intensity: defaults.intensity
     };
     
@@ -160,6 +161,7 @@ export class WebcamProjection {
     const threshold = this.settings.threshold;
     const invert = this.settings.invert;
     const flipH = this.settings.flipHorizontal;
+    const flipV = this.settings.flipVertical;
     const maxSamples = this.maxSamples;
     
     // Calculate sample step based on density (optimized)
@@ -172,7 +174,9 @@ export class WebcamProjection {
     const invHeight = 1 / height;
     
     for (let y = 0; y < height; y += baseStep) {
-      const rowOffset = y * width;
+      // Apply vertical flip if needed (for mobile camera orientation)
+      const sampleY = flipV ? (height - 1 - y) : y;
+      const rowOffset = sampleY * width;
       
       for (let x = 0; x < width; x += baseStep) {
         const sampleX = flipH ? (width - 1 - x) : x;
