@@ -880,7 +880,8 @@ function createTV() {
   silhouetteCanvas = document.createElement('canvas');
   silhouetteCanvas.width = 640;
   silhouetteCanvas.height = 480;
-  silhouetteCtx = silhouetteCanvas.getContext('2d');
+  // Use willReadFrequently for better Safari performance with frequent texture updates
+  silhouetteCtx = silhouetteCanvas.getContext('2d', { willReadFrequently: true });
   
   tvScreenTexture = new THREE.CanvasTexture(silhouetteCanvas);
   tvScreenTexture.colorSpace = THREE.SRGBColorSpace;
@@ -1276,25 +1277,51 @@ console.log('🔍 Safari detection:', { isSafari, isIOSSafari, isDesktopSafari }
 let webcamInitialized = false;
 let webcamInitializing = false;
 
+// Flag to track if we should fall back to iframe on Safari
+let safariUseIframeFallback = false;
+
 function initWebcamOnUserGesture() {
   // Only try once
   if (webcamInitialized || webcamInitializing) return;
   webcamInitializing = true;
   
-  console.log('📷 Initializing webcam after user gesture (mobile Safari)...');
+  console.log('📷 Initializing webcam for Safari TV screen...');
   
   if (webcamRenderer) {
     webcamRenderer.init().then(success => {
-      webcamInitialized = true;
+      webcamInitializing = false;
       if (success) {
-        console.log('✅ Native webcam renderer initialized');
+        webcamInitialized = true;
+        console.log('✅ Native webcam renderer initialized successfully!');
       } else {
-        console.log('⚠️ Webcam not available, using placeholder');
+        console.log('⚠️ Native webcam failed, falling back to iframe approach');
+        safariUseIframeFallback = true;
+        setupSafariIframeFallback();
       }
     }).catch(err => {
-      webcamInitialized = true;
-      console.log('⚠️ Webcam init error:', err);
+      webcamInitializing = false;
+      console.error('❌ Webcam init error:', err);
+      console.error('Error details:', err.message, err.name);
+      console.log('⚠️ Falling back to iframe approach for Safari');
+      safariUseIframeFallback = true;
+      setupSafariIframeFallback();
     });
+  } else {
+    console.error('❌ webcamRenderer is null!');
+  }
+}
+
+// Fallback to iframe approach if native webcam fails on Safari
+function setupSafariIframeFallback() {
+  console.log('🔄 Setting up iframe fallback for Safari...');
+  const iframe = document.getElementById('silhouette-iframe');
+  
+  if (iframe) {
+    // Start capturing from iframe
+    startIframeCapture(iframe);
+    console.log('✅ Safari iframe fallback started');
+  } else {
+    console.error('❌ Silhouette iframe not found for fallback');
   }
 }
 
@@ -1303,84 +1330,81 @@ function setupSilhouetteTexture() {
   silhouetteCtx.fillStyle = '#000000';
   silhouetteCtx.fillRect(0, 0, silhouetteCanvas.width, silhouetteCanvas.height);
   
-  // Check if we're on mobile Safari - use native renderer to avoid iframe issues
-  if (isIOSSafari) {
-    console.log('📱 Mobile Safari detected - using native WebcamTextRenderer');
-    
-    // Use native WebcamTextRenderer (Safari/iOS compatible)
-    webcamRenderer = new WebcamTextRenderer(640, 480);
-    
-    // iOS Safari requires user gesture to access camera
-    const startWebcamOnInteraction = () => {
-      initWebcamOnUserGesture();
-      document.removeEventListener('click', startWebcamOnInteraction);
-      document.removeEventListener('touchstart', startWebcamOnInteraction);
-      document.removeEventListener('touchend', startWebcamOnInteraction);
+  // Use iframe approach for BOTH Safari and non-Safari browsers
+  // The WORD SILHOUETTE.html has Safari-specific optimizations built in
+  // and includes contour lines, text effects, etc.
+  console.log(isSafari ? '🍎 Safari detected' : '🖥️ Non-Safari detected', '- using iframe for WORD SILHOUETTE');
+  
+  const iframe = document.getElementById('silhouette-iframe');
+  
+  if (iframe) {
+    iframe.onload = () => {
+      console.log('WORD SILHOUETTE iframe loaded');
+      startIframeCapture(iframe);
     };
     
-    document.addEventListener('click', startWebcamOnInteraction);
-    document.addEventListener('touchstart', startWebcamOnInteraction);
-    document.addEventListener('touchend', startWebcamOnInteraction);
-    
-    // Render loop for mobile
-    setInterval(() => {
-      if (webcamRenderer) {
-        webcamRenderer.render();
-        const srcCanvas = webcamRenderer.getCanvas();
-        if (srcCanvas) {
-          silhouetteCtx.drawImage(srcCanvas, 0, 0, silhouetteCanvas.width, silhouetteCanvas.height);
-          tvScreenTexture.needsUpdate = true;
-        }
-      } else {
-        drawPlaceholderAnimation();
-      }
-    }, 1000 / 30);
-    
-  } else {
-    // Desktop: use original iframe approach (has pixel contour lines etc.)
-    console.log('🖥️ Desktop detected - using iframe for WORD SILHOUETTE');
-    
-    const iframe = document.getElementById('silhouette-iframe');
-    
-    if (iframe) {
-      iframe.onload = () => {
-        console.log('WORD SILHOUETTE iframe loaded');
-        startIframeCapture(iframe);
-      };
-      
-      // If iframe is already loaded
-      if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
-        startIframeCapture(iframe);
-      }
-    } else {
-      // No iframe, use placeholder
-      setInterval(drawPlaceholderAnimation, 1000 / 30);
+    // If iframe is already loaded
+    if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+      startIframeCapture(iframe);
     }
+  } else {
+    // No iframe, use placeholder
+    console.log('⚠️ No iframe found, using placeholder animation');
+    setInterval(drawPlaceholderAnimation, 1000 / 30);
   }
 }
 
+let iframeCaptureStarted = false;
+
 function startIframeCapture(iframe) {
-  // Capture iframe canvas at 30fps (original desktop approach)
-  setInterval(() => {
-    try {
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-      const iframeCanvas = iframeDoc.querySelector('canvas');
-      
-      if (iframeCanvas && iframeCanvas.width > 0) {
-        // Draw the webcam silhouette effect to our texture
-        silhouetteCtx.drawImage(
-          iframeCanvas,
-          0, 0,
-          silhouetteCanvas.width,
-          silhouetteCanvas.height
-        );
-        tvScreenTexture.needsUpdate = true;
+  if (iframeCaptureStarted) return;
+  iframeCaptureStarted = true;
+  
+  console.log('🖼️ Starting iframe capture for TV screen');
+  
+  let iframeFrameCount = 0;
+  let lastCaptureTime = 0;
+  const targetFPS = 30;
+  const frameInterval = 1000 / targetFPS;
+  
+  // Use requestAnimationFrame for smoother capture (works better on Safari)
+  function captureFrame(timestamp) {
+    // Throttle to target FPS
+    if (timestamp - lastCaptureTime >= frameInterval) {
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const iframeCanvas = iframeDoc.querySelector('canvas');
+        
+        if (iframeCanvas && iframeCanvas.width > 0) {
+          // Draw the webcam silhouette effect to our texture
+          silhouetteCtx.drawImage(
+            iframeCanvas,
+            0, 0,
+            silhouetteCanvas.width,
+            silhouetteCanvas.height
+          );
+          tvScreenTexture.needsUpdate = true;
+          
+          // Log occasionally
+          iframeFrameCount++;
+          if (iframeFrameCount % 300 === 0) {
+            console.log('🖼️ Iframe capture running, frame:', iframeFrameCount);
+          }
+        }
+      } catch (e) {
+        // Cross-origin or not ready - use placeholder
+        if (iframeFrameCount % 60 === 0) {
+          console.warn('⚠️ Iframe capture error:', e.message);
+        }
+        drawPlaceholderAnimation();
       }
-    } catch (e) {
-      // Cross-origin or not ready - use placeholder
-      drawPlaceholderAnimation();
+      lastCaptureTime = timestamp;
     }
-  }, 1000 / 30);
+    
+    requestAnimationFrame(captureFrame);
+  }
+  
+  requestAnimationFrame(captureFrame);
 }
 
 // ============================================
@@ -2369,12 +2393,11 @@ function updateProjection(time) {
     const webcamAspect = webcamProjection.getAspectRatio();
     const wallHeight = CONFIG.room.height;
     
-    // Use full wall height, calculate width from webcam aspect
-    // Same logic as right wall for consistency
-    const projHeight = wallHeight;
+    // Use 80% of wall height with empty space at the top
+    const projHeight = wallHeight * 0.75;
     const projWidth = projHeight * webcamAspect;
     
-    const projBaseY = 0;
+    const projBaseY = 0; // Start from floor, leave space at top
     const projCenterZ = 0;
     const pixelScale = settings.pixelSize;
     
@@ -2428,11 +2451,11 @@ function updateProjectionRight(time) {
     const webcamAspect = webcamProjectionRight.getAspectRatio();
     const wallHeight = CONFIG.room.height;
     
-    // Use full wall height, calculate width from webcam aspect
-    const projHeight = wallHeight;
+    // Use 80% of wall height with empty space at the top
+    const projHeight = wallHeight * 0.75;
     const projWidth = projHeight * webcamAspect;
     
-    const projBaseY = 0;
+    const projBaseY = 0; // Start from floor, leave space at top
     const projCenterZ = 0;
     const pixelScale = settings.pixelSize;
     
@@ -2470,18 +2493,24 @@ function updateProjectionRight(time) {
 // Placeholder Animation for Right Wall (InstancedMesh)
 // ============================================
 function updateProjectionPlaceholderRight(time, mesh, rotation) {
-  // Use full wall height for placeholder
+  // Use 80% of wall height for placeholder with empty space at top
   const wallHeight = CONFIG.room.height;
-  const projHeight = wallHeight;
+  const projHeight = wallHeight * 0.75;
   const projWidth = projHeight * (4/3); // Assume 4:3 for placeholder
-  const projBaseY = 0;
+  const projBaseY = 0; // Start from floor
   const projCenterZ = 0;
   
-  // Reduced grid for better performance
-  const gridCols = 30;
-  const gridRows = 20;
+  // Denser grid for more vibrant shimmer effect
+  const gridCols = 60;
+  const gridRows = 45;
   const totalGridPoints = gridCols * gridRows;
-  const pixelScale = 0.1;
+  const pixelScale = 0.2; // Large pixels for bold shimmer
+  
+  // Set material to full white, 100% opacity for shimmer
+  if (mesh.material) {
+    mesh.material.opacity = 1.0;
+    mesh.material.color.setRGB(1, 1, 1);
+  }
   
   for (let i = 0; i < PIXEL_COUNT; i++) {
     if (i < totalGridPoints) {
@@ -2491,13 +2520,19 @@ function updateProjectionPlaceholderRight(time, mesh, rotation) {
       const baseZ = (col / gridCols - 0.5) * projWidth + projCenterZ;
       const baseY = (row / gridRows) * projHeight + projBaseY;
       
-      // Simplified shimmer calculation
-      const shimmer = Math.sin(time * 2.2 + col * 0.3 + row * 0.25) * 
-                      Math.sin(time * 1.7 + col * 0.2 - row * 0.15);
+      // More vibrant shimmer with multiple overlapping waves
+      const wave1 = Math.sin(time * 3.0 + col * 0.25 + row * 0.2);
+      const wave2 = Math.sin(time * 2.3 + col * 0.15 - row * 0.18);
+      const wave3 = Math.sin(time * 1.8 - col * 0.1 + row * 0.12);
+      const shimmer = (wave1 * wave2 + wave3 * 0.5) * 0.7;
       
-      if (shimmer > 0.2) {
+      // Lower threshold = more pixels visible = more vibrant
+      if (shimmer > -0.15) {
         _tempPosition.set(0, baseY, baseZ);
-        _tempScale.set(pixelScale, pixelScale, 1);
+        const pulseScale = pixelScale * (0.9 + shimmer * 0.3); // Slight size variation
+        _tempScale.set(pulseScale, pulseScale, 1);
+        // Set pure white color for each visible pixel
+        mesh.setColorAt(i, new THREE.Color(1, 1, 1));
       } else {
         _tempScale.set(0, 0, 0);
       }
@@ -2508,24 +2543,34 @@ function updateProjectionPlaceholderRight(time, mesh, rotation) {
     _tempMatrix.compose(_tempPosition, rotation, _tempScale);
     mesh.setMatrixAt(i, _tempMatrix);
   }
+  
+  if (mesh.instanceColor) {
+    mesh.instanceColor.needsUpdate = true;
+  }
 }
 
 // ============================================
 // Placeholder Animation (shimmer effect for InstancedMesh)
 // ============================================
 function updateProjectionPlaceholder(time, mesh, rotation) {
-  // Use full wall height for placeholder
+  // Use 80% of wall height for placeholder with empty space at top
   const wallHeight = CONFIG.room.height;
-  const projHeight = wallHeight;
+  const projHeight = wallHeight * 0.75;
   const projWidth = projHeight * (4/3); // Assume 4:3 for placeholder
-  const projBaseY = 0;
+  const projBaseY = 0; // Start from floor
   const projCenterZ = 0;
   
-  // Reduced grid for better performance
-  const gridCols = 30;
-  const gridRows = 20;
+  // Denser grid for more vibrant shimmer effect
+  const gridCols = 60;
+  const gridRows = 45;
   const totalGridPoints = gridCols * gridRows;
-  const pixelScale = 0.1;
+  const pixelScale = 0.2; // Large pixels for bold shimmer
+  
+  // Set material to full white, 100% opacity for shimmer
+  if (mesh.material) {
+    mesh.material.opacity = 1.0;
+    mesh.material.color.setRGB(1, 1, 1);
+  }
   
   for (let i = 0; i < PIXEL_COUNT; i++) {
     if (i < totalGridPoints) {
@@ -2535,13 +2580,19 @@ function updateProjectionPlaceholder(time, mesh, rotation) {
       const baseZ = (col / gridCols - 0.5) * projWidth + projCenterZ;
       const baseY = (row / gridRows) * projHeight + projBaseY;
       
-      // Simplified shimmer calculation
-      const shimmer = Math.sin(time * 2 + col * 0.3 + row * 0.2) * 
-                      Math.sin(time * 1.5 + col * 0.15 - row * 0.25);
+      // More vibrant shimmer with multiple overlapping waves
+      const wave1 = Math.sin(time * 2.8 + col * 0.22 + row * 0.18);
+      const wave2 = Math.sin(time * 2.1 + col * 0.12 - row * 0.2);
+      const wave3 = Math.sin(time * 1.6 - col * 0.08 + row * 0.14);
+      const shimmer = (wave1 * wave2 + wave3 * 0.5) * 0.7;
       
-      if (shimmer > 0.2) {
+      // Lower threshold = more pixels visible = more vibrant
+      if (shimmer > -0.15) {
         _tempPosition.set(0, baseY, baseZ);
-        _tempScale.set(pixelScale, pixelScale, 1);
+        const pulseScale = pixelScale * (0.9 + shimmer * 0.3); // Slight size variation
+        _tempScale.set(pulseScale, pulseScale, 1);
+        // Set pure white color for each visible pixel
+        mesh.setColorAt(i, new THREE.Color(1, 1, 1));
       } else {
         _tempScale.set(0, 0, 0);
       }
@@ -2551,6 +2602,10 @@ function updateProjectionPlaceholder(time, mesh, rotation) {
     
     _tempMatrix.compose(_tempPosition, rotation, _tempScale);
     mesh.setMatrixAt(i, _tempMatrix);
+  }
+  
+  if (mesh.instanceColor) {
+    mesh.instanceColor.needsUpdate = true;
   }
 }
 

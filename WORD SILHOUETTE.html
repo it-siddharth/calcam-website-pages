@@ -343,8 +343,8 @@
     
     // Safari video frame sync - use requestVideoFrameCallback when available
     let useVideoFrameCallback = typeof HTMLVideoElement !== 'undefined' && 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
-    let lastFrameTime = 0;
     let videoFrameCallbackId = null;
+    let lastPresentedFrames = 0;  // Track presented frames for requestVideoFrameCallback
     
     console.log('🔍 Browser detection:', { isSafari, isIOSSafari, isDesktopSafari, useVideoFrameCallback });
     
@@ -419,9 +419,21 @@
           videoPlaybackInterval = null;
         }
         
-        const constraints = {
-          video: deviceId ? { deviceId: { exact: deviceId } } : true
-        };
+        // Build constraints - Safari needs more explicit settings
+        let videoConstraints = deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'user' };
+        
+        // Safari-specific optimizations
+        if (isSafari) {
+          videoConstraints = {
+            ...videoConstraints,
+            width: { ideal: 640, max: 640 },
+            height: { ideal: 480, max: 480 },
+            frameRate: { ideal: 30, max: 30 }  // Cap at 30fps for Safari
+          };
+          console.log('🍎 Safari: Using optimized video constraints');
+        }
+        
+        const constraints = { video: videoConstraints };
         
         // Create new video
         video = createCapture(constraints, videoLoaded);
@@ -509,7 +521,26 @@
     
     function setup() {
       try {
+        // Check if we're in an iframe (for TV screen texture)
+        const isInIframe = window !== window.parent;
+        
+        // For Safari or iframe usage, reduce pixel density for better performance
+        // This significantly reduces the number of pixels to process
+        if (isSafari || isInIframe) {
+          pixelDensity(1);  // Don't render at retina resolution
+          console.log('🎨 Using pixelDensity(1) for better performance');
+        }
+        
         canvas = createCanvas(windowWidth, windowHeight);
+        
+        // Safari optimization: limit frame rate to reduce GPU load
+        if (isSafari) {
+          frameRate(30); // Safari works better at 30fps
+          console.log('🍎 Safari detected: limiting frame rate to 30fps');
+        }
+        
+        // Optimize canvas for frequent pixel operations
+        const canvasCtx = canvas.elt.getContext('2d', { willReadFrequently: true });
         
         // Initialize camera enumeration
         if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
@@ -596,8 +627,8 @@
       
       function onVideoFrame(now, metadata) {
         // Only trigger redraw if we have a new frame
-        if (metadata.presentedFrames !== lastFrameTime) {
-          lastFrameTime = metadata.presentedFrames;
+        if (metadata.presentedFrames !== lastPresentedFrames) {
+          lastPresentedFrames = metadata.presentedFrames;
           // Mark that we have a fresh frame - p5's draw() will use this
           window.safariHasFreshFrame = true;
         }
@@ -673,84 +704,50 @@
       }
     }
     
-    // Cache for Safari frame handling
-    let cachedPixels = null;
+    // Safari frame handling - track when we last processed a video frame
     let lastProcessedVideoTime = -1;
-    let safariFrameSkipCount = 0;
     
     function draw() {
       try {
-        background(invertColors ? 255 : 0);
-        
         // Only proceed if video is ready
         if (!video || !video.loadedmetadata || !video.width || !video.height) {
+          background(invertColors ? 255 : 0);
           return;
         }
         
-        // Safari fix: Check if video is playing and has new frames
+        // Safari optimization: Skip rendering when no new video frame
+        // The canvas retains its previous content, so no caching needed
         if (isSafari && nativeVideoElement) {
           // Ensure video is still playing
           if (nativeVideoElement.paused || nativeVideoElement.ended) {
             nativeVideoElement.play().catch(() => {});
           }
           
-          // Check if we have a live stream with valid readyState
+          // Check if we have a new video frame
+          const currentVideoTime = nativeVideoElement.currentTime;
+          const hasNewFrame = (currentVideoTime !== lastProcessedVideoTime);
+          
+          // Skip rendering if no new frame - canvas keeps previous content
+          if (!hasNewFrame) {
+            return;
+          }
+          
+          lastProcessedVideoTime = currentVideoTime;
+          
+          // Check if video is ready
           if (nativeVideoElement.readyState < 2) {
-            // Video not ready, use cached pixels if available
-            if (cachedPixels && cachedPixels.length > 0) {
-              video.pixels = cachedPixels;
-            } else {
-              return;
-            }
+            return;
           }
         }
+        
+        background(invertColors ? 255 : 0);
         
         // Load pixel data from the video
         video.loadPixels();
         
         // Check if pixels are available
         if (!video.pixels || video.pixels.length === 0) {
-          // Use cached pixels if available (Safari fallback)
-          if (cachedPixels && cachedPixels.length > 0) {
-            video.pixels = cachedPixels;
-          } else {
-            return;
-          }
-        }
-        
-        // Safari optimization: Only process if we have a new video frame
-        // This prevents choppy rendering when video frames aren't synced with draw loop
-        if (isSafari && nativeVideoElement) {
-          const currentVideoTime = nativeVideoElement.currentTime;
-          
-          // Check if this is a new frame (video time changed)
-          // Also check requestVideoFrameCallback flag for Desktop Safari
-          const hasNewFrame = (currentVideoTime !== lastProcessedVideoTime) || 
-                              (isDesktopSafari && window.safariHasFreshFrame);
-          
-          if (hasNewFrame) {
-            // Cache the new pixels for use when video stalls
-            cachedPixels = new Uint8ClampedArray(video.pixels);
-            lastProcessedVideoTime = currentVideoTime;
-            safariFrameSkipCount = 0;
-            
-            // Clear the fresh frame flag
-            if (isDesktopSafari) {
-              window.safariHasFreshFrame = false;
-            }
-          } else {
-            // No new frame - use cached pixels to avoid choppy appearance
-            safariFrameSkipCount++;
-            
-            // If we've skipped too many frames, still render with cached data
-            // to keep the display responsive
-            if (safariFrameSkipCount > 30 && cachedPixels) {
-              video.pixels = cachedPixels;
-            } else if (cachedPixels) {
-              // Use cached pixels for consistent rendering
-              video.pixels = cachedPixels;
-            }
-          }
+          return;
         }
         
         // Find edges for contour if enabled
@@ -770,6 +767,9 @@
         if (enableGlitch) {
           applyGlitchEffect();
         }
+        
+        // Note: We removed the expensive get() call here
+        // Safari caching is now handled by checking video time before re-rendering
         
         // Update frame time
         lastFrameTime = millis();

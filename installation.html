@@ -198,6 +198,135 @@
     </svg>
   </button>
 
+  <!-- Left Wall Projection Toggle Button -->
+  <button id="projection-toggle" class="projection-toggle" aria-label="Left wall projection settings">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+      <line x1="8" y1="21" x2="16" y2="21"></line>
+      <line x1="12" y1="17" x2="12" y2="21"></line>
+    </svg>
+  </button>
+
+  <!-- Left Wall Projection Controls Panel -->
+  <div id="projection-controls" class="projection-controls">
+    <div class="controls-header">
+      <h3>Left Wall Projection</h3>
+      <button class="controls-close" onclick="toggleProjectionControls()">×</button>
+    </div>
+    <div class="control-group checkbox">
+      <input type="checkbox" id="ctrl-projection" checked>
+      <label for="ctrl-projection">Projection On</label>
+    </div>
+    <div class="control-group">
+      <label>Threshold</label>
+      <input type="range" id="ctrl-threshold" min="10" max="200" value="80">
+      <span id="val-threshold">80</span>
+    </div>
+    <div class="control-group">
+      <label>Pixel Size</label>
+      <input type="range" id="ctrl-pixelsize" min="0.01" max="0.3" step="0.005" value="0.08">
+      <span id="val-pixelsize">0.080</span>
+    </div>
+    <div class="control-group">
+      <label>Density</label>
+      <input type="range" id="ctrl-pixeldensity" min="10" max="100" value="60">
+      <span id="val-pixeldensity">60%</span>
+    </div>
+    <div class="control-group">
+      <label>Intensity</label>
+      <input type="range" id="ctrl-projintensity" min="0.1" max="1" step="0.1" value="0.4">
+      <span id="val-projintensity">0.4</span>
+    </div>
+    <div class="control-group">
+      <label>Color</label>
+      <input type="color" id="ctrl-pixelcolor" value="#ffffff">
+    </div>
+    <div class="control-group">
+      <label>Style</label>
+      <select id="ctrl-pixelstyle">
+        <option value="glow" selected>Glow</option>
+        <option value="squares">Squares</option>
+      </select>
+    </div>
+    <div class="control-group checkbox">
+      <input type="checkbox" id="ctrl-fliph">
+      <label for="ctrl-fliph">Flip Horizontal</label>
+    </div>
+    <div class="control-group checkbox">
+      <input type="checkbox" id="ctrl-flipv">
+      <label for="ctrl-flipv">Flip Vertical</label>
+    </div>
+    <div class="control-group checkbox">
+      <input type="checkbox" id="ctrl-invert">
+      <label for="ctrl-invert">Invert</label>
+    </div>
+  </div>
+
+  <!-- Right Wall Projection Toggle Button -->
+  <button id="projection-toggle-right" class="projection-toggle right" aria-label="Right wall projection settings">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+      <line x1="8" y1="21" x2="16" y2="21"></line>
+      <line x1="12" y1="17" x2="12" y2="21"></line>
+    </svg>
+    <span class="toggle-label">R</span>
+  </button>
+
+  <!-- Right Wall Projection Controls Panel -->
+  <div id="projection-controls-right" class="projection-controls right">
+    <div class="controls-header">
+      <h3>Right Wall Projection</h3>
+      <button class="controls-close" onclick="toggleProjectionControlsRight()">×</button>
+    </div>
+    <div class="control-group checkbox">
+      <input type="checkbox" id="ctrl-projection-right" checked>
+      <label for="ctrl-projection-right">Projection On</label>
+    </div>
+    <div class="control-group">
+      <label>Threshold</label>
+      <input type="range" id="ctrl-threshold-right" min="10" max="200" value="80">
+      <span id="val-threshold-right">80</span>
+    </div>
+    <div class="control-group">
+      <label>Pixel Size</label>
+      <input type="range" id="ctrl-pixelsize-right" min="0.01" max="0.3" step="0.005" value="0.08">
+      <span id="val-pixelsize-right">0.080</span>
+    </div>
+    <div class="control-group">
+      <label>Density</label>
+      <input type="range" id="ctrl-pixeldensity-right" min="10" max="100" value="60">
+      <span id="val-pixeldensity-right">60%</span>
+    </div>
+    <div class="control-group">
+      <label>Intensity</label>
+      <input type="range" id="ctrl-projintensity-right" min="0.1" max="1" step="0.1" value="0.4">
+      <span id="val-projintensity-right">0.4</span>
+    </div>
+    <div class="control-group">
+      <label>Color</label>
+      <input type="color" id="ctrl-pixelcolor-right" value="#ffffff">
+    </div>
+    <div class="control-group">
+      <label>Style</label>
+      <select id="ctrl-pixelstyle-right">
+        <option value="glow" selected>Glow</option>
+        <option value="squares">Squares</option>
+      </select>
+    </div>
+    <div class="control-group checkbox">
+      <input type="checkbox" id="ctrl-fliph-right">
+      <label for="ctrl-fliph-right">Flip Horizontal</label>
+    </div>
+    <div class="control-group checkbox">
+      <input type="checkbox" id="ctrl-flipv-right">
+      <label for="ctrl-flipv-right">Flip Vertical</label>
+    </div>
+    <div class="control-group checkbox">
+      <input type="checkbox" id="ctrl-invert-right" checked>
+      <label for="ctrl-invert-right">Invert</label>
+    </div>
+  </div>
+
   <!-- Background Music Controller -->
   <script>
     (function() {
