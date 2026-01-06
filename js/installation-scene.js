@@ -1265,9 +1265,13 @@ function createProjectionRight() {
 // Setup Silhouette Texture
 // ============================================
 
-// Detect iOS Safari / mobile Safari
+// Detect Safari browsers (both iOS and macOS desktop)
+const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Chromium');
 const isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-  (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome') && 'ontouchend' in document);
+  (isSafari && 'ontouchend' in document);
+const isDesktopSafari = isSafari && !isIOSSafari;
+
+console.log('🔍 Safari detection:', { isSafari, isIOSSafari, isDesktopSafari });
 
 let webcamInitialized = false;
 let webcamInitializing = false;

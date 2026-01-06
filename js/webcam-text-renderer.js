@@ -27,16 +27,20 @@ export class WebcamTextRenderer {
     this.cameras = [];
     this.isInitialized = false;
     
-    // Mobile Safari detection
+    // Safari detection (includes both iOS and macOS Safari)
+    this.isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Chromium');
     this.isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-      (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome') && 'ontouchend' in document);
+      (this.isSafari && 'ontouchend' in document);
+    this.isDesktopSafari = this.isSafari && !this.isIOSSafari;
     this.lastVideoTime = 0;
     this.videoKeepAliveInterval = null;
     
-    // iOS Safari frame caching - keep last good frame when video stalls
+    // Safari frame caching - keep last good frame when video stalls (for both desktop and mobile)
     this.lastGoodImageData = null;
     this.lastFrameTime = 0;
     this.videoHasEverWorked = false;
+    
+    console.log('🔍 WebcamTextRenderer Safari detection:', { isSafari: this.isSafari, isIOSSafari: this.isIOSSafari, isDesktopSafari: this.isDesktopSafari });
     
     // Word definitions with CORRECT colors
     this.words = [
@@ -175,10 +179,14 @@ export class WebcamTextRenderer {
         ? { deviceId: { exact: deviceId } } 
         : { facingMode: 'user' }; // Prefer front camera on mobile
       
-      // For iOS Safari, use lower resolution for better performance
-      if (this.isIOSSafari) {
-        videoConstraints.width = { ideal: 480 };
-        videoConstraints.height = { ideal: 360 };
+      // For Safari, optimize constraints for better performance
+      if (this.isSafari) {
+        // Use lower resolution on mobile Safari for better performance
+        if (this.isIOSSafari) {
+          videoConstraints.width = { ideal: 480 };
+          videoConstraints.height = { ideal: 360 };
+        }
+        // Request specific frame rate for Safari (helps with frame sync)
         videoConstraints.frameRate = { ideal: 30, max: 30 };
       }
       
@@ -205,8 +213,8 @@ export class WebcamTextRenderer {
         };
       });
       
-      // Setup Safari mobile keep-alive workaround
-      if (this.isIOSSafari) {
+      // Setup Safari keep-alive workaround (for both desktop and mobile Safari)
+      if (this.isSafari) {
         this.setupSafariKeepAlive();
       }
       
@@ -367,19 +375,19 @@ export class WebcamTextRenderer {
    * Main render method - called every frame
    */
   render() {
-    // Safari mobile: always try to keep video playing
-    if (this.isIOSSafari && this.video) {
+    // Safari (both desktop and mobile): always try to keep video playing
+    if (this.isSafari && this.video) {
       if (this.video.paused || this.video.ended) {
         this.video.play().catch(() => {});
       }
     }
     
-    // Check if video has any data at all (less strict for iOS Safari)
+    // Check if video has any data at all (less strict for Safari)
     const hasVideoElement = this.video && this.video.videoWidth > 0 && this.video.videoHeight > 0;
     const videoReady = hasVideoElement && this.video.readyState >= 1; // HAVE_METADATA or better
     
-    // For iOS Safari, also accept if we've ever had a good frame
-    const canRender = videoReady || (this.isIOSSafari && this.videoHasEverWorked && this.lastGoodImageData);
+    // For Safari, also accept if we've ever had a good frame (prevents choppy rendering)
+    const canRender = videoReady || (this.isSafari && this.videoHasEverWorked && this.lastGoodImageData);
     
     if (!canRender) {
       this.drawPlaceholder();
@@ -393,7 +401,7 @@ export class WebcamTextRenderer {
       const currentVideoTime = this.video.currentTime;
       const hasNewFrame = currentVideoTime !== this.lastFrameTime && videoReady;
       
-      if (hasNewFrame || !this.isIOSSafari) {
+      if (hasNewFrame || !this.isSafari) {
         // Clear canvas and draw new video frame
         this.ctx.fillStyle = this.settings.invertColors ? '#FFFFFF' : '#000000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -404,14 +412,14 @@ export class WebcamTextRenderer {
         // Get pixel data
         imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
         
-        // Cache this good frame for iOS Safari (in case video stalls)
-        if (this.isIOSSafari) {
+        // Cache this good frame for Safari (in case video stalls) - both desktop and mobile
+        if (this.isSafari) {
           this.lastGoodImageData = imageData;
           this.lastFrameTime = currentVideoTime;
           this.videoHasEverWorked = true;
         }
-      } else if (this.isIOSSafari && this.lastGoodImageData) {
-        // iOS Safari: video stalled, use cached frame
+      } else if (this.isSafari && this.lastGoodImageData) {
+        // Safari: video stalled, use cached frame for smooth rendering
         imageData = this.lastGoodImageData;
       } else {
         this.drawPlaceholder();
