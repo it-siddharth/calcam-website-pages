@@ -1330,28 +1330,102 @@ function setupSilhouetteTexture() {
   silhouetteCtx.fillStyle = '#000000';
   silhouetteCtx.fillRect(0, 0, silhouetteCanvas.width, silhouetteCanvas.height);
   
-  // Use iframe approach for BOTH Safari and non-Safari browsers
-  // The WORD SILHOUETTE.html has Safari-specific optimizations built in
-  // and includes contour lines, text effects, etc.
-  console.log(isSafari ? '🍎 Safari detected' : '🖥️ Non-Safari detected', '- using iframe for WORD SILHOUETTE');
-  
-  const iframe = document.getElementById('silhouette-iframe');
-  
-  if (iframe) {
-    iframe.onload = () => {
-      console.log('WORD SILHOUETTE iframe loaded');
-      startIframeCapture(iframe);
-    };
+  if (isSafari) {
+    // Safari: Use native WebcamTextRenderer (iframe canvas capture is broken in Safari)
+    console.log('🍎 Safari detected - using native WebcamTextRenderer for TV');
+    setupSafariTVRenderer();
+      } else {
+    // Chrome/Firefox: Use iframe approach (works great, has all effects)
+    console.log('🖥️ Non-Safari detected - using iframe for WORD SILHOUETTE');
     
-    // If iframe is already loaded
-    if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
-      startIframeCapture(iframe);
+    const iframe = document.getElementById('silhouette-iframe');
+    
+    if (iframe) {
+      iframe.onload = () => {
+        console.log('WORD SILHOUETTE iframe loaded');
+        startIframeCapture(iframe);
+      };
+      
+      // If iframe is already loaded
+      if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+        startIframeCapture(iframe);
+      }
+    } else {
+      console.log('⚠️ No iframe found, using placeholder animation');
+      setInterval(drawPlaceholderAnimation, 1000 / 30);
     }
-  } else {
-    // No iframe, use placeholder
-    console.log('⚠️ No iframe found, using placeholder animation');
-    setInterval(drawPlaceholderAnimation, 1000 / 30);
   }
+}
+
+// Safari-specific TV renderer using native WebcamTextRenderer
+function setupSafariTVRenderer() {
+  // Create WebcamTextRenderer at TV texture resolution
+  webcamRenderer = new WebcamTextRenderer(silhouetteCanvas.width, silhouetteCanvas.height);
+  console.log('📹 WebcamTextRenderer created for Safari TV:', silhouetteCanvas.width, 'x', silhouetteCanvas.height);
+  
+  // Enable contour lines (matching WORD SILHOUETTE.html defaults)
+  webcamRenderer.settings.showContour = true;
+  webcamRenderer.settings.pixelSize = 3;
+  webcamRenderer.settings.contourColor = '#FFFFFF';
+  webcamRenderer.settings.contourSensitivity = 4;
+  webcamRenderer.settings.contourDensity = 2;
+  console.log('✏️ Contour lines enabled for Safari TV');
+  
+  // Initialize webcam - same pattern as wall projections
+  const initTVWebcam = async () => {
+    if (webcamInitialized) return;
+    
+    console.log('📷 Initializing Safari TV webcam...');
+    const success = await webcamRenderer.init();
+    if (success) {
+      webcamInitialized = true;
+      console.log('✅ Safari TV webcam initialized!');
+    } else {
+      console.warn('⚠️ Safari TV webcam failed to initialize');
+    }
+  };
+  
+  // Try immediate init (works if permission already granted)
+  initTVWebcam().catch(err => {
+    console.log('📷 Immediate TV webcam init failed, waiting for interaction...', err);
+  });
+  
+  // Fallback on user interaction (same as wall projections)
+  const startOnInteraction = () => {
+    initTVWebcam();
+    // Keep trying until initialized
+    if (webcamInitialized) {
+      document.removeEventListener('click', startOnInteraction);
+      document.removeEventListener('touchstart', startOnInteraction);
+      document.removeEventListener('keydown', startOnInteraction);
+    }
+  };
+  
+  document.addEventListener('click', startOnInteraction);
+  document.addEventListener('touchstart', startOnInteraction);
+  document.addEventListener('keydown', startOnInteraction);
+  
+  // Render loop - same pattern as wall projections
+  function safariTVRenderLoop() {
+    if (webcamRenderer && webcamInitialized) {
+      // Render the text silhouette effect
+      webcamRenderer.render();
+      
+      // Copy to TV texture
+      const srcCanvas = webcamRenderer.getCanvas();
+      if (srcCanvas) {
+        silhouetteCtx.drawImage(srcCanvas, 0, 0, silhouetteCanvas.width, silhouetteCanvas.height);
+        tvScreenTexture.needsUpdate = true;
+      }
+    } else {
+      // Show placeholder while waiting
+      drawPlaceholderAnimation();
+    }
+    
+    requestAnimationFrame(safariTVRenderLoop);
+  }
+  
+  requestAnimationFrame(safariTVRenderLoop);
 }
 
 let iframeCaptureStarted = false;
@@ -1371,33 +1445,33 @@ function startIframeCapture(iframe) {
   function captureFrame(timestamp) {
     // Throttle to target FPS
     if (timestamp - lastCaptureTime >= frameInterval) {
-      try {
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const iframeCanvas = iframeDoc.querySelector('canvas');
-        
-        if (iframeCanvas && iframeCanvas.width > 0) {
-          // Draw the webcam silhouette effect to our texture
-          silhouetteCtx.drawImage(
-            iframeCanvas,
-            0, 0,
-            silhouetteCanvas.width,
-            silhouetteCanvas.height
-          );
-          tvScreenTexture.needsUpdate = true;
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      const iframeCanvas = iframeDoc.querySelector('canvas');
+      
+      if (iframeCanvas && iframeCanvas.width > 0) {
+        // Draw the webcam silhouette effect to our texture
+        silhouetteCtx.drawImage(
+          iframeCanvas,
+          0, 0,
+          silhouetteCanvas.width,
+          silhouetteCanvas.height
+        );
+        tvScreenTexture.needsUpdate = true;
           
           // Log occasionally
           iframeFrameCount++;
           if (iframeFrameCount % 300 === 0) {
             console.log('🖼️ Iframe capture running, frame:', iframeFrameCount);
           }
-        }
-      } catch (e) {
-        // Cross-origin or not ready - use placeholder
+      }
+    } catch (e) {
+      // Cross-origin or not ready - use placeholder
         if (iframeFrameCount % 60 === 0) {
           console.warn('⚠️ Iframe capture error:', e.message);
         }
-        drawPlaceholderAnimation();
-      }
+      drawPlaceholderAnimation();
+    }
       lastCaptureTime = timestamp;
     }
     
