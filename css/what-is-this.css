@@ -830,6 +830,102 @@ body:has(.what-is-this-page) {
   margin: 0;
 }
 
+/* Rejected Iterations Carousel */
+.rejected-iterations {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  margin-top: 60px;
+  width: 100%;
+}
+
+.rejected-iterations-label {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  font-weight: 500;
+  line-height: var(--label-line-height);
+  text-transform: uppercase;
+  color: var(--color-text);
+  padding: 6px 14px;
+  border: 1px solid var(--color-text);
+  border-radius: 30px;
+}
+
+.rejected-carousel {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.rejected-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+
+.rejected-carousel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rejected-carousel::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.rejected-carousel::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.rejected-carousel-track {
+  display: flex;
+  gap: 16px;
+  padding-bottom: 12px;
+}
+
+.rejected-carousel-item {
+  flex: 0 0 auto;
+  width: 320px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  position: relative;
+  background: #1a1a1a;
+}
+
+.rejected-carousel-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Video shimmer for rejected carousel */
+.rejected-carousel-item:not(.video-loaded) video {
+  opacity: 0;
+}
+
+.rejected-carousel-item:not(.video-loaded)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 20%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.08) 80%,
+    transparent 100%
+  );
+  animation: shimmerSlide 1.5s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.rejected-carousel-item.video-loaded video {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
 /* ============================================
    Section 7: Setting It Up
    ============================================ */
@@ -1223,6 +1319,15 @@ body:has(.what-is-this-page) {
   
   .setup-video-item {
     gap: 12px;
+  }
+  
+  .rejected-iterations {
+    gap: 16px;
+    margin-top: 40px;
+  }
+  
+  .rejected-carousel-item {
+    width: 260px;
   }
   
   .specs-text,
