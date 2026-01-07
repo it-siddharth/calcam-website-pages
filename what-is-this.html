@@ -181,7 +181,7 @@
         </div>
         <div class="projection-column">
           <h3 class="projection-label">right wall</h3>
-          <p class="projection-text">The opposite wall mirrored the experience—another camera, another particle silhouette. Visitors found themselves surrounded by ghostly digital echoes as they moved through the room.</p>
+          <p class="projection-text">The opposite wall mirrored the experience. Another camera, another particle silhouette. Visitors found themselves surrounded by ghostly digital echoes as they moved through the room.</p>
           <div class="projection-video projection-video-inline">
             <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/right-wall-projection.mp4" preload="none">
               <source data-src="assets/videos/right-wall-projection.mp4" type="video/mp4">
@@ -211,24 +211,49 @@
     <section class="section section-setup">
       <h2 class="section-title">setting it up</h2>
       <p class="setup-intro">Turning all of this into a physical installation meant figuring out things I had never done before. Mounting projectors to ceilings, hanging acrylic in mid-air, getting cameras and code to work together in real time. I had a tight window to get everything installed, so I broke it down into phases.</p>
-      <div class="day-cards">
-        <div class="day-card">
-          <div class="day-card-image">
-            <img src="assets/R0002097_1.jpg" alt="Day 1 setup" loading="lazy">
-          </div>
-          <span class="day-label">day 1</span>
+      <!-- Setup Videos Grid: 2 rows x 3 columns -->
+      <div class="setup-videos-grid">
+        <div class="setup-video-item">
+          <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/hanging acrylic - 1.mov" preload="none">
+            <source data-src="assets/videos/hanging acrylic - 1.mov" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <span class="setup-video-label">hanging acrylic</span>
         </div>
-        <div class="day-card">
-          <div class="day-card-image">
-            <img src="assets/R0002355_1.jpg" alt="Day 2 setup" loading="lazy">
-          </div>
-          <span class="day-label">day 2</span>
+        <div class="setup-video-item">
+          <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/setting up tv - 2.mov" preload="none">
+            <source data-src="assets/videos/setting up tv - 2.mov" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <span class="setup-video-label">setting up tv</span>
         </div>
-        <div class="day-card">
-          <div class="day-card-image">
-            <img src="assets/R0002358_1.jpg" alt="Day 3 setup" loading="lazy">
-          </div>
-          <span class="day-label">day 3</span>
+        <div class="setup-video-item">
+          <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/hang projector - 3.mov" preload="none">
+            <source data-src="assets/videos/hang projector - 3.mov" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <span class="setup-video-label">hang projector</span>
+        </div>
+        <div class="setup-video-item">
+          <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/setting up projectors - 4.mov" preload="none">
+            <source data-src="assets/videos/setting up projectors - 4.mov" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <span class="setup-video-label">setting up projectors</span>
+        </div>
+        <div class="setup-video-item">
+          <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/clean up - 5.mov" preload="none">
+            <source data-src="assets/videos/clean up - 5.mov" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <span class="setup-video-label">clean up</span>
+        </div>
+        <div class="setup-video-item">
+          <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/clean up - 6.mov" preload="none">
+            <source data-src="assets/videos/clean up - 6.mov" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <span class="setup-video-label">clean up</span>
         </div>
       </div>
     </section>
@@ -268,16 +293,14 @@
       });
     });
     
-    // Lazy load videos using Intersection Observer with shimmer effect
+    // Lazy load videos and play/pause based on visibility
     // Safari-compatible version
     (function() {
       var videos = document.querySelectorAll('video[data-src]');
       if (!videos.length) return;
       
-      var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
-                     /iPad|iPhone|iPod/.test(navigator.userAgent);
-      
-      var observer = new IntersectionObserver(function(entries) {
+      // Observer for lazy loading (triggers once per video)
+      var loadObserver = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
           if (entry.isIntersecting) {
             var video = entry.target;
@@ -285,13 +308,11 @@
             var src = video.dataset.src;
             
             if (src) {
-              // Ensure muted attribute is set (critical for Safari autoplay)
               video.muted = true;
               video.setAttribute('muted', '');
               video.setAttribute('playsinline', '');
               video.setAttribute('webkit-playsinline', '');
               
-              // Find and update source element if present
               var sourceEl = video.querySelector('source[data-src]');
               if (sourceEl) {
                 sourceEl.src = sourceEl.dataset.src;
@@ -301,22 +322,9 @@
               video.src = src;
               video.removeAttribute('data-src');
               
-              // Use canplay event (more reliable on Safari than loadeddata)
               video.addEventListener('canplay', function() {
                 video.muted = true;
                 if (container) container.classList.add('video-loaded');
-                video.play().catch(function() {});
-              }, { once: true });
-              
-              // Fallback for Safari: loadedmetadata
-              video.addEventListener('loadedmetadata', function() {
-                video.muted = true;
-                setTimeout(function() {
-                  if (container && !container.classList.contains('video-loaded')) {
-                    container.classList.add('video-loaded');
-                    video.play().catch(function() {});
-                  }
-                }, 100);
               }, { once: true });
               
               video.addEventListener('error', function() {
@@ -325,22 +333,35 @@
               
               video.load();
               
-              // Safari fallback timeout
+              // Mark as loaded after timeout
               setTimeout(function() {
                 if (container && !container.classList.contains('video-loaded')) {
                   container.classList.add('video-loaded');
-                  video.muted = true;
-                  video.play().catch(function() {});
                 }
               }, 2000);
             }
-            observer.unobserve(video);
+            loadObserver.unobserve(video);
           }
         });
       }, { rootMargin: '100px', threshold: 0 });
       
+      // Observer for play/pause based on visibility
+      var playObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          var video = entry.target;
+          video.muted = true;
+          
+          if (entry.isIntersecting) {
+            video.play().catch(function() {});
+          } else {
+            video.pause();
+          }
+        });
+      }, { threshold: 0.25 });
+      
       videos.forEach(function(video) {
-        observer.observe(video);
+        loadObserver.observe(video);
+        playObserver.observe(video);
       });
     })();
   </script>

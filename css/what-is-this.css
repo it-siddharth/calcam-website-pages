@@ -890,6 +890,70 @@ body:has(.what-is-this-page) {
   border-radius: 30px;
 }
 
+/* Setup Videos Grid */
+.setup-videos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.setup-video-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+}
+
+.setup-video-item video {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  background: #1a1a1a;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+}
+
+/* Video placeholder shimmer for setup videos */
+.setup-video-item:not(.video-loaded) video {
+  opacity: 0;
+}
+
+.setup-video-item:not(.video-loaded)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 20%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.08) 80%,
+    transparent 100%
+  );
+  animation: shimmerSlide 1.5s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.setup-video-item.video-loaded video {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.setup-video-label {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  font-weight: 500;
+  line-height: var(--label-line-height);
+  text-transform: uppercase;
+  color: var(--color-text);
+  padding: 4px 10px;
+  border: 1px solid var(--color-text);
+  border-radius: 30px;
+}
+
 /* ============================================
    Section 8: Personal Reflections
    ============================================ */
@@ -1000,6 +1064,11 @@ body:has(.what-is-this-page) {
   
   .day-cards {
     justify-content: center;
+  }
+  
+  .setup-videos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 }
 
@@ -1149,6 +1218,15 @@ body:has(.what-is-this-page) {
     min-width: 150px;
   }
   
+  .setup-videos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .setup-video-item {
+    gap: 12px;
+  }
+  
   .specs-text,
   .backstory-text,
   .research-text,
@@ -1204,5 +1282,19 @@ body:has(.what-is-this-page) {
   .day-card {
     width: 100%;
     max-width: 250px;
+  }
+  
+  .setup-videos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .setup-video-item {
+    gap: 10px;
+  }
+  
+  .setup-video-label {
+    font-size: 10px;
+    padding: 3px 8px;
   }
 }
