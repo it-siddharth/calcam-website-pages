@@ -473,6 +473,22 @@ body:has(.what-is-this-page) {
   height: 100%;
 }
 
+.backstory-header {
+  font-family: var(--font-title);
+  font-size: clamp(36px, 6vw, 72px);
+  font-weight: normal;
+  line-height: 1.1;
+  letter-spacing: -2px;
+  color: var(--color-text);
+  margin: 0 0 32px 0;
+  text-transform: lowercase;
+  max-width: 60%;
+}
+
+.backstory-header em {
+  font-style: italic;
+}
+
 .backstory-text {
   font-family: var(--font-body);
   font-size: var(--body-size);
@@ -845,7 +861,7 @@ body:has(.what-is-this-page) {
 }
 
 .centrepiece-video {
-  width: 50%;
+  width: 40%;
   aspect-ratio: 9 / 16;
   overflow: hidden;
   position: relative;
@@ -1154,6 +1170,37 @@ body:has(.what-is-this-page) {
 }
 
 /* ============================================
+   Section 9: Credits
+   ============================================ */
+.section-credits {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-title-to-text);
+}
+
+.credits-text {
+  max-width: 650px;
+  font-family: var(--font-body);
+  font-size: var(--body-size);
+  font-weight: 700;
+  line-height: var(--body-line-height);
+  color: var(--color-text);
+}
+
+.credits-text p {
+  margin: 0 0 1.5em 0;
+}
+
+.credits-text p:last-child {
+  margin-bottom: 0;
+}
+
+.credits-intro {
+  font-size: var(--body-large-size);
+  line-height: var(--body-large-line-height);
+}
+
+/* ============================================
    Responsive - Large Desktop (1400px+)
    ============================================ */
 @media screen and (min-width: 1400px) {
@@ -1413,6 +1460,14 @@ body:has(.what-is-this-page) {
   
   .centrepiece-media img {
     object-position: center center;
+  }
+  
+  .centrepiece-video {
+    width: 100%;
+  }
+  
+  .backstory-header {
+    max-width: 80%;
   }
   
   .specs-text,
