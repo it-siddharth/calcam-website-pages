@@ -708,7 +708,6 @@ body:has(.what-is-this-page) {
   overflow: hidden;
   position: relative;
   background: #1a1a1a;
-  border: 1px dashed rgba(255, 255, 255, 0.3);
   margin-top: auto;
 }
 
@@ -894,7 +893,7 @@ body:has(.what-is-this-page) {
 .setup-videos-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  gap: 74px 24px; /* row-gap column-gap */
   width: 100%;
   margin-top: 20px;
 }
@@ -912,7 +911,6 @@ body:has(.what-is-this-page) {
   aspect-ratio: 9 / 16;
   object-fit: cover;
   background: #1a1a1a;
-  border: 1px dashed rgba(255, 255, 255, 0.3);
 }
 
 /* Video placeholder shimmer for setup videos */
@@ -1068,7 +1066,7 @@ body:has(.what-is-this-page) {
   
   .setup-videos-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 60px 20px;
   }
 }
 
@@ -1220,7 +1218,7 @@ body:has(.what-is-this-page) {
   
   .setup-videos-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 50px 16px;
   }
   
   .setup-video-item {
@@ -1286,7 +1284,7 @@ body:has(.what-is-this-page) {
   
   .setup-videos-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 40px 12px;
   }
   
   .setup-video-item {
