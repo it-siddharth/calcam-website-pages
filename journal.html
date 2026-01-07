@@ -1126,8 +1126,9 @@
 
       textureToMaterial(texture, side) {
         texture.magFilter = THREE.LinearFilter;
-        texture.minFilter = THREE.LinearFilter;
-        texture.generateMipmaps = false;
+        texture.minFilter = THREE.LinearMipmapLinearFilter;
+        texture.generateMipmaps = true;
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
         texture.colorSpace = THREE.SRGBColorSpace;
 
         return new THREE.MeshStandardMaterial({
