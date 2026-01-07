@@ -404,49 +404,6 @@
       letter-spacing: 1px;
     }
 
-    /* Zoom Controls */
-    .zoom-controls {
-      display: none;
-      position: absolute;
-      bottom: 120px;
-      right: 20px;
-      z-index: 100;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .zoom-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1.5px solid rgba(255, 255, 255, 0.5);
-      color: rgba(255, 255, 255, 0.9);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      transition: all 0.15s ease;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      font-size: 20px;
-      font-weight: 300;
-      font-family: var(--font-mono);
-    }
-
-    .zoom-btn:active {
-      background: rgba(255, 255, 255, 0.35);
-      border-color: rgba(255, 255, 255, 0.8);
-      transform: scale(0.92);
-    }
-
-    .zoom-btn:disabled {
-      opacity: 0.3;
-    }
-
     /* Loading state */
     .loading-overlay {
       position: absolute;
@@ -650,19 +607,6 @@
         min-width: 40px;
       }
       
-      /* Zoom controls visible on mobile */
-      .zoom-controls {
-        display: flex;
-        bottom: 100px;
-        right: 16px;
-      }
-      
-      .zoom-btn {
-        width: 36px;
-        height: 36px;
-        font-size: 18px;
-      }
-      
       /* Journal footer mobile adjustments (matches installation page) */
       .journal-footer {
         display: flex !important;
@@ -822,16 +766,10 @@
         </div>
       </div>
 
-      <!-- Zoom Controls (Mobile only) -->
-      <div class="zoom-controls" id="zoom-controls">
-        <button class="zoom-btn" id="btn-zoom-in" aria-label="Zoom in">+</button>
-        <button class="zoom-btn" id="btn-zoom-out" aria-label="Zoom out">−</button>
-      </div>
-
       <!-- Instruction Footer -->
       <footer class="journal-footer">
         <p class="instruction-text desktop-only">Swipe to rotate. Tap pages to flip.</p>
-        <p class="instruction-text mobile-only">Pinch to zoom. Swipe to rotate.</p>
+        <p class="instruction-text mobile-only">Pinch to zoom. Tap to flip.</p>
       </footer>
     </section>
     
@@ -1411,13 +1349,11 @@
     const MIN_ROTATION_X = -0.2;
 
     // ============================================
-    // Zoom Controls (Mobile)
+    // Pinch-to-Zoom (Mobile)
     // ============================================
     let currentZoom = 1; // 1 = default, higher = zoomed in
     const MIN_ZOOM = 0.6;
     const MAX_ZOOM = 2.5;
-    const ZOOM_STEP = 0.25;
-    const PINCH_ZOOM_SENSITIVITY = 0.008;
     
     // Pinch-to-zoom state
     let isPinching = false;
@@ -1444,12 +1380,6 @@
       camera.position.set(0, baseCamY / currentZoom, baseCamZ / currentZoom);
       camera.lookAt(0, 0, 0);
       camera.updateProjectionMatrix();
-      
-      // Update zoom button states
-      const zoomInBtn = document.getElementById('btn-zoom-in');
-      const zoomOutBtn = document.getElementById('btn-zoom-out');
-      if (zoomInBtn) zoomInBtn.disabled = currentZoom >= MAX_ZOOM;
-      if (zoomOutBtn) zoomOutBtn.disabled = currentZoom <= MIN_ZOOM;
     }
 
     // ============================================
@@ -1758,23 +1688,6 @@
           playFlipSound();
           updatePageIndicator();
         }
-      }
-    });
-
-    // ============================================
-    // Zoom Button Controls (Mobile)
-    // ============================================
-    document.getElementById('btn-zoom-in').addEventListener('click', () => {
-      if (currentZoom < MAX_ZOOM) {
-        currentZoom = Math.min(MAX_ZOOM, currentZoom + ZOOM_STEP);
-        applyZoom();
-      }
-    });
-
-    document.getElementById('btn-zoom-out').addEventListener('click', () => {
-      if (currentZoom > MIN_ZOOM) {
-        currentZoom = Math.max(MIN_ZOOM, currentZoom - ZOOM_STEP);
-        applyZoom();
       }
     });
 
