@@ -198,52 +198,80 @@
         <h2 class="section-title">centrepiece</h2>
         <p class="centrepiece-intro">I used p5.js to experiment with different face filters, and an RGB visual style started to emerge that I was drawn to. But I was struggling to find something that would tie the physical and digital elements together.</p>
       </div>
-      <div class="centrepiece-media">
-        <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/vid-1.mp4" preload="none">
-          <source data-src="assets/videos/vid-1.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
-      </div>
-      <p class="centrepiece-text">My advisor suggested colored acrylic sheets. Panels that block certain light wavelengths and filter what you see. The idea clicked immediately. To get the full picture, viewers would have to look through these colored windows. It worked both ways: practically, the acrylics filtered the RGB display. Conceptually, you need to look through different lenses to see the whole truth.</p>
-      
       <!-- Rejected Iterations Carousel -->
-      <div class="rejected-iterations">
-        <span class="rejected-iterations-label">rejected iterations</span>
-        <div class="rejected-carousel">
+      <div class="rejected-iterations" id="rejected-iterations">
+        <div class="rejected-carousel" id="rejected-carousel">
           <div class="rejected-carousel-track">
-            <div class="rejected-carousel-item">
+            <div class="rejected-carousel-item" data-index="0">
               <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/IMG_6059-720p.mp4" preload="none">
                 <source data-src="assets/videos/IMG_6059-720p.mp4" type="video/mp4">
               </video>
             </div>
-            <div class="rejected-carousel-item">
-              <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/IMG_6061-720p.mp4" preload="none">
-                <source data-src="assets/videos/IMG_6061-720p.mp4" type="video/mp4">
-              </video>
-            </div>
-            <div class="rejected-carousel-item">
+            <div class="rejected-carousel-item" data-index="1">
               <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/IMG_6065-720p.mp4" preload="none">
                 <source data-src="assets/videos/IMG_6065-720p.mp4" type="video/mp4">
               </video>
             </div>
-            <div class="rejected-carousel-item">
+            <div class="rejected-carousel-item" data-index="2">
               <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/IMG_6067-720p.mp4" preload="none">
                 <source data-src="assets/videos/IMG_6067-720p.mp4" type="video/mp4">
               </video>
             </div>
-            <div class="rejected-carousel-item">
+            <div class="rejected-carousel-item" data-index="3">
               <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/IMG_6075-720p.mp4" preload="none">
                 <source data-src="assets/videos/IMG_6075-720p.mp4" type="video/mp4">
               </video>
             </div>
-            <div class="rejected-carousel-item">
+            <div class="rejected-carousel-item" data-index="4">
               <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/IMG_6079-720p.mp4" preload="none">
                 <source data-src="assets/videos/IMG_6079-720p.mp4" type="video/mp4">
               </video>
             </div>
           </div>
         </div>
+        <div class="rejected-thumbnails" id="rejected-thumbnails">
+          <button class="rejected-thumb active" data-index="0">
+            <video muted playsinline webkit-playsinline data-src="assets/videos/IMG_6059-720p.mp4" preload="none">
+              <source data-src="assets/videos/IMG_6059-720p.mp4" type="video/mp4">
+            </video>
+          </button>
+          <button class="rejected-thumb" data-index="1">
+            <video muted playsinline webkit-playsinline data-src="assets/videos/IMG_6065-720p.mp4" preload="none">
+              <source data-src="assets/videos/IMG_6065-720p.mp4" type="video/mp4">
+            </video>
+          </button>
+          <button class="rejected-thumb" data-index="2">
+            <video muted playsinline webkit-playsinline data-src="assets/videos/IMG_6067-720p.mp4" preload="none">
+              <source data-src="assets/videos/IMG_6067-720p.mp4" type="video/mp4">
+            </video>
+          </button>
+          <button class="rejected-thumb" data-index="3">
+            <video muted playsinline webkit-playsinline data-src="assets/videos/IMG_6075-720p.mp4" preload="none">
+              <source data-src="assets/videos/IMG_6075-720p.mp4" type="video/mp4">
+            </video>
+          </button>
+          <button class="rejected-thumb" data-index="4">
+            <video muted playsinline webkit-playsinline data-src="assets/videos/IMG_6079-720p.mp4" preload="none">
+              <source data-src="assets/videos/IMG_6079-720p.mp4" type="video/mp4">
+            </video>
+          </button>
+        </div>
+        <span class="rejected-iterations-label">rejected iterations</span>
       </div>
+      
+      <div class="centrepiece-media">
+        <img src="assets/final style .png" alt="Final style - text silhouette artwork" loading="lazy">
+      </div>
+      <span class="final-style-label">final style</span>
+      
+      <div class="centrepiece-video">
+        <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/cewntrepiece vid.mov" preload="none">
+          <source data-src="assets/videos/cewntrepiece vid.mov" type="video/quicktime">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      
+      <p class="centrepiece-text">My advisor suggested colored acrylic sheets. Panels that block certain light wavelengths and filter what you see. The idea clicked immediately. To get the full picture, viewers would have to look through these colored windows. It worked both ways: practically, the acrylics filtered the RGB display. Conceptually, you need to look through different lenses to see the whole truth.</p>
     </section>
 
     <!-- Section 7: Setting It Up -->
@@ -402,6 +430,94 @@
         loadObserver.observe(video);
         playObserver.observe(video);
       });
+    })();
+    
+    // Rejected Iterations Carousel - Auto-scroll and thumbnails
+    (function() {
+      var carousel = document.getElementById('rejected-carousel');
+      var thumbs = document.querySelectorAll('.rejected-thumb');
+      var items = document.querySelectorAll('.rejected-carousel-item');
+      var currentIndex = 0;
+      var totalItems = items.length;
+      var autoScrollInterval;
+      
+      if (!carousel || !thumbs.length) return;
+      
+      // Update active thumbnail
+      function updateActiveThumbnail(index) {
+        thumbs.forEach(function(thumb, i) {
+          thumb.classList.toggle('active', i === index);
+        });
+        currentIndex = index;
+      }
+      
+      // Scroll to specific index
+      function scrollToIndex(index) {
+        var item = items[index];
+        if (item) {
+          carousel.scrollTo({
+            left: item.offsetLeft,
+            behavior: 'smooth'
+          });
+          updateActiveThumbnail(index);
+        }
+      }
+      
+      // Auto-scroll to next video
+      function autoScroll() {
+        var nextIndex = (currentIndex + 1) % totalItems;
+        scrollToIndex(nextIndex);
+      }
+      
+      // Start auto-scroll
+      function startAutoScroll() {
+        stopAutoScroll();
+        autoScrollInterval = setInterval(autoScroll, 3000);
+      }
+      
+      // Stop auto-scroll
+      function stopAutoScroll() {
+        if (autoScrollInterval) {
+          clearInterval(autoScrollInterval);
+        }
+      }
+      
+      // Thumbnail click handlers
+      thumbs.forEach(function(thumb) {
+        thumb.addEventListener('click', function() {
+          var index = parseInt(thumb.dataset.index, 10);
+          scrollToIndex(index);
+          // Restart auto-scroll after manual interaction
+          startAutoScroll();
+        });
+      });
+      
+      // Detect scroll position to update active thumbnail
+      carousel.addEventListener('scroll', function() {
+        var scrollLeft = carousel.scrollLeft;
+        var carouselWidth = carousel.offsetWidth;
+        var newIndex = Math.round(scrollLeft / carouselWidth);
+        if (newIndex !== currentIndex && newIndex >= 0 && newIndex < totalItems) {
+          updateActiveThumbnail(newIndex);
+        }
+      });
+      
+      // Pause auto-scroll on hover
+      carousel.addEventListener('mouseenter', stopAutoScroll);
+      carousel.addEventListener('mouseleave', startAutoScroll);
+      
+      // Start auto-scroll when carousel is visible
+      var carouselObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            startAutoScroll();
+          } else {
+            stopAutoScroll();
+          }
+        });
+      }, { threshold: 0.5 });
+      
+      carouselObserver.observe(carousel);
     })();
   </script>
 </body>

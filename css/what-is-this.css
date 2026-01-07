@@ -772,23 +772,24 @@ body:has(.what-is-this-page) {
 .centrepiece-media {
   width: 100%;
   aspect-ratio: 1015 / 525;
-  border: 1px solid var(--color-text);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
   overflow: hidden;
   position: relative;
 }
 
-.centrepiece-media video {
+.centrepiece-media video,
+.centrepiece-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* Video shimmer - shows by default until loaded */
-.centrepiece-media:not(.video-loaded) {
+/* Video shimmer - only for video content, not images */
+.centrepiece-media:has(video):not(.video-loaded) {
   background: #1a1a1a;
 }
 
-.centrepiece-media:not(.video-loaded)::before {
+.centrepiece-media:has(video):not(.video-loaded)::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -806,7 +807,7 @@ body:has(.what-is-this-page) {
 }
 
 /* Hide video until loaded */
-.centrepiece-media:not(.video-loaded) video {
+.centrepiece-media:has(video):not(.video-loaded) video {
   opacity: 0;
 }
 
@@ -830,13 +831,39 @@ body:has(.what-is-this-page) {
   margin: 0;
 }
 
+.final-style-label {
+  font-family: var(--font-mono);
+  font-size: var(--label-size);
+  font-weight: 500;
+  line-height: var(--label-line-height);
+  text-transform: uppercase;
+  color: var(--color-text);
+  padding: 6px 14px;
+  border: 1px solid var(--color-text);
+  border-radius: 30px;
+  align-self: center;
+}
+
+.centrepiece-video {
+  width: 50%;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  position: relative;
+  align-self: flex-start;
+}
+
+.centrepiece-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* Rejected Iterations Carousel */
 .rejected-iterations {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 24px;
-  margin-top: 60px;
   width: 100%;
 }
 
@@ -853,12 +880,11 @@ body:has(.what-is-this-page) {
 }
 
 .rejected-carousel {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  width: 60%;
+  max-width: 60%;
+  overflow: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
 }
 
 .rejected-carousel::-webkit-scrollbar {
@@ -880,23 +906,60 @@ body:has(.what-is-this-page) {
 
 .rejected-carousel-track {
   display: flex;
-  gap: 16px;
-  padding-bottom: 12px;
+  gap: 0;
 }
 
 .rejected-carousel-item {
-  flex: 0 0 auto;
-  width: 320px;
+  flex: 0 0 100%;
+  width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
   position: relative;
   background: #1a1a1a;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .rejected-carousel-item video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Rejected Thumbnails */
+.rejected-thumbnails {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.rejected-thumb {
+  width: 80px;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  border: 2px solid transparent;
+  background: #1a1a1a;
+  cursor: pointer;
+  overflow: hidden;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.rejected-thumb:hover {
+  opacity: 0.8;
+}
+
+.rejected-thumb.active {
+  border-color: var(--color-text);
+  opacity: 1;
+}
+
+.rejected-thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
 }
 
 /* Video shimmer for rejected carousel */
@@ -1323,11 +1386,33 @@ body:has(.what-is-this-page) {
   
   .rejected-iterations {
     gap: 16px;
-    margin-top: 40px;
+  }
+  
+  .rejected-carousel {
+    width: 100%;
+    max-width: 100%;
   }
   
   .rejected-carousel-item {
-    width: 260px;
+    flex: 0 0 100%;
+    width: 100%;
+  }
+  
+  .rejected-thumb {
+    width: 60px;
+  }
+  
+  .rejected-thumbnails {
+    gap: 6px;
+  }
+  
+  /* Portrait crop for final style image on mobile */
+  .centrepiece-media {
+    aspect-ratio: 3 / 4;
+  }
+  
+  .centrepiece-media img {
+    object-position: center center;
   }
   
   .specs-text,
