@@ -23,13 +23,14 @@
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
                    /iPad|iPhone|iPod/.test(navigator.userAgent);
   
-  // Helper function to load video with Safari compatibility
+  // Helper function to load video with cross-browser compatibility (Chrome, Arc, Safari, Firefox)
   function loadVideoWithSafariSupport(video) {
     const src = video.dataset.src;
     if (!src) return;
     
-    // Ensure muted attribute is set (critical for Safari autoplay)
+    // Ensure muted attribute is set (critical for autoplay in all browsers)
     video.muted = true;
+    video.defaultMuted = true;
     video.setAttribute('muted', '');
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
@@ -45,9 +46,11 @@
     video.src = src;
     video.removeAttribute('data-src');
     
-    // Use canplay event (more reliable on Safari than loadeddata)
-    const onCanPlay = () => {
-      video.muted = true; // Re-ensure muted
+    let loaded = false;
+    const markLoaded = () => {
+      if (loaded) return;
+      loaded = true;
+      video.muted = true;
       video.parentElement?.classList.add('video-loaded');
       
       const playPromise = video.play();
@@ -58,16 +61,18 @@
       }
     };
     
-    video.addEventListener('canplay', onCanPlay, { once: true });
+    // Multiple event handlers for cross-browser compatibility
+    video.addEventListener('canplaythrough', markLoaded, { once: true });
+    video.addEventListener('canplay', markLoaded, { once: true });
+    video.addEventListener('loadeddata', markLoaded, { once: true });
     
-    // Fallback: also listen for loadedmetadata (Safari sometimes fires this first)
+    // Fallback: also listen for loadedmetadata
     video.addEventListener('loadedmetadata', () => {
       video.muted = true;
-      // Give Safari a moment then try to play
+      // Give browsers a moment then try to play
       setTimeout(() => {
-        if (!video.parentElement?.classList.contains('video-loaded')) {
-          video.parentElement?.classList.add('video-loaded');
-          video.play().catch(() => {});
+        if (!loaded) {
+          markLoaded();
         }
       }, 100);
     }, { once: true });
@@ -75,20 +80,21 @@
     video.addEventListener('error', (e) => {
       console.warn('Video load error:', video.src, e);
       // Still mark as loaded to stop shimmer on error
-      video.parentElement?.classList.add('video-loaded');
+      if (!loaded) {
+        loaded = true;
+        video.parentElement?.classList.add('video-loaded');
+      }
     }, { once: true });
     
     // Force load
     video.load();
     
-    // Safari fallback: if still not loaded after 2 seconds, force show
+    // Fallback: if still not loaded after 3 seconds, force show
     setTimeout(() => {
-      if (!video.parentElement?.classList.contains('video-loaded')) {
-        video.parentElement?.classList.add('video-loaded');
-        video.muted = true;
-        video.play().catch(() => {});
+      if (!loaded) {
+        markLoaded();
       }
-    }, 2000);
+    }, 3000);
   }
   
   // If mobile, just load videos and exit (use native scroll)
@@ -524,8 +530,9 @@
     loadedVideos.add(video);
     videoObserver.unobserve(video);
     
-    // Ensure muted attribute is set (critical for Safari autoplay)
+    // Ensure muted attribute is set (critical for autoplay in all browsers)
     video.muted = true;
+    video.defaultMuted = true;
     video.setAttribute('muted', '');
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
@@ -540,43 +547,48 @@
     video.src = src;
     video.removeAttribute('data-src');
     
-    // Use canplay event (more reliable on Safari than loadeddata)
-    const onCanPlay = () => {
+    let loaded = false;
+    const markLoaded = () => {
+      if (loaded) return;
+      loaded = true;
       video.muted = true;
       video.parentElement?.classList.add('video-loaded');
       video.play().catch(() => {});
       setTimeout(updateBounds, 100);
     };
     
-    video.addEventListener('canplay', onCanPlay, { once: true });
+    // Multiple event handlers for cross-browser compatibility
+    video.addEventListener('canplaythrough', markLoaded, { once: true });
+    video.addEventListener('canplay', markLoaded, { once: true });
+    video.addEventListener('loadeddata', markLoaded, { once: true });
     
-    // Fallback for Safari: loadedmetadata
+    // Fallback: loadedmetadata
     video.addEventListener('loadedmetadata', () => {
       video.muted = true;
       setTimeout(() => {
-        if (!video.parentElement?.classList.contains('video-loaded')) {
-          video.parentElement?.classList.add('video-loaded');
-          video.play().catch(() => {});
-          setTimeout(updateBounds, 100);
+        if (!loaded) {
+          markLoaded();
         }
       }, 100);
     }, { once: true });
     
-    video.addEventListener('error', () => {
+    video.addEventListener('error', (e) => {
+      console.warn('Video load error:', src, e);
       // Still mark as loaded to stop shimmer on error
-      video.parentElement?.classList.add('video-loaded');
+      if (!loaded) {
+        loaded = true;
+        video.parentElement?.classList.add('video-loaded');
+      }
     }, { once: true });
     
     video.load();
     
-    // Safari fallback timeout
+    // Fallback timeout - 3 seconds
     setTimeout(() => {
-      if (!video.parentElement?.classList.contains('video-loaded')) {
-        video.parentElement?.classList.add('video-loaded');
-        video.muted = true;
-        video.play().catch(() => {});
+      if (!loaded) {
+        markLoaded();
       }
-    }, 2000);
+    }, 3000);
   }
   
   // Wait for media to load
