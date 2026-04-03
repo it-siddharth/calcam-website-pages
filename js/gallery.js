@@ -98,6 +98,13 @@
     videos.forEach(video => {
       loadVideoWithSafariSupport(video);
     });
+
+    // Load all images immediately on mobile (native vertical scroll handles visibility)
+    const images = track.querySelectorAll('img[data-src]');
+    images.forEach(img => {
+      img.src = img.dataset.src;
+      img.removeAttribute('data-src');
+    });
     
     // Setup Intersection Observer for video autoplay on mobile
     const observer = new IntersectionObserver((entries) => {
@@ -195,8 +202,8 @@
       }
     }
     
-    // Check for videos that need to be loaded
-    checkLazyVideos();
+    // Check for media that needs to be loaded
+    checkLazyMedia();
   }
   
   // Get smoothed velocity from history
@@ -495,11 +502,24 @@
     }
   }
   
-  // Lazy load videos using Intersection Observer for better performance
-  const videoObserver = new IntersectionObserver((entries) => {
+  // Lazy load media (videos + images) using Intersection Observer.
+  // Using root: wrapper so items entering the carousel viewport trigger loading.
+  // This is necessary for images because Chromium's native loading="lazy" does not
+  // re-evaluate visibility when only a CSS transform on an ancestor changes — it only
+  // responds to scroll/resize events. Items laid out far to the right in the flex row
+  // would never be considered "in view" by the native lazy loader.
+  const mediaObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        loadVideo(entry.target);
+        const el = entry.target;
+        if (el.tagName === 'VIDEO') {
+          loadVideo(el);
+        } else if (el.tagName === 'IMG') {
+          el.src = el.dataset.src;
+          el.removeAttribute('data-src');
+          el.addEventListener('load', () => setTimeout(updateBounds, 50), { once: true });
+          mediaObserver.unobserve(el);
+        }
       }
     });
   }, {
@@ -507,13 +527,15 @@
     rootMargin: '200px', // Start loading 200px before visible
     threshold: 0
   });
-  
-  function checkLazyVideos() {
-    const videos = track.querySelectorAll('video[data-src]');
-    videos.forEach(video => {
+
+  function checkLazyMedia() {
+    track.querySelectorAll('video[data-src]').forEach(video => {
       if (!loadedVideos.has(video)) {
-        videoObserver.observe(video);
+        mediaObserver.observe(video);
       }
+    });
+    track.querySelectorAll('img[data-src]').forEach(img => {
+      mediaObserver.observe(img); // safe to call multiple times; observer deduplicates
     });
   }
   
@@ -522,7 +544,7 @@
     if (!src || loadedVideos.has(video)) return;
     
     loadedVideos.add(video);
-    videoObserver.unobserve(video);
+    mediaObserver.unobserve(video);
     
     // Ensure muted attribute is set (critical for Safari autoplay)
     video.muted = true;
@@ -649,7 +671,7 @@
     // Wait for media
     waitForMedia();
     updateBounds();
-    checkLazyVideos();
+    checkLazyMedia();
   }
   
   // Run on DOM ready

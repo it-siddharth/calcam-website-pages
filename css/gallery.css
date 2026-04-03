@@ -311,7 +311,6 @@ body {
   cursor: grab;
   user-select: none;
   will-change: transform;
-  transition: transform 0.05s ease-out;
   touch-action: pan-y pinch-zoom; /* Allow vertical scroll, handle horizontal ourselves */
 }
 
