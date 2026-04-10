@@ -34,13 +34,6 @@
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
     
-    // Find and update source element if present
-    const sourceEl = video.querySelector('source[data-src]');
-    if (sourceEl) {
-      sourceEl.src = sourceEl.dataset.src;
-      sourceEl.removeAttribute('data-src');
-    }
-    
     // Set video src
     video.src = src;
     video.removeAttribute('data-src');
@@ -495,24 +488,29 @@
     }
   }
   
-  // Lazy load videos using Intersection Observer for better performance
-  const videoObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        loadVideo(entry.target);
-      }
-    });
-  }, {
-    root: wrapper,
-    rootMargin: '200px', // Start loading 200px before visible
-    threshold: 0
-  });
-  
+  // Lazy load videos based on visual (transformed) position, not layout position.
+  // IntersectionObserver with a root element uses layout positions and doesn't account
+  // for CSS transform-based scrolling — this breaks in Chromium. getBoundingClientRect()
+  // returns the actual painted position after transforms, so it works correctly here.
   function checkLazyVideos() {
     const videos = track.querySelectorAll('video[data-src]');
+    if (!videos.length) return;
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const preloadMargin = 500; // start loading 500px before item enters view
+
     videos.forEach(video => {
-      if (!loadedVideos.has(video)) {
-        videoObserver.observe(video);
+      if (loadedVideos.has(video)) return;
+
+      const item = video.closest('.carousel-item');
+      if (!item) return;
+
+      const itemRect = item.getBoundingClientRect();
+
+      // Load if item is within preload margin of the wrapper's visible area
+      if (itemRect.left < wrapperRect.right + preloadMargin &&
+          itemRect.right > wrapperRect.left - preloadMargin) {
+        loadVideo(video);
       }
     });
   }
@@ -522,24 +520,16 @@
     if (!src || loadedVideos.has(video)) return;
     
     loadedVideos.add(video);
-    videoObserver.unobserve(video);
-    
+
     // Ensure muted attribute is set (critical for Safari autoplay)
     video.muted = true;
     video.setAttribute('muted', '');
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
     
-    // Find and update source element if present
-    const sourceEl = video.querySelector('source[data-src]');
-    if (sourceEl) {
-      sourceEl.src = sourceEl.dataset.src;
-      sourceEl.removeAttribute('data-src');
-    }
-    
     video.src = src;
     video.removeAttribute('data-src');
-    
+
     // Use canplay event (more reliable on Safari than loadeddata)
     const onCanPlay = () => {
       video.muted = true;
