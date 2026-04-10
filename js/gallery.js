@@ -488,15 +488,16 @@
     }
   }
   
-  // Lazy load videos based on visual (transformed) position, not layout position.
-  // IntersectionObserver with a root element uses layout positions and doesn't account
-  // for CSS transform-based scrolling — this breaks in Chromium. getBoundingClientRect()
-  // returns the actual painted position after transforms, so it works correctly here.
+  // Lazy load videos based on JS transform position — avoids two pitfalls:
+  // 1. IntersectionObserver uses layout positions, not CSS transform positions (broken in Chromium).
+  // 2. getBoundingClientRect() reads the CSS-animated (interpolated) position at the moment of call,
+  //    which lags the JS target value when a CSS transition is active — can miss items mid-scroll.
+  // Using item.offsetLeft + currentTranslate gives the exact JS target position with no lag.
   function checkLazyVideos() {
     const videos = track.querySelectorAll('video[data-src]');
     if (!videos.length) return;
 
-    const wrapperRect = wrapper.getBoundingClientRect();
+    const wrapperWidth = wrapper.offsetWidth;
     const preloadMargin = 500; // start loading 500px before item enters view
 
     videos.forEach(video => {
@@ -505,11 +506,12 @@
       const item = video.closest('.carousel-item');
       if (!item) return;
 
-      const itemRect = item.getBoundingClientRect();
+      // item.offsetLeft is relative to the wrapper (first positioned ancestor).
+      // currentTranslate is the track's JS transform value (negative = scrolled right).
+      const itemLeft = item.offsetLeft + currentTranslate;
+      const itemRight = itemLeft + item.offsetWidth;
 
-      // Load if item is within preload margin of the wrapper's visible area
-      if (itemRect.left < wrapperRect.right + preloadMargin &&
-          itemRect.right > wrapperRect.left - preloadMargin) {
+      if (itemLeft < wrapperWidth + preloadMargin && itemRight > -preloadMargin) {
         loadVideo(video);
       }
     });

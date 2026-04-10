@@ -365,6 +365,7 @@
               video.addEventListener('canplay', function() {
                 video.muted = true;
                 if (container) container.classList.add('video-loaded');
+                video.play().catch(function() {});
               }, { once: true });
 
               video.addEventListener('error', function() {
