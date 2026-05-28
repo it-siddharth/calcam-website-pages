@@ -116,7 +116,7 @@ let projectionInitializedRight = false;
 
 // Shared geometry for projection pixels
 let pixelGeometry = null;
-const PIXEL_COUNT = 8000; // Increased to support higher density
+const PIXEL_COUNT = 16000; // Higher cap so both wall projections can render denser square fields
 
 // Cached Three.js objects for performance (avoid garbage collection)
 const _tempMatrix = new THREE.Matrix4();
@@ -2574,11 +2574,11 @@ function updateProjectionPlaceholderRight(time, mesh, rotation) {
   const projBaseY = 0; // Start from floor
   const projCenterZ = 0;
   
-  // Denser grid for more vibrant shimmer effect
-  const gridCols = 60;
-  const gridRows = 45;
+  // Dense grid for tight square spacing on the wall.
+  const gridCols = 120;
+  const gridRows = 90;
   const totalGridPoints = gridCols * gridRows;
-  const pixelScale = 0.2; // Large pixels for bold shimmer
+  const pixelScale = 0.14;
   
   // Set material to full white, 100% opacity for shimmer
   if (mesh.material) {
@@ -2634,11 +2634,11 @@ function updateProjectionPlaceholder(time, mesh, rotation) {
   const projBaseY = 0; // Start from floor
   const projCenterZ = 0;
   
-  // Denser grid for more vibrant shimmer effect
-  const gridCols = 60;
-  const gridRows = 45;
+  // Dense grid for tight square spacing on the wall.
+  const gridCols = 120;
+  const gridRows = 90;
   const totalGridPoints = gridCols * gridRows;
-  const pixelScale = 0.2; // Large pixels for bold shimmer
+  const pixelScale = 0.14;
   
   // Set material to full white, 100% opacity for shimmer
   if (mesh.material) {

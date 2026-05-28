@@ -12,16 +12,16 @@ export class WebcamProjection {
   // Desktop defaults
   static DESKTOP_DEFAULTS = {
     threshold: 96,
-    pixelSize: 0.200,
-    pixelDensity: 150,
+    pixelSize: 0.160,
+    pixelDensity: 260,
     intensity: 0.4
   };
   
   // Mobile defaults (larger pixels, higher visibility)
   static MOBILE_DEFAULTS = {
     threshold: 96,
-    pixelSize: 0.500,      // Much larger on mobile
-    pixelDensity: 120,     // Slightly less dense for performance
+    pixelSize: 0.320,      // Larger on mobile for visibility
+    pixelDensity: 160,     // Slightly less dense for performance
     intensity: 0.6         // Brighter on mobile
   };
   
@@ -74,7 +74,7 @@ export class WebcamProjection {
     
     // Sampling grid - positions where we check brightness
     this.sampleGrid = [];
-    this.maxSamples = this.isMobile ? 5000 : 8000; // Fewer samples on mobile for performance
+    this.maxSamples = this.isMobile ? 9000 : 16000; // Fewer samples on mobile for performance
     
     console.log('📽️ WebcamProjection created:', width, 'x', height, this.isMobile ? '(mobile)' : '(desktop)');
   }
@@ -312,4 +312,3 @@ export class WebcamProjection {
     this.isInitialized = false;
   }
 }
-

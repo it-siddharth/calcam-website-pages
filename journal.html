@@ -139,6 +139,8 @@
       transition: all 0.2s ease;
       width: fit-content;
       margin-bottom: 20px;
+      position: relative;
+      z-index: 40;
     }
 
     .back-button:hover {
@@ -174,7 +176,6 @@
       min-width: 480px;
       max-width: 540px;
       position: relative;
-      z-index: 10;
       height: 100vh;
     }
 
@@ -186,6 +187,8 @@
       letter-spacing: var(--title-letter-spacing);
       white-space: nowrap;
       margin-bottom: 0;
+      position: relative;
+      z-index: 5;
     }
 
     .journal-description {
@@ -196,10 +199,14 @@
       max-width: var(--content-max-width);
       margin-top: auto;
       margin-bottom: 40px;
+      position: relative;
+      z-index: 5;
     }
 
     .journal-info {
       max-width: var(--content-max-width);
+      position: relative;
+      z-index: 40;
     }
 
     .learn-more {
@@ -312,7 +319,7 @@
       align-items: center;
       justify-content: center;
       overflow: visible;
-      z-index: 1;
+      z-index: 20;
     }
 
     #book-container {
@@ -324,10 +331,13 @@
       cursor: pointer;
       overflow: visible;
       pointer-events: auto;
+      z-index: 20;
     }
     
     #book-container canvas {
       overflow: visible !important;
+      position: relative;
+      z-index: 20;
     }
 
     /* ============================================
@@ -1248,7 +1258,7 @@
 
     // Scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+    scene.background = null;
 
     // Lighting (matching demo)
     const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -1272,8 +1282,9 @@
     camera.lookAt(0, 0, 0);
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.setSize(width, height);
@@ -1797,4 +1808,3 @@
   </script>
 </body>
 </html>
-
