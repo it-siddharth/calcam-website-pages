@@ -29,9 +29,9 @@
   --font-arrow: 'Alegreya', serif;
   
   /* Title - matches home page */
-  --title-size: 136px;
-  --title-line-height: 130px;
-  --title-letter-spacing: -4px;
+  --title-size: 120px;
+  --title-line-height: 116px;
+  --title-letter-spacing: -3.5px;
   
   /* Quote - 67px (Figma: 67.02px) */
   --quote-size: 67px;
@@ -43,8 +43,8 @@
   --body-large-line-height: 36px;
   
   /* Body - 20px */
-  --body-size: 20px;
-  --body-line-height: 26px;
+  --body-size: 18px;
+  --body-line-height: 24px;
   
   /* Labels - 14px */
   --label-size: 14px;
@@ -1210,13 +1210,24 @@ body:has(.what-is-this-page) {
 }
 
 /* ============================================
+   Responsive - Laptop (1440px and below)
+   ============================================ */
+@media screen and (max-width: 1440px) {
+  :root {
+    --title-size: 112px;
+    --title-line-height: 108px;
+    --title-letter-spacing: -3.5px;
+  }
+}
+
+/* ============================================
    Responsive - Tablet (1024px and below)
    ============================================ */
 @media screen and (max-width: 1024px) {
   :root {
-    --title-size: 90px;
-    --title-line-height: 86px;
-    --title-letter-spacing: -3px;
+    --title-size: 78px;
+    --title-line-height: 76px;
+    --title-letter-spacing: -2.5px;
     --quote-size: 48px;
     --quote-line-height: 56px;
     --section-gap: 60px;

@@ -42,12 +42,14 @@ export class WebcamTextRenderer {
     
     console.log('🔍 WebcamTextRenderer Safari detection:', { isSafari: this.isSafari, isIOSSafari: this.isIOSSafari, isDesktopSafari: this.isDesktopSafari });
     
-    // Word definitions with CORRECT colors
+    // Word definitions match the original WORD SILHOUETTE composition.
     this.words = [
-      { text: "YOU ARE", color: "#FF0000", font: "monospace", size: 24 },
+      { text: "YOU ARE", color: "#FF0000", font: "monospace", size: 18 },
+      { text: "YOU ARE", color: "#FF0000", font: "monospace", size: 18 },
+      { text: "YOU ARE", color: "#FF0000", font: "monospace", size: 18 },
       { text: "YOUR CHOICES", color: "#FFFF00", font: "serif", size: 22 },
-      { text: "PUBLIC SELF", color: "#0000FF", font: "monospace", size: 17 },
-      { text: "POSSIBILITY", color: "#00FF00", font: "monospace", size: 17 }
+      { text: "PUBLIC SELF", color: "#0000FF", font: "monospace", size: 10 },
+      { text: "PRESENT", color: "#00FF00", font: "monospace", size: 10 }
     ];
     
     // Text grid
@@ -65,7 +67,7 @@ export class WebcamTextRenderer {
       flipVideo: false,
       portraitMode: false,
       threshold: 95,
-      cellWidthMultiplier: 1.5,
+      cellWidthMultiplier: 0.7,
       
       // Contour controls
       showContour: false,
@@ -75,8 +77,8 @@ export class WebcamTextRenderer {
       contourColor: "#FFFFFF",
       
       // Text settings
-      fontSize: 17,
-      textDensity: 0.8,
+      fontSize: 10,
+      textDensity: 1.15,
       
       // Animation controls (not implemented yet)
       enableAnimation: false,
@@ -330,12 +332,16 @@ export class WebcamTextRenderer {
    * Calculate grid dimensions based on settings
    */
   updateGridDimensions() {
-    const avgCharWidth = this.settings.fontSize * 0.6;
-    const avgWordLength = 8;
-    const cellWidthNeeded = avgWordLength * avgCharWidth * this.settings.cellWidthMultiplier;
-    
-    this.textColumns = Math.max(1, Math.floor(this.displayWidth / (cellWidthNeeded / this.settings.textDensity)));
-    this.textRows = Math.max(1, Math.floor(this.displayHeight / ((this.settings.fontSize * 1.2) / this.settings.textDensity)));
+    // Keep the Safari renderer's cadence close to WORD SILHOUETTE.html:
+    // higher textDensity means more phrases across and down the TV feed.
+    this.textColumns = Math.max(
+      1,
+      Math.floor(this.displayWidth / (10 * this.settings.fontSize * this.settings.cellWidthMultiplier / this.settings.textDensity))
+    );
+    this.textRows = Math.max(
+      1,
+      Math.floor(this.displayHeight / (this.settings.fontSize / this.settings.textDensity))
+    );
     
     const cellWidth = this.displayWidth / this.textColumns;
     const cellHeight = this.displayHeight / this.textRows;
@@ -504,7 +510,7 @@ export class WebcamTextRenderer {
     
     this.ctx.fillStyle = '#0000FF';
     this.ctx.font = '20px monospace';
-    this.ctx.fillText('POSSIBILITY', w - 100, h - 100);
+    this.ctx.fillText('PRESENT', w - 100, h - 100);
     
     // Center message
     this.ctx.fillStyle = '#FFFFFF';
@@ -523,87 +529,71 @@ export class WebcamTextRenderer {
     const pixels = imageData.data;
     const gridColWidth = this.displayWidth / this.textColumns;
     const gridRowHeight = this.displayHeight / this.textRows;
-    const cellPadding = 2;
+    let currentY = this.displayY;
     
-    // Iterate through grid
-    for (let y = 0; y < this.textRows; y++) {
-      const currentY = this.displayY + (y * gridRowHeight);
-      
+    for (let y = 0; y < this.textGrid.length; y++) {
       if (currentY > this.displayY + this.displayHeight) break;
       
-      for (let x = 0; x < this.textColumns; x++) {
-        const currentX = this.displayX + (x * gridColWidth);
+      let currentX = this.displayX;
+      let rowHeight = gridRowHeight;
+      
+      for (let x = 0; x < this.textGrid[y].length; x++) {
+        const wordIndex = this.textGrid[y][x];
+        if (wordIndex >= this.words.length) continue;
         
+        rowHeight = Math.max(rowHeight, this.words[wordIndex].size);
+      }
+      
+      for (let x = 0; x < this.textGrid[y].length; x++) {
         if (currentX > this.displayX + this.displayWidth) break;
         
         try {
-          // Get word for this cell
           const wordIndex = this.textGrid[y][x];
           if (wordIndex >= this.words.length) continue;
           
           const word = this.words[wordIndex];
+          const cellWidth = Math.min(
+            word.text.length * word.size * this.settings.cellWidthMultiplier,
+            gridColWidth * 2
+          );
           
-          // Sample pixel at center of cell
-          let vidX = Math.floor(currentX + gridColWidth / 2);
-          let vidY = Math.floor(currentY + gridRowHeight / 2);
+          let vidX = Math.floor(((currentX - this.displayX) / this.displayWidth) * this.canvas.width);
+          let vidY = Math.floor(((currentY - this.displayY) / this.displayHeight) * this.canvas.height);
           
-          // Apply flip if needed
           if (this.settings.flipVideo) {
             vidX = this.canvas.width - vidX;
           }
           
-          // Constrain to bounds
           vidX = Math.max(0, Math.min(this.canvas.width - 1, vidX));
           vidY = Math.max(0, Math.min(this.canvas.height - 1, vidY));
           
-          // Get pixel brightness
           const pixelIndex = (vidY * this.canvas.width + vidX) * 4;
           const r = pixels[pixelIndex];
           const g = pixels[pixelIndex + 1];
           const b = pixels[pixelIndex + 2];
           const brightness = (r + g + b) / 3;
           
-          // Check threshold
           const shouldDrawText = this.settings.invertColors ? 
             (brightness > this.settings.threshold) : 
             (brightness < this.settings.threshold);
           
           if (shouldDrawText) {
-            // Save canvas state
             this.ctx.save();
-            
-            // CRITICAL: Set color for THIS word
             this.ctx.fillStyle = word.color;
             this.ctx.font = `${word.size}px ${word.font}`;
             this.ctx.textAlign = 'left';
             this.ctx.textBaseline = 'top';
-            
-            // Measure text width
-            const textWidth = this.ctx.measureText(word.text).width;
-            const maxTextWidth = gridColWidth - cellPadding * 2;
-            
-            // Draw text if it fits
-            if (textWidth <= maxTextWidth) {
-              this.ctx.fillText(word.text, currentX + cellPadding, currentY + cellPadding);
-            } else {
-              // Truncate if too long
-              let truncatedText = word.text;
-              while (this.ctx.measureText(truncatedText).width > maxTextWidth && truncatedText.length > 1) {
-                truncatedText = truncatedText.substring(0, truncatedText.length - 1);
-              }
-              if (truncatedText.length > 0) {
-                this.ctx.fillText(truncatedText, currentX + cellPadding, currentY + cellPadding);
-              }
-            }
-            
-            // Restore canvas state
+            this.ctx.fillText(word.text, currentX, currentY);
             this.ctx.restore();
           }
+          
+          currentX += cellWidth;
         } catch (error) {
-          // Skip cell on error
           continue;
         }
       }
+      
+      currentY += rowHeight;
     }
   }
   
@@ -897,4 +887,3 @@ export class WebcamTextRenderer {
     }
   }
 }
-

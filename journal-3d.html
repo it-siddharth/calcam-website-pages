@@ -40,12 +40,12 @@
       --font-mono: 'JetBrains Mono', monospace;
       --font-arrow: 'Alegreya', serif;
       
-      --title-size: 136px;
-      --title-line-height: 130px;
-      --title-letter-spacing: -4px;
+      --title-size: 120px;
+      --title-line-height: 116px;
+      --title-letter-spacing: -3.5px;
       
-      --body-size: 20px;
-      --body-line-height: 26px;
+      --body-size: 18px;
+      --body-line-height: 24px;
       
       --label-size: 14px;
       --label-line-height: 14px;
@@ -398,6 +398,28 @@
     .desktop-only { display: block; }
     .mobile-only { display: none; }
     .journal-footer-mobile { display: none; }
+
+    /* ============================================
+       Responsive - Laptop (1440px and below)
+       ============================================ */
+    @media screen and (max-width: 1440px) {
+      :root {
+        --title-size: 112px;
+        --title-line-height: 108px;
+        --title-letter-spacing: -3.5px;
+      }
+    }
+
+    /* ============================================
+       Responsive - Tablet (1024px and below)
+       ============================================ */
+    @media screen and (max-width: 1024px) {
+      :root {
+        --title-size: 78px;
+        --title-line-height: 76px;
+        --title-letter-spacing: -2.5px;
+      }
+    }
 
     /* ============================================
        Mobile Responsive Styles

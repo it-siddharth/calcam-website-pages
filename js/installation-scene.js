@@ -1429,12 +1429,53 @@ function setupSafariTVRenderer() {
 }
 
 let iframeCaptureStarted = false;
+const ROOM_TV_TEXT_DENSITY = 1.15;
+
+function tuneSilhouetteIframeDensity(iframe) {
+  try {
+    if (!iframe.contentWindow) {
+      console.warn('⚠️ Room TV iframe is not ready for density tuning');
+      return;
+    }
+    
+    iframe.contentWindow.eval(`
+      if (typeof defaultWords !== 'undefined') {
+        defaultWords = defaultWords.map(word => (
+          word.text === 'POSSIBILITY' ? { ...word, text: 'PRESENT' } : word
+        ));
+      }
+      if (typeof wordsData !== 'undefined') {
+        wordsData = wordsData.map(word => (
+          word.text === 'POSSIBILITY' ? { ...word, text: 'PRESENT' } : word
+        ));
+        const youAre = wordsData.find(word => word.text === 'YOU ARE');
+        if (youAre) {
+          wordsData = [
+            youAre,
+            { ...youAre },
+            { ...youAre },
+            ...wordsData.filter((word, index) => word.text !== 'YOU ARE' || index === wordsData.findIndex(item => item.text === 'YOU ARE'))
+          ];
+        }
+      }
+      if (typeof textDensity !== 'undefined') {
+        textDensity = ${ROOM_TV_TEXT_DENSITY};
+        if (typeof updateGridDimensions === 'function') updateGridDimensions();
+        if (typeof initializeGrid === 'function') initializeGrid();
+      }
+    `);
+    console.log('📝 Room TV iframe text density tuned:', ROOM_TV_TEXT_DENSITY);
+  } catch (error) {
+    console.warn('⚠️ Could not tune room TV iframe density:', error.message);
+  }
+}
 
 function startIframeCapture(iframe) {
   if (iframeCaptureStarted) return;
   iframeCaptureStarted = true;
   
   console.log('🖼️ Starting iframe capture for TV screen');
+  tuneSilhouetteIframeDensity(iframe);
   
   let iframeFrameCount = 0;
   let lastCaptureTime = 0;
@@ -1493,8 +1534,8 @@ function drawPlaceholderAnimation() {
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, w, h);
   
-  const words = ['YOU ARE', 'YOUR CHOICES', 'PUBLIC SELF', 'POSSIBILITY'];
-  const textColors = ['#FF0000', '#0000FF', '#00FF00', '#FFFF00'];
+  const words = ['YOU ARE', 'YOU ARE', 'YOU ARE', 'YOUR CHOICES', 'PUBLIC SELF', 'PRESENT'];
+  const textColors = ['#FF0000', '#FF0000', '#FF0000', '#FFFF00', '#0000FF', '#00FF00'];
   
   ctx.save();
   ctx.beginPath();

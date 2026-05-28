@@ -27,12 +27,12 @@
   --font-mono: 'JetBrains Mono', monospace;
   --font-arrow: 'Alegreya', serif;
   
-  --title-size: 136px;
-  --title-line-height: 130px;
-  --title-letter-spacing: -4px;
+  --title-size: 120px;
+  --title-line-height: 116px;
+  --title-letter-spacing: -3.5px;
   
-  --body-size: 20px;
-  --body-line-height: 26px;
+  --body-size: 18px;
+  --body-line-height: 24px;
   
   --label-size: 14px;
   --label-line-height: 14px;
