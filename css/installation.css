@@ -742,7 +742,8 @@ body.pointer-locked:hover .music-toggle {
 
 .key-label {
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--body-size);
+  line-height: var(--body-line-height);
   color: rgba(255, 255, 255, 0.6);
   margin-left: 8px;
 }
@@ -1030,7 +1031,8 @@ body:not(.cinematic-intro) .skip-hint {
   }
   
   .key-label {
-    font-size: 12px;
+    font-size: var(--body-size);
+    line-height: var(--body-line-height);
   }
 }
 
@@ -1106,8 +1108,8 @@ body:not(.cinematic-intro) .skip-hint {
 
 .anchor-info-panel .panel-description {
   font-family: var(--font-body);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: var(--body-size);
+  line-height: var(--body-line-height);
   color: rgba(255, 255, 255, 0.75);
   margin-bottom: 0;
 }
@@ -1357,8 +1359,8 @@ body.anchor-focused .anchor-indicator:not(.active) {
   }
   
   .anchor-info-panel .panel-description {
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: var(--body-size);
+    line-height: var(--body-line-height);
   }
   
   .anchor-info-panel .panel-description p {
@@ -1413,7 +1415,8 @@ body.anchor-focused .anchor-indicator:not(.active) {
   }
   
   .anchor-info-panel .panel-description {
-    font-size: 12px;
+    font-size: var(--body-size);
+    line-height: var(--body-line-height);
   }
 }
 

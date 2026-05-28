@@ -38,9 +38,9 @@
   --quote-line-height: 77px;
   --quote-letter-spacing: -2px;
   
-  /* Body Large - 22px */
-  --body-large-size: 22px;
-  --body-large-line-height: 36px;
+  /* Body Large - kept aligned with body copy for cross-page consistency */
+  --body-large-size: var(--body-size);
+  --body-large-line-height: var(--body-line-height);
   
   /* Body - 20px */
   --body-size: 18px;
@@ -1303,8 +1303,8 @@ body:has(.what-is-this-page) {
     --quote-line-height: 40px;
     --quote-letter-spacing: -1px;
     
-    --body-large-size: 18px;
-    --body-large-line-height: 28px;
+    --body-large-size: var(--body-size);
+    --body-large-line-height: var(--body-line-height);
     
     --body-size: 15px;
     --body-line-height: 24px;
@@ -1505,8 +1505,8 @@ body:has(.what-is-this-page) {
     --quote-size: 24px;
     --quote-line-height: 30px;
     
-    --body-large-size: 16px;
-    --body-large-line-height: 24px;
+    --body-large-size: var(--body-size);
+    --body-large-line-height: var(--body-line-height);
     
     --body-size: 15px;
     --body-line-height: 24px;
