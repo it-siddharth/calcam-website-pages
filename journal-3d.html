@@ -466,11 +466,24 @@
       
       .book-section {
         flex: 1;
-        min-height: 250px;
+        min-height: clamp(280px, 48dvh, 430px);
+        position: relative;
+        width: 100%;
+      }
+
+      #book-container {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
       }
       
       .book-controls {
-        bottom: 15px;
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
         gap: 6px;
       }
       
@@ -485,7 +498,7 @@
       
       .journal-footer-mobile {
         display: block;
-        padding: 16px var(--page-padding) var(--page-padding);
+        padding: 14px var(--page-padding) var(--page-padding);
         flex-shrink: 0;
       }
       
@@ -531,16 +544,20 @@
         --title-line-height: 44px;
       }
       
-      .nav-links {
+      .journal-footer-mobile .nav-links {
         gap: 6px;
+      }
+
+      .book-section {
+        min-height: clamp(260px, 44dvh, 390px);
       }
       
       .btn {
-        padding: 5px 10px;
+        padding: 5px 8px;
       }
       
       .btn-text {
-        font-size: 11px;
+        font-size: 10px;
       }
       
       .btn-arrow {
@@ -681,17 +698,17 @@
     // Page images configuration
     // ============================================
     const pageImages = [
-      'assets/R0002034.png',
-      'assets/R0002068%202.png',
-      'assets/R0002097%201.png',
-      'assets/R0002355%201.png',
-      'assets/R0002358%201.png',
-      'assets/DSC_4949%201.png',
-      'assets/IMG_4179%202.png',
-      'assets/IMG_4216%201.png',
-      'assets/IMG_4223%201.png',
-      'assets/IMG_4227%202.png',
-      'assets/Frame%2011.png'
+      'assets/R0002034.jpg',
+      'assets/R0002068_2.jpg',
+      'assets/R0002097_1.jpg',
+      'assets/R0002355_1.jpg',
+      'assets/R0002358_1.jpg',
+      'assets/DSC_4949_1.jpg',
+      'assets/IMG_4179_2.jpg',
+      'assets/IMG_4216_1.jpg',
+      'assets/IMG_4223_1.jpg',
+      'assets/IMG_4227_2.jpg',
+      'assets/Frame_11.jpg'
     ];
 
     // ============================================
@@ -1116,7 +1133,7 @@
       pageSubdivisions: 20
     });
 
-    book.scale.x = 0.8;
+    book.scale.set(0.8, 1, 1);
     book.position.x = 0; // Centered
     scene.add(book);
 
@@ -1148,11 +1165,26 @@
     // ============================================
     // Event Handlers
     // ============================================
+    function adjustBookView() {
+      if (window.innerWidth <= 768) {
+        camera.setFocalLength(58);
+        camera.position.set(0, 3.2, 1.0);
+        book.scale.set(1.45, 1.45, 1.45);
+      } else {
+        camera.setFocalLength(MAXFOV);
+        camera.position.set(0, 4, 1.2);
+        book.scale.set(0.8, 1, 1);
+      }
+
+      camera.lookAt(0, 0, 0);
+      camera.updateProjectionMatrix();
+    }
+
     function onWindowResize() {
       const w = container.clientWidth;
       const h = container.clientHeight;
       camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      adjustBookView();
       renderer.setSize(w, h);
     }
 
@@ -1267,6 +1299,7 @@
     // ============================================
     // Initialize
     // ============================================
+    adjustBookView();
     updatePageIndicator();
 
     // Hide loading overlay
