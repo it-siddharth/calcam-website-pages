@@ -530,7 +530,7 @@
         height: 100vh;
         height: 100svh;
         height: 100dvh;
-        overflow: hidden;
+        overflow: hidden !important;
       }
       
       .journal-content {
@@ -1397,14 +1397,11 @@
       
       // Pull the camera back far enough that the tilted open book
       // stays inside the shorter mobile canvas (header + controls).
-      const canvasWidth = container.clientWidth || window.innerWidth;
-      const canvasHeight = container.clientHeight || window.innerHeight;
-      const aspect = canvasWidth / Math.max(canvasHeight, 1);
-      const shortCanvas = aspect > 1.2 || canvasHeight < 360;
-      
-      const baseFocal = shortCanvas ? 34 : 38;
-      const baseCamY = shortCanvas ? 3.15 : 2.95;
-      const baseCamZ = shortCanvas ? 1.15 : 1.0;
+      // Wider / farther than the old mobile camera so the tilted open
+      // spread stays inside the canvas, including the bottom corners.
+      const baseFocal = 39;
+      const baseCamY = 2.7;
+      const baseCamZ = 0.92;
       
       // Apply zoom by adjusting focal length (higher = more zoomed in)
       const zoomedFocal = baseFocal * currentZoom;
@@ -1424,7 +1421,7 @@
     function adjustBookFraming() {
       if (isMobile()) {
         // Shrink uniformly so the tilted open spread fits the short canvas.
-        book.scale.set(0.72, 0.72, 0.72);
+        book.scale.set(0.78, 0.78, 0.78);
       } else {
         book.scale.set(0.8, 1, 1);
       }
