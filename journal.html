@@ -528,15 +528,16 @@
       .journal-page {
         flex-direction: column;
         height: 100vh;
+        height: 100svh;
         height: 100dvh;
-        overflow: hidden;
+        overflow: hidden !important;
       }
       
       .journal-content {
         width: 100%;
         min-width: 0;
         max-width: none;
-        padding: 25px var(--page-padding) 0;
+        padding: 16px var(--page-padding) 0;
         height: auto;
         flex-shrink: 0;
         order: 1;
@@ -572,39 +573,42 @@
         font-family: var(--font-body);
         font-size: 15px;
         font-weight: 700;
-        line-height: 24px;
+        line-height: 22px;
         max-width: 315px;
         margin: 0;
-        margin-top: 8px;
+        margin-top: 4px;
         padding: 0 var(--page-padding);
         flex-shrink: 0;
         order: 2;
       }
       
       .book-section {
-        flex: 1;
-        min-height: 300px;
+        flex: 1 1 0;
+        min-height: 0;
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
         order: 3;
         position: relative;
-        padding-bottom: 100px; /* Space for controls + footer */
+        padding-bottom: 0;
+        overflow: hidden;
       }
       
       #book-container {
-        width: 100%;
-        height: 100%;
-        left: 0;
+        position: absolute;
         top: 0;
-        position: relative;
+        left: 0;
+        right: 0;
+        bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+        width: auto;
+        height: auto;
       }
       
       /* Page controls mobile adjustments */
       .page-controls {
         position: fixed;
-        bottom: 55px;
+        bottom: calc(55px + env(safe-area-inset-bottom, 0px));
         left: 50%;
         transform: translateX(-50%);
       }
@@ -632,7 +636,7 @@
       .journal-footer {
         display: flex !important;
         position: fixed !important;
-        bottom: 16px !important;
+        bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
         width: auto !important;
@@ -652,7 +656,7 @@
       .back-button {
         padding: 6px 12px;
         font-size: 12px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
       }
       
       .back-arrow { font-size: 14px; }
@@ -1310,7 +1314,7 @@
     });
 
     book.scale.x = 0.8;
-    book.position.x = -0.3; // Shifted left to prevent right-side clipping
+    book.position.x = -0.3; // Shifted left on desktop to prevent right-side clipping
     scene.add(book);
 
     book.setPages(pageImages);
@@ -1391,16 +1395,19 @@
     function applyZoom() {
       if (!isMobile()) return;
       
-      // Base mobile camera settings
-      const baseFocal = 55;
-      const baseCamY = 2.4;
-      const baseCamZ = 0.75;
+      // Pull the camera back far enough that the tilted open book
+      // stays inside the shorter mobile canvas (header + controls).
+      // Wider / farther than the old mobile camera so the tilted open
+      // spread stays inside the canvas, including the bottom corners.
+      const baseFocal = 39;
+      const baseCamY = 2.7;
+      const baseCamZ = 0.92;
       
       // Apply zoom by adjusting focal length (higher = more zoomed in)
       const zoomedFocal = baseFocal * currentZoom;
       camera.setFocalLength(zoomedFocal);
       camera.position.set(0, baseCamY / currentZoom, baseCamZ / currentZoom);
-      camera.lookAt(0, 0, 0);
+      camera.lookAt(0, 0.02, 0);
       camera.updateProjectionMatrix();
     }
 
@@ -1411,12 +1418,23 @@
       return window.innerWidth <= 768;
     }
     
+    function adjustBookFraming() {
+      if (isMobile()) {
+        // Shrink uniformly so the tilted open spread fits the short canvas.
+        book.scale.set(0.78, 0.78, 0.78);
+      } else {
+        book.scale.set(0.8, 1, 1);
+      }
+    }
+
     function adjustCameraForDevice() {
       // Use the book-section (parent) dimensions, not the book-container
       // because book-container is 200% width (for overflow effects)
       const bookSection = container.parentElement;
       const sectionWidth = bookSection.clientWidth;
       const sectionHeight = bookSection.clientHeight;
+      
+      adjustBookFraming();
       
       if (isMobile()) {
         // Mobile: apply current zoom level
@@ -1717,6 +1735,9 @@
     // Event Listeners
     // ============================================
     window.addEventListener('resize', onWindowResize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', onWindowResize);
+    }
     
     // Track if last interaction was a drag (to prevent click from firing after drag)
     let wasDragged = false;
@@ -1802,7 +1823,10 @@
     // Initialize
     // ============================================
     adjustCameraForDevice();
+    onWindowResize();
     updatePageIndicator();
+    requestAnimationFrame(onWindowResize);
+    window.addEventListener('load', onWindowResize);
 
     // Hide loading overlay
     setTimeout(() => {
