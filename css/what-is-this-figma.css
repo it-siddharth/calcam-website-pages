@@ -33,7 +33,7 @@
 .section-credits > .section-title { display: none; }
 
 .section-backstory { position: relative; display: grid; grid-template-columns: minmax(0, 441px) minmax(0, 430px); column-gap: 240px; min-height: 520px; padding: 0 0 110px 56px; align-items: start; }
-.backstory-icon { position: absolute; top: 110px; left: 0; width: 26px; height: 36px; margin: 0; }
+.backstory-icon { position: absolute; top: 8px; left: 56px; width: 26px; height: 36px; margin: 0; }
 .backstory-icon img { display: block; }
 .backstory-text { max-width: none; font-size: 18px; line-height: 24px; }
 .backstory-text:nth-of-type(2) { padding-top: 110px; }
