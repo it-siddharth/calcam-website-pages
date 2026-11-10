@@ -3,6 +3,9 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { WebcamTextRenderer } from './webcam-text-renderer.js';
 import { WebcamProjection } from './webcam-projection.js';
 
+// The story page embeds focused views of this same installation scene.
+const embedView = new URLSearchParams(window.location.search).get('embed');
+
 // ============================================
 // Scene Configuration (matching home page)
 // ============================================
@@ -69,13 +72,13 @@ const CONFIG = {
 // ============================================
 const roomSettings = {
   ambient: 0.00,
-  wallColor: '#545454',
-  floorColor: '#3d3d3d',
-  ceilingColor: '#3d3d3d',
+  wallColor: '#3a3a3a',
+  floorColor: '#242424',
+  ceilingColor: '#242424',
   projectionOn: true,
-  projectionIntensity: 0.4,
+  projectionIntensity: 0.55,
   projectionRightOn: true,
-  projectionRightIntensity: 0.4,
+  projectionRightIntensity: 0.55,
   panelOpacity: 0.30,
   tvFrameColor: '#1c1c1c',
   tvBorderVisible: false,
@@ -97,6 +100,7 @@ const panelBasePositions = [
 // Global Variables
 // ============================================
 let scene, camera, renderer, controls;
+let embedReadySent = false;
 let installationGroup, tvGroup, tvScreen, tvScreenTexture, tvFrame, screenBorder;
 let standPole;
 let acrylicPanels = [];
@@ -673,10 +677,12 @@ function init() {
   // Detect mobile/touch device (also check for narrow viewport for Chrome emulator)
   isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth <= 768;
   
-  // Pointer Lock Controls (desktop only)
-  controls = new PointerLockControls(camera, document.body);
+  // Pointer lock belongs to the full room experience, not embedded previews.
+  if (!embedView) controls = new PointerLockControls(camera, document.body);
   
-  if (isMobile) {
+  if (embedView) {
+    // The embedded view sets its own camera after the room is built.
+  } else if (isMobile) {
     // Mobile: use touch controls instead of pointer lock
     setupTouchControls(container);
     // Don't add pointer-locked class on mobile - keeps anchor indicators interactive
@@ -710,28 +716,30 @@ function init() {
   createProjection();
   createProjectionRight();
   createSpeakers();
+
+  if (embedView) setupEmbeddedView(container);
   
   // Setup silhouette texture
   setupSilhouetteTexture();
   
   // Setup controls
-  setupKeyboardControls();
-  setupRoomControls();
-  setupModelControls();
-  setupProjectionControls();
-  setupProjectionControlsRight();
-  
-  // Setup anchor point system
-  setupAnchorPoints();
+  if (!embedView) {
+    setupKeyboardControls();
+    setupRoomControls();
+    setupModelControls();
+    setupProjectionControls();
+    setupProjectionControlsRight();
+    setupAnchorPoints();
+  }
   
   // Handle resize
   window.addEventListener('resize', onWindowResize);
   
   // Setup cinematic skip listeners
-  setupCinematicSkipListeners();
+  if (!embedView) setupCinematicSkipListeners();
   
   // Check if we should play cinematic intro
-  const shouldPlayCinematic = checkCinematicTransition();
+  const shouldPlayCinematic = !embedView && checkCinematicTransition();
   
   if (shouldPlayCinematic) {
     // Set camera to start position BEFORE first render to avoid glitch
@@ -750,6 +758,73 @@ function init() {
       startCinematicIntro();
     }, 100);
   }
+}
+
+function setupEmbeddedView(container) {
+  document.body.classList.remove('cinematic-intro');
+  isCinematicIntro = false;
+  const target = new THREE.Vector3(0, 2, -3);
+  if (embedView === 'room') {
+    // Open the existing room from above so both projection walls and TV are visible.
+    ceiling.visible = false;
+    walls[1].visible = false; // entrance wall
+    walls[3].visible = false; // right wall, nearest the camera
+    // Match the exterior room model's starting angle from room-3d.js.
+    camera.fov = 45;
+    camera.position.set(6, 4, 8);
+    camera.lookAt(target);
+    let dragging = false;
+    let previousX = 0;
+    let previousY = 0;
+    let angle = Math.atan2(camera.position.x - target.x, camera.position.z - target.z);
+    let radius = camera.position.distanceTo(target);
+    let elevation = Math.asin((camera.position.y - target.y) / radius);
+    const updateOrbit = () => {
+      camera.position.set(
+        target.x + radius * Math.cos(elevation) * Math.sin(angle),
+        target.y + radius * Math.sin(elevation),
+        target.z + radius * Math.cos(elevation) * Math.cos(angle)
+      );
+      camera.lookAt(target);
+    };
+    renderer.domElement.style.touchAction = 'none';
+    renderer.domElement.addEventListener('pointerdown', event => {
+      dragging = true;
+      previousX = event.clientX;
+      previousY = event.clientY;
+      renderer.domElement.setPointerCapture(event.pointerId);
+    });
+    renderer.domElement.addEventListener('pointermove', event => {
+      if (!dragging) return;
+      angle = Math.max(0.35, Math.min(1.15, angle + (event.clientX - previousX) * 0.004));
+      elevation = Math.max(0.1, Math.min(0.8, elevation + (event.clientY - previousY) * 0.003));
+      previousX = event.clientX;
+      previousY = event.clientY;
+      updateOrbit();
+    });
+    renderer.domElement.addEventListener('pointerup', () => { dragging = false; });
+    renderer.domElement.addEventListener('pointercancel', () => { dragging = false; });
+    renderer.domElement.addEventListener('wheel', event => {
+      event.preventDefault();
+      radius = Math.max(9, Math.min(23, radius * (event.deltaY > 0 ? 1.08 : 0.92)));
+      updateOrbit();
+    }, { passive: false });
+  } else if (embedView === 'left-wall') {
+    projectionMeshRight.visible = false;
+    camera.position.set(-0.5, roomSettings.cameraHeight, 1);
+    camera.lookAt(-CONFIG.room.width / 2, 2, -1);
+  } else if (embedView === 'right-wall') {
+    projectionMesh.visible = false;
+    camera.position.set(0.5, roomSettings.cameraHeight, 1);
+    camera.lookAt(CONFIG.room.width / 2, 2, -1);
+  } else if (embedView === 'centre-tv') {
+    projectionMesh.visible = false;
+    projectionMeshRight.visible = false;
+    camera.position.set(0, roomSettings.cameraHeight, -1.75);
+    camera.lookAt(0, roomSettings.tvHeight, -CONFIG.room.depth / 2);
+  }
+  camera.updateProjectionMatrix();
+  container.setAttribute('aria-label', `Live ${embedView.replaceAll('-', ' ')} view of the installation`);
 }
 
 // ============================================
@@ -797,8 +872,8 @@ function createRoom() {
     color: new THREE.Color(roomSettings.wallColor)
   });
   
-  // Back wall material (15% darker than side walls)
-  const backWallColor = new THREE.Color(roomSettings.wallColor).multiplyScalar(0.85);
+  // Back wall sits darker so the TV and acrylic panels hold focus.
+  const backWallColor = new THREE.Color(roomSettings.wallColor).multiplyScalar(0.75);
   const backWallMat = new THREE.MeshBasicMaterial({
     color: backWallColor
   });
@@ -1158,11 +1233,14 @@ function createProjection() {
 // Setup Projection Webcam (starts immediately, fallback on interaction)
 // ============================================
 function setupProjectionWebcam() {
+  if (embedView === 'centre-tv') return;
+  const wantsLeft = embedView !== 'right-wall';
+  const wantsRight = embedView !== 'left-wall';
   const initWebcam = async () => {
-    if (projectionInitialized && projectionInitializedRight) return;
+    if ((!wantsLeft || projectionInitialized) && (!wantsRight || projectionInitializedRight)) return;
     
     // Initialize left wall webcam
-    if (!projectionInitialized) {
+    if (wantsLeft && !projectionInitialized) {
       console.log('📽️ Initializing left wall projection webcam...');
       const success = await webcamProjection.init();
       if (success) {
@@ -1174,7 +1252,7 @@ function setupProjectionWebcam() {
     }
     
     // Initialize right wall webcam (shares the same camera stream conceptually)
-    if (!projectionInitializedRight) {
+    if (wantsRight && !projectionInitializedRight) {
       console.log('📽️ Initializing right wall projection webcam...');
       const successRight = await webcamProjectionRight.init();
       if (successRight) {
@@ -1329,8 +1407,10 @@ function setupSilhouetteTexture() {
   // Initial black fill
   silhouetteCtx.fillStyle = '#000000';
   silhouetteCtx.fillRect(0, 0, silhouetteCanvas.width, silhouetteCanvas.height);
+
+  if (embedView === 'left-wall' || embedView === 'right-wall') return;
   
-  if (isSafari) {
+  if (isSafari || (embedView && location.protocol === 'file:')) {
     // Safari: Use native WebcamTextRenderer (iframe canvas capture is broken in Safari)
     console.log('🍎 Safari detected - using native WebcamTextRenderer for TV');
     setupSafariTVRenderer();
@@ -2007,11 +2087,13 @@ window.toggleRoomControls = function() {
 window.resetRoomSettings = function() {
   const defaults = {
     ambient: 0.00,
-    wallColor: '#545454',
-    floorColor: '#3d3d3d',
-    ceilingColor: '#3d3d3d',
+    wallColor: '#3a3a3a',
+    floorColor: '#242424',
+    ceilingColor: '#242424',
     projectionOn: true,
-    projectionIntensity: 0.8,
+    projectionIntensity: 0.55,
+    projectionRightOn: true,
+    projectionRightIntensity: 0.55,
     panelOpacity: 0.30,
     tvFrameColor: '#1c1c1c',
     hSpread: 0.35,
@@ -2072,7 +2154,7 @@ window.resetRoomSettings = function() {
   
   ambientLight.intensity = defaults.ambient;
   const baseWallColor = new THREE.Color(defaults.wallColor);
-  const darkWallColor = baseWallColor.clone().multiplyScalar(0.85);
+  const darkWallColor = baseWallColor.clone().multiplyScalar(0.75);
   walls.forEach(wall => {
     if (wall === backWall) {
       wall.material.color.copy(darkWallColor);
@@ -2083,9 +2165,9 @@ window.resetRoomSettings = function() {
   floor.material.color.set(defaults.floorColor);
   ceiling.material.color.set(defaults.ceilingColor);
   if (projectionMesh) projectionMesh.visible = defaults.projectionOn;
-  if (projectionMeshRight) projectionMeshRight.visible = defaults.projectionOn;
+  if (projectionMeshRight) projectionMeshRight.visible = defaults.projectionRightOn;
   projectionMaterial.opacity = defaults.projectionIntensity;
-  if (projectionMaterialRight) projectionMaterialRight.opacity = defaults.projectionIntensity;
+  if (projectionMaterialRight) projectionMaterialRight.opacity = defaults.projectionRightIntensity;
   acrylicPanels.forEach(panel => panel.material.opacity = defaults.panelOpacity);
   updatePanelThickness(defaults.thickness);
   updatePanelSpacing(defaults.hSpread, defaults.vSpread, defaults.zOffset);
@@ -2097,17 +2179,6 @@ window.resetRoomSettings = function() {
     THREE.MathUtils.degToRad(defaults.rotateZ)
   );
 };
-
-window.dismissHint = function() {
-  const hint = document.getElementById('controls-hint');
-  hint.classList.add('hidden');
-  localStorage.setItem('installationHintDismissed', 'true');
-};
-
-if (localStorage.getItem('installationHintDismissed')) {
-  const hint = document.getElementById('controls-hint');
-  if (hint) hint.classList.add('hidden');
-}
 
 // ============================================
 // Projection Controls Toggle (Left Wall)
@@ -2784,23 +2855,32 @@ function onWindowResize() {
 // ============================================
 function animate() {
   requestAnimationFrame(animate);
+
+  if (embedView && document.hidden) {
+    prevTime = performance.now();
+    return;
+  }
   
   const time = performance.now();
   const delta = (time - prevTime) / 1000;
   
   // Only allow movement when not focused on an anchor
-  if (!isAnchorFocused) {
+  if (!embedView && !isAnchorFocused) {
     updateMovement(delta);
   }
   
   projectionTime += delta;
-  updateProjection(projectionTime);
-  updateProjectionRight(projectionTime);
+  if (embedView !== 'right-wall' && embedView !== 'centre-tv') updateProjection(projectionTime);
+  if (embedView !== 'left-wall' && embedView !== 'centre-tv') updateProjectionRight(projectionTime);
   
   // Update anchor indicator positions
-  updateAnchorIndicators();
+  if (!embedView) updateAnchorIndicators();
   
   renderer.render(scene, camera);
+  if (embedView && !embedReadySent) {
+    embedReadySent = true;
+    window.parent.postMessage({ type: 'calcam-embed', status: 'ready' }, '*');
+  }
   
   prevTime = time;
 }

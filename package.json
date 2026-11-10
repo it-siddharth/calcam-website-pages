@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "scripts": {
+    "build:installation-embed": "node scripts/build-installation-embed.cjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.0"
+  }
+}

@@ -22,7 +22,7 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet"></noscript>
   
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="css/installation.css?v=11">
+  <link rel="stylesheet" href="css/installation.css?v=13">
   
   <!-- Critical inline styles to prevent white flash and text flash -->
   <style>
@@ -84,7 +84,10 @@
         <span class="back-arrow">←</span>
         <span class="back-text">BACK</span>
       </a>
-      <h1 class="title">THE<br>INSTALLATION</h1>
+      <h1 class="installation-title" aria-label="The Installation">
+        <span class="title-word title-word-the">THE</span>
+        <span class="title-word title-word-installation">INSTALLATION</span>
+      </h1>
     </header>
 
     <!-- Instructions (centered at bottom) -->
@@ -132,42 +135,6 @@
       <p>In the contrast between light and dark, we find the boundaries of self.</p>
     </div>
   </div>
-
-  <!-- Controls Hint (shown initially) -->
-  <div id="controls-hint" class="controls-hint">
-    <div class="hint-content">
-      <div class="hint-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M12 2L12 6M12 18L12 22M2 12L6 12M18 12L22 12"/>
-          <circle cx="12" cy="12" r="4"/>
-        </svg>
-      </div>
-      <p class="hint-title">Navigation Controls</p>
-      <div class="hint-keys">
-        <div class="key-group">
-          <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
-          <span class="key-label">or Arrow Keys to move</span>
-        </div>
-        <div class="key-group">
-          <span class="key wide">Mouse</span>
-          <span class="key-label">to look around</span>
-        </div>
-      </div>
-      <button class="hint-dismiss" id="hint-dismiss-btn">Got it</button>
-    </div>
-  </div>
-  
-  <!-- Inline script for hint dismiss (runs early, doesn't depend on module) -->
-  <script>
-    document.getElementById('hint-dismiss-btn').addEventListener('click', function() {
-      document.getElementById('controls-hint').classList.add('hidden');
-      localStorage.setItem('installationHintDismissed', 'true');
-    });
-    // Auto-hide if already dismissed
-    if (localStorage.getItem('installationHintDismissed')) {
-      document.getElementById('controls-hint').classList.add('hidden');
-    }
-  </script>
 
   <!-- Background Music -->
   <audio id="bg-music" loop preload="none">

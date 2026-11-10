@@ -59,6 +59,8 @@ export class WebcamTextRenderer {
     
     // Contour detection
     this.edgePixels = [];
+    this.lastTextFrame = [];
+    this.wordLayoutCache = new Map();
     
     // Settings (matching WORD SILHOUETTE defaults)
     this.settings = {
@@ -80,10 +82,11 @@ export class WebcamTextRenderer {
       fontSize: 10,
       textDensity: 1.15,
       
-      // Animation controls (not implemented yet)
+      // Animation controls
       enableAnimation: false,
       animationType: 'wave',
       animationSpeed: 5,
+      animationAmount: 10,
       
       // Glitch controls
       enableGlitch: false,
@@ -332,21 +335,82 @@ export class WebcamTextRenderer {
    * Calculate grid dimensions based on settings
    */
   updateGridDimensions() {
-    // Keep the Safari renderer's cadence close to WORD SILHOUETTE.html:
-    // higher textDensity means more phrases across and down the TV feed.
-    this.textColumns = Math.max(
-      1,
-      Math.floor(this.displayWidth / (10 * this.settings.fontSize * this.settings.cellWidthMultiplier / this.settings.textDensity))
-    );
-    this.textRows = Math.max(
-      1,
-      Math.floor(this.displayHeight / (this.settings.fontSize / this.settings.textDensity))
-    );
-    
-    const cellWidth = this.displayWidth / this.textColumns;
-    const cellHeight = this.displayHeight / this.textRows;
-    
-    console.log(`📐 Grid: ${this.textColumns}cols x ${this.textRows}rows | Cell: ${cellWidth.toFixed(1)}x${cellHeight.toFixed(1)}`);
+    const metrics = this.words.map((word) => this.getWordLayoutMetrics(word));
+    const narrowestSlot = metrics.length ? Math.min(...metrics.map((item) => item.slotWidth)) : 40;
+    const tallestSlot = metrics.length ? Math.max(...metrics.map((item) => item.slotHeight)) : 20;
+
+    // Add a spare column and row because words have different measured widths.
+    this.textColumns = Math.max(1, Math.ceil(this.displayWidth / narrowestSlot) + 1);
+    this.textRows = Math.max(1, Math.ceil(this.displayHeight / tallestSlot) + 1);
+
+    console.log(`📐 Collision-safe grid: ${this.textColumns}cols x ${this.textRows}rows`);
+  }
+
+  /**
+   * Reserve enough room for a word's largest possible animated bounds.
+   * Independent phrases can then move without entering a neighbor's slot.
+   */
+  getWordLayoutMetrics(word) {
+    const cacheKey = [
+      word.text,
+      word.font,
+      word.size,
+      this.settings.enableAnimation,
+      this.settings.animationType,
+      this.settings.animationAmount,
+      this.settings.cellWidthMultiplier,
+      this.settings.textDensity
+    ].join('|');
+    const cached = this.wordLayoutCache.get(cacheKey);
+    if (cached) return cached;
+
+    this.ctx.save();
+    this.ctx.font = `${word.size}px ${word.font}`;
+    const measurement = this.ctx.measureText(word.text);
+    this.ctx.restore();
+
+    const baseWidth = Math.max(1, measurement.width);
+    const measuredHeight = (measurement.actualBoundingBoxAscent || 0) + (measurement.actualBoundingBoxDescent || 0);
+    const baseHeight = Math.max(word.size * 1.2, measuredHeight);
+    const animationEnabled = this.settings.enableAnimation;
+    const amount = animationEnabled ? this.settings.animationAmount : 0;
+    const maxScale = animationEnabled && this.settings.animationType === 'pulse' ? 1 + amount * 0.012 : 1;
+    const maxRotation = animationEnabled && this.settings.animationType === 'rotate' ? amount * 0.012 : 0;
+    const verticalTravel = animationEnabled && ['wave', 'bounce'].includes(this.settings.animationType) ? amount : 0;
+    const widestAngle = Math.min(maxRotation, Math.atan2(baseHeight, baseWidth));
+    const tallestAngle = Math.min(maxRotation, Math.atan2(baseWidth, baseHeight));
+    const rotatedWidth = maxScale * (baseWidth * Math.cos(widestAngle) + baseHeight * Math.sin(widestAngle));
+    const rotatedHeight = maxScale * (baseWidth * Math.sin(tallestAngle) + baseHeight * Math.cos(tallestAngle));
+    const horizontalGap = Math.max(4, 10 * this.settings.cellWidthMultiplier / this.settings.textDensity);
+    const verticalGap = Math.max(4, 8 / this.settings.textDensity);
+
+    const metrics = {
+      baseWidth,
+      baseHeight,
+      slotWidth: Math.ceil(rotatedWidth + horizontalGap),
+      slotHeight: Math.ceil(rotatedHeight + verticalTravel * 2 + verticalGap)
+    };
+    this.wordLayoutCache.set(cacheKey, metrics);
+    return metrics;
+  }
+
+  /**
+   * Resize the actual render surface so previews and exports share dimensions.
+   */
+  resize(width, height) {
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.video.width = width;
+    this.video.height = height;
+    this.displayX = 0;
+    this.displayY = 0;
+    this.displayWidth = width;
+    this.displayHeight = height;
+    this.lastGoodImageData = null;
+    this.lastTextFrame = [];
+    this.updateGridDimensions();
+    this.initializeGrid();
+    this.drawPlaceholder();
   }
   
   /**
@@ -354,6 +418,8 @@ export class WebcamTextRenderer {
    */
   initializeGrid() {
     this.textGrid = [];
+    if (this.words.length === 0) return;
+
     for (let y = 0; y < this.textRows; y++) {
       const row = [];
       for (let x = 0; x < this.textColumns; x++) {
@@ -412,8 +478,8 @@ export class WebcamTextRenderer {
         this.ctx.fillStyle = this.settings.invertColors ? '#FFFFFF' : '#000000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Draw webcam frame
-        this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+        // Draw a centered cover crop so portrait modes do not stretch the feed.
+        this.drawVideoCover();
         
         // Get pixel data
         imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -455,6 +521,27 @@ export class WebcamTextRenderer {
       console.error('Render error:', error);
       this.drawPlaceholder();
     }
+  }
+
+  drawVideoCover() {
+    const sourceWidth = this.video.videoWidth || this.canvas.width;
+    const sourceHeight = this.video.videoHeight || this.canvas.height;
+    const sourceRatio = sourceWidth / sourceHeight;
+    const targetRatio = this.canvas.width / this.canvas.height;
+    let sx = 0;
+    let sy = 0;
+    let sw = sourceWidth;
+    let sh = sourceHeight;
+
+    if (sourceRatio > targetRatio) {
+      sw = sourceHeight * targetRatio;
+      sx = (sourceWidth - sw) / 2;
+    } else if (sourceRatio < targetRatio) {
+      sh = sourceWidth / targetRatio;
+      sy = (sourceHeight - sh) / 2;
+    }
+
+    this.ctx.drawImage(this.video, sx, sy, sw, sh, 0, 0, this.canvas.width, this.canvas.height);
   }
   
   /**
@@ -527,21 +614,20 @@ export class WebcamTextRenderer {
    */
   drawTextGrid(imageData) {
     const pixels = imageData.data;
-    const gridColWidth = this.displayWidth / this.textColumns;
-    const gridRowHeight = this.displayHeight / this.textRows;
     let currentY = this.displayY;
+    this.lastTextFrame = [];
     
     for (let y = 0; y < this.textGrid.length; y++) {
       if (currentY > this.displayY + this.displayHeight) break;
       
       let currentX = this.displayX;
-      let rowHeight = gridRowHeight;
+      let rowHeight = 1;
       
       for (let x = 0; x < this.textGrid[y].length; x++) {
         const wordIndex = this.textGrid[y][x];
         if (wordIndex >= this.words.length) continue;
-        
-        rowHeight = Math.max(rowHeight, this.words[wordIndex].size);
+
+        rowHeight = Math.max(rowHeight, this.getWordLayoutMetrics(this.words[wordIndex]).slotHeight);
       }
       
       for (let x = 0; x < this.textGrid[y].length; x++) {
@@ -552,13 +638,12 @@ export class WebcamTextRenderer {
           if (wordIndex >= this.words.length) continue;
           
           const word = this.words[wordIndex];
-          const cellWidth = Math.min(
-            word.text.length * word.size * this.settings.cellWidthMultiplier,
-            gridColWidth * 2
-          );
+          const layout = this.getWordLayoutMetrics(word);
+
+          if (currentX + layout.slotWidth > this.displayX + this.displayWidth) break;
           
-          let vidX = Math.floor(((currentX - this.displayX) / this.displayWidth) * this.canvas.width);
-          let vidY = Math.floor(((currentY - this.displayY) / this.displayHeight) * this.canvas.height);
+          let vidX = Math.floor(((currentX + layout.slotWidth / 2 - this.displayX) / this.displayWidth) * this.canvas.width);
+          let vidY = Math.floor(((currentY + rowHeight / 2 - this.displayY) / this.displayHeight) * this.canvas.height);
           
           if (this.settings.flipVideo) {
             vidX = this.canvas.width - vidX;
@@ -583,11 +668,35 @@ export class WebcamTextRenderer {
             this.ctx.font = `${word.size}px ${word.font}`;
             this.ctx.textAlign = 'left';
             this.ctx.textBaseline = 'top';
-            this.ctx.fillText(word.text, currentX, currentY);
+            const animation = this.settings.enableAnimation ?
+              this.getAnimationTransform(currentX, currentY) :
+              { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 };
+            const translateX = currentX + layout.slotWidth / 2 + animation.x;
+            const translateY = currentY + rowHeight / 2 + animation.y;
+
+            this.ctx.globalAlpha = animation.opacity;
+            this.ctx.translate(translateX, translateY);
+            this.ctx.rotate(animation.rotation);
+            this.ctx.scale(animation.scale, animation.scale);
+            this.ctx.fillText(word.text, -layout.baseWidth / 2, -layout.baseHeight / 2);
+            this.lastTextFrame.push({
+              text: word.text,
+              color: word.color,
+              font: word.font,
+              size: word.size,
+              x: -layout.baseWidth / 2,
+              y: -layout.baseHeight / 2,
+              translateX,
+              translateY,
+              rotation: animation.rotation,
+              scale: animation.scale,
+              opacity: animation.opacity
+            });
+
             this.ctx.restore();
           }
           
-          currentX += cellWidth;
+          currentX += layout.slotWidth;
         } catch (error) {
           continue;
         }
@@ -595,6 +704,69 @@ export class WebcamTextRenderer {
       
       currentY += rowHeight;
     }
+  }
+
+  /**
+   * Match the motion vocabulary used by WORD SILHOUETTE.html while exposing
+   * a separate amount control for the animation playground.
+   */
+  getAnimationTransform(x, y) {
+    const time = performance.now() * 0.001;
+    const speed = this.settings.animationSpeed * 0.55;
+    const amount = this.settings.animationAmount;
+    const phase = x * 0.018 + y * 0.008;
+    const result = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 };
+
+    switch (this.settings.animationType) {
+      case 'wave':
+        result.y = Math.sin(time * speed + phase) * amount;
+        break;
+      case 'pulse':
+        result.scale = Math.max(0.1, 1 + Math.sin(time * speed * 1.35 + phase) * amount * 0.012);
+        break;
+      case 'rotate':
+        result.rotation = Math.sin(time * speed + phase) * amount * 0.012;
+        break;
+      case 'bounce':
+        result.y = -Math.abs(Math.sin(time * speed + phase)) * amount;
+        break;
+      case 'flicker':
+        result.opacity = Math.max(0.08, 1 - Math.abs(Math.sin(time * speed * 2.2 + phase)) * amount * 0.045);
+        break;
+      default:
+        break;
+    }
+
+    return result;
+  }
+
+  /**
+   * Export the latest silhouette as editable SVG text at the active viewport.
+   */
+  toSVG() {
+    const escapeXML = (value) => String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&apos;');
+    const number = (value) => Number(value).toFixed(3).replace(/\.000$/, '');
+    const background = this.settings.invertColors ? '#ffffff' : '#000000';
+    const nodes = this.lastTextFrame.map((item) => {
+      const transform = item.translateX === undefined ? '' :
+        ` transform="translate(${number(item.translateX)} ${number(item.translateY)}) rotate(${number(item.rotation * 180 / Math.PI)}) scale(${number(item.scale)})"`;
+      return `  <text x="${number(item.x)}" y="${number(item.y)}"${transform} fill="${escapeXML(item.color)}" fill-opacity="${number(item.opacity)}" font-family="${escapeXML(item.font)}" font-size="${number(item.size)}" dominant-baseline="hanging">${escapeXML(item.text)}</text>`;
+    }).join('\n');
+
+    return [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${this.canvas.width}" height="${this.canvas.height}" viewBox="0 0 ${this.canvas.width} ${this.canvas.height}">`,
+      '  <title>Text Silhouette</title>',
+      '  <desc>Editable vector text exported from the Calculated Camouflage Text Silhouette Lab.</desc>',
+      `  <rect width="100%" height="100%" fill="${background}"/>`,
+      nodes,
+      '</svg>'
+    ].join('\n');
   }
   
   /**

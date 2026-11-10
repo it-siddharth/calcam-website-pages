@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculated Camouflage installation preview</title>
+  <style>
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000; }
+    #three-container, #three-container canvas { display: block; width: 100%; height: 100%; }
+    #silhouette-iframe { position: fixed; left: -9999px; top: 0; width: 640px; height: 480px; border: 0; }
+  </style>
+  <script>
+    const reportEmbedError = () => window.parent.postMessage({ type: 'calcam-embed', status: 'error' }, '*');
+    window.addEventListener('error', event => {
+      if (event.target === window || event.target?.tagName === 'SCRIPT') reportEmbedError();
+    }, true);
+    window.addEventListener('unhandledrejection', reportEmbedError);
+  </script>
+</head>
+<body>
+  <div id="three-container"></div>
+  <script>
+    if (location.protocol !== 'file:' && !['left-wall', 'right-wall'].includes(new URLSearchParams(location.search).get('embed'))) {
+      const frame = document.createElement('iframe');
+      frame.id = 'silhouette-iframe';
+      frame.src = 'WORD SILHOUETTE.html';
+      frame.allow = 'camera';
+      document.body.append(frame);
+    }
+  </script>
+  <script src="js/installation-embed.bundle.js?v=1" defer></script>
+</body>
+</html>

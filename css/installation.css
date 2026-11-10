@@ -23,13 +23,16 @@
   
   /* Typography - Desktop */
   --font-title: '403 Super Vega', sans-serif;
+  --font-installation-title: 'Nanum Myeongjo', serif;
   --font-body: 'Nanum Myeongjo', serif;
   --font-mono: 'JetBrains Mono', monospace;
   --font-arrow: 'Alegreya', serif;
   
-  --title-size: 120px;
-  --title-line-height: 116px;
-  --title-letter-spacing: -3.5px;
+  --installation-title-size: clamp(52px, 4.34vw, 75px);
+  --installation-title-line-height: 0.99;
+  --installation-title-top: clamp(82px, 5.7vw, 98px);
+  --installation-title-x: clamp(28px, 3.65vw, 63px);
+  --installation-title-right-x: clamp(30px, 3.94vw, 68px);
   
   --body-size: 18px;
   --body-line-height: 24px;
@@ -126,13 +129,13 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 45%;
+  height: min(253px, 24vh);
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.95) 0%,
-    rgba(0, 0, 0, 0.8) 20%,
-    rgba(0, 0, 0, 0.5) 50%,
-    rgba(0, 0, 0, 0.2) 75%,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.76) 28%,
+    rgba(0, 0, 0, 0.42) 58%,
+    rgba(0, 0, 0, 0.16) 82%,
     rgba(0, 0, 0, 0) 100%
   );
   z-index: 5;
@@ -176,16 +179,32 @@ body {
 
 /* Header Section */
 .installation-header {
-  pointer-events: auto;
+  pointer-events: none;
 }
 
-.title {
-  font-family: var(--font-title);
-  font-size: var(--title-size);
-  font-weight: normal;
-  line-height: var(--title-line-height);
-  letter-spacing: var(--title-letter-spacing);
+.installation-title {
+  position: fixed;
+  top: var(--installation-title-top);
+  left: var(--installation-title-x);
+  right: var(--installation-title-right-x);
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  font-family: var(--font-installation-title);
+  font-size: var(--installation-title-size);
+  font-weight: 700;
+  line-height: var(--installation-title-line-height);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--color-text);
   white-space: nowrap;
+  pointer-events: none;
+}
+
+.title-word {
+  display: block;
 }
 
 
@@ -283,6 +302,11 @@ body {
    Back Button
    ============================================ */
 .back-button {
+  position: fixed;
+  left: var(--page-padding);
+  top: var(--page-padding);
+  bottom: auto;
+  z-index: 40;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -302,7 +326,8 @@ body {
   width: fit-content;
   flex-shrink: 0;
   white-space: nowrap;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+  pointer-events: auto;
 }
 
 .back-button:hover {
@@ -653,122 +678,6 @@ body.pointer-locked:hover .music-toggle {
 }
 
 /* ============================================
-   Controls Hint Modal
-   ============================================ */
-.controls-hint {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  animation: fadeIn 0.3s ease;
-}
-
-.controls-hint.hidden {
-  display: none;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.hint-content {
-  text-align: center;
-  max-width: 400px;
-  padding: 40px;
-  background: rgba(20, 20, 25, 0.95);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
-}
-
-.hint-icon {
-  margin-bottom: 20px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.hint-title {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--color-text);
-  margin-bottom: 24px;
-}
-
-.hint-keys {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 28px;
-}
-
-.key-group {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.key {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  height: 36px;
-  padding: 0 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.key.wide {
-  min-width: 80px;
-}
-
-.key-label {
-  font-family: var(--font-body);
-  font-size: var(--body-size);
-  line-height: var(--body-line-height);
-  color: rgba(255, 255, 255, 0.6);
-  margin-left: 8px;
-}
-
-.hint-dismiss {
-  padding: 12px 32px;
-  background: var(--color-text);
-  border: none;
-  border-radius: 30px;
-  color: var(--color-bg);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.hint-dismiss:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
-}
-
-/* ============================================
    Pointer Lock Active State
    ============================================ */
 body.pointer-locked {
@@ -888,9 +797,10 @@ body:not(.cinematic-intro) .skip-hint {
    ============================================ */
 @media screen and (max-width: 1440px) {
   :root {
-    --title-size: 112px;
-    --title-line-height: 108px;
-    --title-letter-spacing: -3.5px;
+    --installation-title-size: clamp(48px, 4.6vw, 66px);
+    --installation-title-top: clamp(88px, 6.8vw, 98px);
+    --installation-title-x: clamp(26px, 3.4vw, 50px);
+    --installation-title-right-x: clamp(28px, 3.6vw, 52px);
   }
 }
 
@@ -899,9 +809,10 @@ body:not(.cinematic-intro) .skip-hint {
    ============================================ */
 @media screen and (max-width: 1024px) {
   :root {
-    --title-size: 78px;
-    --title-line-height: 76px;
-    --title-letter-spacing: -2.5px;
+    --installation-title-size: clamp(36px, 5.8vw, 56px);
+    --installation-title-top: 90px;
+    --installation-title-x: clamp(22px, 3vw, 34px);
+    --installation-title-right-x: clamp(22px, 3.2vw, 36px);
   }
 }
 
@@ -910,9 +821,10 @@ body:not(.cinematic-intro) .skip-hint {
    ============================================ */
 @media screen and (max-width: 768px) {
   :root {
-    --title-size: 42px;
-    --title-line-height: 40px;
-    --title-letter-spacing: -1px;
+    --installation-title-size: clamp(24px, 7.2vw, 34px);
+    --installation-title-top: calc(env(safe-area-inset-top, 0px) + 71px);
+    --installation-title-x: clamp(16px, 5vw, 24px);
+    --installation-title-right-x: clamp(16px, 5vw, 24px);
     
     --body-size: 15px;
     --body-line-height: 24px;
@@ -939,11 +851,6 @@ body:not(.cinematic-intro) .skip-hint {
     display: flex !important;
   }
   
-  /* Hide keyboard controls hint on mobile */
-  .controls-hint {
-    display: none !important;
-  }
-  
   /* Always show pointer on mobile for anchor points */
   body:not(.pointer-locked) .anchor-indicator {
     opacity: 1;
@@ -956,12 +863,14 @@ body:not(.cinematic-intro) .skip-hint {
     padding-bottom: 24px;
   }
   
-  .title {
-    display: none !important;
+  .installation-title {
+    display: flex !important;
+    gap: 14px;
   }
   
   .gradient-top {
-    display: none !important;
+    display: block !important;
+    height: 150px;
   }
   
   .installation-footer {
@@ -984,9 +893,11 @@ body:not(.cinematic-intro) .skip-hint {
   }
   
   .back-button {
+    left: 20px;
+    top: calc(env(safe-area-inset-top, 0px) + 20px);
+    bottom: auto;
     padding: 6px 12px;
     font-size: 12px;
-    margin-bottom: 10px;
   }
   
   .back-arrow {
@@ -1015,33 +926,15 @@ body:not(.cinematic-intro) .skip-hint {
     max-height: calc(100vh - 100px);
   }
   
-  .hint-content {
-    margin: 20px;
-    padding: 30px 24px;
-  }
-  
-  .hint-title {
-    font-size: 12px;
-  }
-  
-  .key {
-    min-width: 32px;
-    height: 32px;
-    font-size: 12px;
-  }
-  
-  .key-label {
-    font-size: var(--body-size);
-    line-height: var(--body-line-height);
-  }
 }
 
 /* Extra small screens (iPhone SE, etc.) */
 @media screen and (max-width: 480px) {
   :root {
-    --title-size: 48px;
-    --title-line-height: 44px;
-    --title-letter-spacing: -1.5px;
+    --installation-title-size: clamp(23px, 6.9vw, 30px);
+    --installation-title-top: calc(env(safe-area-inset-top, 0px) + 71px);
+    --installation-title-x: 16px;
+    --installation-title-right-x: 16px;
     
     --body-size: 15px;
     --body-line-height: 24px;
