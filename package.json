@@ -1,9 +1,15 @@
 {
   "private": true,
   "scripts": {
+    "build:gallery": "esbuild js/gallery.jsx --bundle --minify --format=iife --target=es2020 --outfile=js/gallery.bundle.js",
     "build:installation-embed": "node scripts/build-installation-embed.cjs"
   },
   "devDependencies": {
     "esbuild": "0.28.0"
+  },
+  "dependencies": {
+    "@ramka/react": "^0.0.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   }
 }

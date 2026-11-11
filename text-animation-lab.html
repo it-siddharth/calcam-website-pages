@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090909">
+  <title>Text Silhouette Lab — Calculated Camouflage</title>
+  <link rel="icon" href="favicon.png">
+  <link rel="stylesheet" href="css/text-animation-lab.css">
+</head>
+<body>
+  <main class="lab-shell">
+    <header class="lab-header">
+      <div>
+        <a class="back-link" href="index.html">← CALCULATED CAMOUFLAGE</a>
+        <h1>TEXT SILHOUETTE LAB</h1>
+      </div>
+      <div class="header-actions">
+        <span class="status" id="cameraStatus" data-state="idle"><i></i><span>CAMERA OFF</span></span>
+        <button class="button button-quiet" id="fullscreenButton" type="button">FULLSCREEN PREVIEW</button>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <div class="preview-column">
+        <div class="preview-frame" id="previewFrame">
+          <div class="preview-canvas" id="canvasMount"></div>
+          <div class="start-card" id="startCard">
+            <p class="eyebrow">LIVE INPUT</p>
+            <h2>Turn your camera into words.</h2>
+            <p>The same text silhouette running on the installation TV, separated out so you can push it around.</p>
+            <button class="button button-primary" id="startCameraButton" type="button">START CAMERA</button>
+            <p class="permission-note">Your camera stays in this browser window.</p>
+          </div>
+          <div class="scanline" aria-hidden="true"></div>
+        </div>
+
+        <div class="preview-toolbar">
+          <label class="select-wrap">
+            <span>VIEWPORT</span>
+            <select id="viewportSelect">
+              <option value="960x720">Landscape · 4:3 · 960×720</option>
+              <option value="1280x720">Landscape · 16:9 · 1280×720</option>
+              <option value="720x960">Portrait · 3:4 · 720×960</option>
+              <option value="720x1280">Portrait · 9:16 · 720×1280</option>
+              <option value="900x900">Square · 1:1 · 900×900</option>
+            </select>
+          </label>
+          <label class="select-wrap">
+            <span>CAMERA</span>
+            <select id="cameraSelect" disabled><option value="">Default camera</option></select>
+          </label>
+          <button class="button button-quiet" id="shuffleButton" type="button">SHUFFLE WORDS</button>
+          <button class="button button-quiet" id="snapshotButton" type="button" disabled>SAVE PNG</button>
+          <button class="button button-quiet" id="svgButton" type="button" disabled title="Exports the text frame as editable vector text">SAVE SVG</button>
+        </div>
+      </div>
+
+      <aside class="controls" aria-label="Text animation controls">
+        <section class="control-section open">
+          <button class="section-heading" type="button" aria-expanded="true"><span>01 / MOTION</span><b>−</b></button>
+          <div class="section-content">
+            <label class="toggle-row">
+              <span><strong>Animate text</strong><small>Move every phrase independently</small></span>
+              <input id="enableAnimation" type="checkbox" checked><i aria-hidden="true"></i>
+            </label>
+            <label class="field"><span>STYLE</span><select id="animationType">
+              <option value="wave">Wave</option><option value="pulse">Pulse</option><option value="rotate">Rotate</option><option value="bounce">Bounce</option><option value="flicker">Flicker</option>
+            </select></label>
+            <label class="range-field"><span>SPEED <output id="animationSpeedOutput">5</output></span><input id="animationSpeed" type="range" min="1" max="20" value="5"></label>
+            <label class="range-field"><span>AMOUNT <output id="animationAmountOutput">10</output></span><input id="animationAmount" type="range" min="0" max="30" value="10"></label>
+          </div>
+        </section>
+
+        <section class="control-section open">
+          <button class="section-heading" type="button" aria-expanded="true"><span>02 / SILHOUETTE</span><b>−</b></button>
+          <div class="section-content">
+            <label class="range-field"><span>LIGHT THRESHOLD <output id="thresholdOutput">95</output></span><input id="threshold" type="range" min="0" max="255" value="95"></label>
+            <label class="range-field"><span>TEXT DENSITY <output id="textDensityOutput">1.15×</output></span><input id="textDensity" type="range" min="0.5" max="2.5" step="0.05" value="1.15"></label>
+            <label class="range-field"><span>WORD SPACING <output id="cellWidthMultiplierOutput">0.70</output></span><input id="cellWidthMultiplier" type="range" min="0.3" max="1.4" step="0.05" value="0.7"></label>
+            <div class="toggle-grid">
+              <label class="mini-toggle"><input id="flipVideo" type="checkbox" checked><span>MIRROR</span></label>
+              <label class="mini-toggle"><input id="invertColors" type="checkbox"><span>INVERT</span></label>
+              <label class="mini-toggle"><input id="showContour" type="checkbox"><span>CONTOUR</span></label>
+            </div>
+          </div>
+        </section>
+
+        <section class="control-section open">
+          <button class="section-heading" type="button" aria-expanded="true"><span>03 / SIGNAL</span><b>−</b></button>
+          <div class="section-content">
+            <label class="toggle-row">
+              <span><strong>Glitch signal</strong><small>Add digital interference</small></span>
+              <input id="enableGlitch" type="checkbox"><i aria-hidden="true"></i>
+            </label>
+            <label class="field"><span>TYPE</span><select id="glitchType">
+              <option value="digitaldropout">Digital dropout</option><option value="rgbshift">RGB shift</option><option value="scanlines">Scan lines</option><option value="noise">Noise</option><option value="blockshift">Block shift</option>
+            </select></label>
+            <label class="range-field"><span>INTENSITY <output id="glitchIntensityOutput">20%</output></span><input id="glitchIntensity" type="range" min="0" max="100" value="20"></label>
+            <label class="range-field"><span>SPEED <output id="glitchSpeedOutput">2</output></span><input id="glitchSpeed" type="range" min="1" max="10" value="2"></label>
+          </div>
+        </section>
+
+        <section class="control-section open words-section">
+          <button class="section-heading" type="button" aria-expanded="true"><span>04 / WORDS</span><b>−</b></button>
+          <div class="section-content">
+            <div id="wordsList" class="words-list"></div>
+            <div class="add-word-row">
+              <input id="newWord" type="text" maxlength="32" placeholder="NEW PHRASE">
+              <input id="newWordColor" type="color" value="#ffffff" aria-label="New phrase color">
+              <button class="button button-primary" id="addWordButton" type="button">ADD</button>
+            </div>
+            <button class="text-button" id="resetButton" type="button">RESET ORIGINAL WORDS</button>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="js/text-animation-lab.js"></script>
+</body>
+</html>

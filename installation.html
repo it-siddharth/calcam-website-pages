@@ -23,6 +23,7 @@
   
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="css/installation.css?v=13">
+  <link rel="stylesheet" href="css/redesign.css?v=3">
   
   <!-- Critical inline styles to prevent white flash and text flash -->
   <style>
@@ -80,7 +81,7 @@
     <!-- Header Section -->
     <header class="installation-header">
       <!-- Back Button -->
-      <a href="index.html" class="back-button">
+      <a href="index.html" class="back-button site-back" aria-label="Back to home">
         <span class="back-arrow">←</span>
         <span class="back-text">BACK</span>
       </a>
@@ -95,6 +96,11 @@
       <p class="instruction-text desktop-only">Click and use W/A/S/D to move around.</p>
       <p class="instruction-text mobile-only">Swipe to look around.<br>Use the joystick to move.</p>
     </footer>
+    <nav class="redesign-nav installation-nav" aria-label="Explore">
+      <a href="installation.html" class="redesign-pill is-current" aria-current="page">VIEW ROOM <span aria-hidden="true">→</span></a>
+      <a href="journal.html" class="redesign-pill">VIEWER JOURNAL <span aria-hidden="true">→</span></a>
+      <a href="gallery.html" class="redesign-pill">GALLERY <span aria-hidden="true">→</span></a>
+    </nav>
   </main>
 
   <!-- Anchor Point Indicators (positioned via JS) -->

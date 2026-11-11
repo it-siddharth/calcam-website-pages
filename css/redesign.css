@@ -1,0 +1,128 @@
+/* Shared presentation layer for the 2026 Figma redesign. Scene code remains in place. */
+@font-face { font-family: 'Calcam Display'; src: url('../fonts/Matrix-TM-Regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+
+.redesign-nav { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.redesign-pill { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; padding: 8px 14px; border: 1px solid currentColor; border-radius: 30px; color: #fff; text-decoration: none; white-space: nowrap; font: 500 14px/1 'JetBrains Mono', monospace; transition: background .2s ease, color .2s ease; }
+.redesign-pill span { font: italic 18px/1 'Alegreya', serif; }
+.redesign-pill:hover, .redesign-pill:focus-visible, .redesign-pill.is-current { background: #fff; color: #000; }
+.redesign-pill:focus-visible, .site-back:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+
+/* One back control across the installation, journal, and gallery. */
+.site-back, .installation-overlay .site-back, .journal-content .site-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 36px;
+  width: fit-content;
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid #fff;
+  border-radius: 30px;
+  background: transparent;
+  color: #fff;
+  font: 500 14px/1 'JetBrains Mono', monospace;
+  text-decoration: none;
+  white-space: nowrap;
+  opacity: 1;
+  transition: background .2s ease, color .2s ease;
+}
+.site-back:hover, .installation-overlay .site-back:hover, .journal-content .site-back:hover { background: #fff; color: #000; border-color: #fff; }
+.site-back .back-arrow { font: inherit; }
+
+/* Home */
+.landing-page .content-section { width: 45%; padding-top: 35px; }
+.landing-page .title { font-family: 'Calcam Display', sans-serif; font-feature-settings: 'calt' 1; letter-spacing: -.095em; line-height: .97; margin-bottom: 34px; transform: none; width: auto; }
+.landing-page .description { max-width: 510px; text-align: justify; text-justify: inter-word; }
+.landing-page .meta-info { gap: clamp(24px, 5vw, 66px); }
+.landing-page .meta-item { flex: 0 0 auto; }
+.landing-page .meta-value { white-space: nowrap; }
+.landing-page .cta-section { padding-bottom: 0; }
+.landing-page .credit { font-size: 11px; }
+
+/* Installation */
+.installation-title { display: block; top: 101px; left: 50%; right: auto; transform: translateX(-50%); font-family: 'Calcam Display', sans-serif; font-size: clamp(44px, 4.1vw, 58px); font-weight: 400; line-height: 1; letter-spacing: -.055em; text-align: center; }
+.installation-title .title-word { display: inline; }
+.installation-title .title-word-the::after { content: ' '; white-space: pre; }
+.installation-footer { width: auto; position: fixed; right: max(85px, 7%); bottom: 42px; margin: 0; text-align: right; align-items: flex-end; }
+.installation-nav { position: fixed; left: 5%; bottom: 40px; z-index: 30; pointer-events: auto; }
+.installation-nav .redesign-pill.is-current { background: transparent; color: #fff; }
+.installation-nav .redesign-pill.is-current:hover { background: #fff; color: #000; }
+.installation-overlay .back-button { top: 28px; left: 30px; }
+
+/* Journal */
+.journal-page { display: block !important; position: relative; width: 100vw; height: 100vh; height: 100dvh; }
+.journal-content { position: absolute; inset: 0; width: 100% !important; max-width: none !important; height: 100% !important; padding: 0 !important; pointer-events: none; z-index: 60; }
+.journal-content .back-button { position: fixed; top: 28px; left: 30px; pointer-events: auto; }
+.journal-title { position: absolute !important; top: 93px; left: 50%; transform: translateX(-50%); width: max-content; margin: 0 !important; font-family: 'Calcam Display', sans-serif !important; font-size: clamp(44px, 4.1vw, 58px) !important; line-height: 1 !important; letter-spacing: -.055em !important; text-align: center; }
+.journal-content .journal-description.desktop-only { display: block; position: fixed; right: 5%; bottom: 33px; width: 330px; margin: 0; text-align: left; }
+.journal-info { position: fixed !important; bottom: 40px; left: 5%; max-width: none !important; pointer-events: auto; }
+.journal-info .cta-primary-row { display: none; }
+.journal-info .nav-links { gap: 12px; }
+.journal-info .btn { border: 1px solid #fff; padding: 8px 14px; font-size: 14px; }
+.journal-info .btn.active { background: #fff; color: #000; }
+.book-section { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; }
+#book-container { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; }
+.page-controls { position: fixed !important; bottom: 143px !important; left: 50% !important; transform: translateX(-50%) !important; }
+.journal-footer { position: fixed !important; bottom: 104px !important; left: 50% !important; right: auto !important; transform: translateX(-50%); width: max-content !important; }
+
+/* Gallery: sparse first screen followed by the existing media. */
+.gallery-page { display: block; min-height: 100vh; background: #000; }
+.gallery-intro { position: relative; height: clamp(300px, 44dvh, 430px); background: #000; }
+.gallery-home { position: absolute; top: 28px; left: 30px; z-index: 2; }
+.gallery-title { position: absolute; top: 93px; left: 50%; transform: translateX(-50%); margin: 0; font: 400 clamp(44px, 4.1vw, 58px)/1 'Calcam Display', sans-serif; letter-spacing: -.055em; }
+.gallery-nav { position: absolute; left: 5%; bottom: 40px; }
+.gallery-nav .is-current { background: transparent; color: #fff; }
+.gallery-instruction { position: absolute; right: 5%; bottom: 45px; margin: 0; color: #fff; font: 700 18px/24px 'Nanum Myeongjo', serif; }
+.gallery-work { max-width: 1442px; margin: 0 auto; padding: 62px 5% 110px; }
+.gallery-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 24px; }
+.gallery-tile:nth-child(5n + 1), .gallery-tile:nth-child(5n + 4) { grid-column: auto; }
+.gallery-tile:nth-child(7n + 1), .gallery-tile:nth-child(7n + 5) { grid-column: span 2; }
+
+@media (max-width: 900px) {
+  .installation-nav, .gallery-nav, .journal-info { left: 24px; }
+  .installation-footer, .gallery-instruction { right: 24px; }
+  .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gallery-tile:nth-child(7n + 1), .gallery-tile:nth-child(7n + 5) { grid-column: auto; }
+}
+
+@media (max-width: 768px) {
+  .redesign-pill { min-height: 34px; padding: 7px 11px; font-size: 11px; }
+  .site-back, .installation-overlay .site-back, .journal-content .site-back { min-height: 34px; padding: 7px 11px; font-size: 11px; }
+  .landing-page .content-section { width: 100% !important; }
+  .landing-page .title { font-size: clamp(46px, 12vw, 92px); line-height: .92; margin-bottom: 20px; transform: none; width: auto; }
+  .landing-page .description.mobile-only { display: block !important; text-align: left; }
+  .landing-page .meta-info { gap: 20px; flex-wrap: wrap; }
+  .landing-page .meta-value { white-space: normal; }
+  .installation-title { top: 83px; font-size: clamp(32px, 8vw, 52px); }
+  .installation-footer { right: 20px; left: 20px; bottom: 85px; align-items: center; text-align: center; }
+  .installation-nav { display: none; }
+  .installation-overlay .back-button { top: 23px; left: 20px; }
+  .journal-content .back-button { top: 23px; left: 20px; }
+  .journal-page { overflow: hidden !important; }
+  .journal-content { display: block !important; height: 100% !important; }
+  .journal-title { top: 65px; font-size: clamp(34px, 8vw, 48px) !important; }
+  .journal-content .journal-description.desktop-only { display: none; }
+  .journal-description.mobile-only { position: fixed; left: 20px; right: 20px; bottom: 14px; padding: 0 !important; text-align: center; max-width: none !important; margin: 0 !important; font-size: 13px !important; line-height: 18px !important; }
+  .book-section { inset: 90px 0 130px !important; width: 100% !important; height: auto !important; }
+  #book-container { inset: 0 !important; width: 100% !important; height: 100% !important; }
+  .page-controls { bottom: 177px !important; }
+  .journal-footer { bottom: 142px !important; }
+  .gallery-intro { height: clamp(270px, 38dvh, 360px); }
+  .gallery-home { top: 23px; left: 20px; }
+  .gallery-title { top: 91px; font-size: clamp(42px, 11vw, 66px); }
+  .gallery-nav { display: none; }
+  .gallery-instruction { left: 20px; right: 20px; bottom: 25px; text-align: center; font-size: 14px; }
+  .gallery-work { padding: 35px 20px 70px; }
+}
+
+@media (max-width: 480px) {
+  .gallery-grid { grid-template-columns: 1fr; }
+  #gallery-root .gallery-tile { grid-column: auto; }
+  .installation-nav .redesign-pill, .gallery-nav .redesign-pill { font-size: 10px; }
+}
+
+/* Keep the journal's desktop page links off phones, including landscape phones. */
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .journal-content .journal-info { display: none !important; }
+}

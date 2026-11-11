@@ -713,6 +713,7 @@
       opacity: 0;
     }
   </style>
+  <link rel="stylesheet" href="css/redesign.css?v=4">
 </head>
 <body>
   <!-- Page Transition Overlay -->
@@ -729,11 +730,11 @@
     <!-- Left Content Section -->
     <section class="journal-content">
       <!-- Back Button -->
-      <a href="index.html" class="back-button">
+      <a href="index.html" class="back-button site-back" aria-label="Back to home">
         <span class="back-arrow">←</span>
         <span class="back-text">BACK</span>
       </a>
-      <h1 class="journal-title">VIEWER<br>JOURNAL</h1>
+      <h1 class="journal-title">VIEWER JOURNAL</h1>
       
       <p class="journal-description desktop-only">
         While the installation ran, a journal sat open, inviting visitors to leave their mark.
@@ -750,11 +751,11 @@
         </div>
         
         <nav class="nav-links">
-          <a href="what-is-this.html" class="btn btn-secondary">
-            <span class="btn-text">what is this</span>
+          <a href="installation.html" class="btn btn-secondary">
+            <span class="btn-text">view room</span>
             <span class="btn-arrow">→</span>
           </a>
-          <a href="journal.html" class="btn btn-secondary">
+          <a href="journal.html" class="btn btn-secondary active" aria-current="page">
             <span class="btn-text">viewer journal</span>
             <span class="btn-arrow">→</span>
           </a>
@@ -782,7 +783,7 @@
               <path d="M19 12H5M12 5l-7 7 7 7"/>
             </svg>
           </button>
-          <span class="page-indicator"><span id="current-page">1</span> / <span id="total-pages">12</span></span>
+          <span class="page-indicator"><span id="current-page">1</span> / <span id="total-pages">36</span></span>
           <button class="arrow-btn arrow-right" id="btn-next" aria-label="Next page">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M5 12h14M12 5l7 7-7 7"/>

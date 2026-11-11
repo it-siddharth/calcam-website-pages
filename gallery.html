@@ -3,292 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="Calculated Camouflage - Gallery">
+  <meta name="description" content="Calculated Camouflage — gallery of installation photographs and films">
   <meta name="theme-color" content="#000000">
   <title>Gallery | Calculated Camouflage</title>
-  
-  <!-- Preload critical resources -->
   <link rel="preload" href="fonts/403-super-vega-regular.woff" as="font" type="font/woff" crossorigin>
-  <link rel="preload" href="css/gallery.css" as="style">
-  
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet"></noscript>
-  
-  <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="css/gallery.css?v=5">
-  
-  <!-- Critical inline styles to prevent white flash -->
-  <style>
-    html, body {
-      background-color: #000000 !important;
-    }
-    .page-transition-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #000;
-      z-index: 9999;
-      opacity: 1;
-      transition: opacity 0.3s ease-out;
-      pointer-events: none;
-    }
-    .page-transition-overlay.hidden {
-      opacity: 0;
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/gallery.css?v=7">
+  <link rel="stylesheet" href="css/redesign.css?v=3">
+  <script src="js/gallery.bundle.js?v=2" defer></script>
 </head>
-<body style="background-color: #000000;">
-  <!-- Page Transition Overlay -->
-  <div class="page-transition-overlay"></div>
-  
-  <!-- Corner Accents -->
-  <div class="corner-accent top-left"></div>
-  <div class="corner-accent top-right"></div>
-  <div class="corner-accent bottom-left"></div>
-  <div class="corner-accent bottom-right"></div>
+<body>
+  <div class="corner-accent top-left" aria-hidden="true"></div>
+  <div class="corner-accent top-right" aria-hidden="true"></div>
+  <div class="corner-accent bottom-left" aria-hidden="true"></div>
+  <div class="corner-accent bottom-right" aria-hidden="true"></div>
 
-  <!-- Main Gallery Container -->
   <main class="gallery-page">
-    <!-- Left Content Section -->
-    <section class="gallery-content">
-      <!-- Back Button -->
-      <a href="index.html" class="back-button">
-        <span class="back-arrow">←</span>
-        <span class="back-text">BACK</span>
-      </a>
+    <header class="gallery-intro">
+      <a href="index.html" class="gallery-home site-back" aria-label="Back to home">← BACK</a>
       <h1 class="gallery-title">GALLERY</h1>
-      
-      <!-- Info Section - Positioned at bottom on desktop, after carousel on mobile -->
-      <div class="gallery-info">
-        <p class="cta-text">Scroll to explore the gallery.</p>
-        
-        <div class="cta-primary-row">
-          <span class="cta-arrow">↳</span>
-          <span class="cta-text">See it for yourself</span>
-          <a href="installation.html" class="btn btn-primary">
-            <span class="btn-text">VIEW ROOM</span>
-            <span class="btn-arrow">→</span>
-          </a>
-        </div>
-        
-        <nav class="nav-links">
-          <a href="what-is-this.html" class="btn btn-secondary">
-            <span class="btn-text">what is this</span>
-            <span class="btn-arrow">→</span>
-          </a>
-          <a href="journal.html" class="btn btn-secondary">
-            <span class="btn-text">viewer journal</span>
-            <span class="btn-arrow">→</span>
-          </a>
-          <a href="gallery.html" class="btn btn-secondary">
-            <span class="btn-text">gallery</span>
-            <span class="btn-arrow">→</span>
-          </a>
-        </nav>
-      </div>
-    </section>
-
-    <!-- Carousel Section -->
-    <div class="carousel-wrapper">
-      <div class="carousel-track" id="carousel-track">
-        <!-- Item 01 - Video -->
-        <article class="carousel-item video-item" data-aspect-ratio="1.78">
-          <span class="item-index">01</span>
-          <div class="item-media">
-            <video muted loop playsinline webkit-playsinline autoplay preload="none" data-src="assets/videos/vid-1.mp4">
-            </video>
-          </div>
-        </article>
-        
-        <!-- Item 02 -->
-        <article class="carousel-item" data-aspect-ratio="1.5">
-          <span class="item-index">02</span>
-          <div class="item-media">
-            <img src="assets/DSC_4949_1.jpg" alt="Interactive installation with digital projection" width="1200" height="802">
-          </div>
-        </article>
-
-        <!-- Item 03 -->
-        <article class="carousel-item" data-aspect-ratio="0.8">
-          <span class="item-index">03</span>
-          <div class="item-media">
-            <img src="assets/Frame_11.jpg" alt="Digital silhouettes with text overlay" width="957" height="1200">
-          </div>
-        </article>
-
-        <!-- Item 04 -->
-        <article class="carousel-item" data-aspect-ratio="1.5">
-          <span class="item-index">04</span>
-          <div class="item-media">
-            <img src="assets/DSC_4952_1.jpg" alt="Installation documentation" width="1400" height="934">
-          </div>
-        </article>
-
-        <!-- Item 05 -->
-        <article class="carousel-item" data-aspect-ratio="1.5">
-          <span class="item-index">05</span>
-          <div class="item-media">
-            <img src="assets/IMG_4179_2.jpg" alt="Visitor interacting with projection" width="1200" height="961">
-          </div>
-        </article>
-        
-        <!-- Item 06 - Video -->
-        <article class="carousel-item video-item" data-aspect-ratio="1.78">
-          <span class="item-index">06</span>
-          <div class="item-media">
-            <video muted loop playsinline webkit-playsinline autoplay preload="none" data-src="assets/videos/vid-2.mp4">
-            </video>
-          </div>
-        </article>
-
-        <!-- Item 07 -->
-        <article class="carousel-item" data-aspect-ratio="1.5">
-          <span class="item-index">07</span>
-          <div class="item-media">
-            <img src="assets/IMG_4216_1.jpg" alt="Blue projection with text patterns" width="1200" height="799">
-          </div>
-        </article>
-
-        <!-- Item 08 -->
-        <article class="carousel-item" data-aspect-ratio="1.5">
-          <span class="item-index">08</span>
-          <div class="item-media">
-            <img src="assets/IMG_4223_1.jpg" alt="Colorful interactive projection installation" width="1200" height="799">
-          </div>
-        </article>
-
-        <!-- Item 09 -->
-        <article class="carousel-item" data-aspect-ratio="1.5">
-          <span class="item-index">09</span>
-          <div class="item-media">
-            <img src="assets/IMG_4227_2.jpg" alt="Visitor experiencing digital art" width="1200" height="799">
-          </div>
-        </article>
-
-        <!-- Item 10 - Video -->
-        <article class="carousel-item video-item" data-aspect-ratio="1.78">
-          <span class="item-index">10</span>
-          <div class="item-media">
-            <video muted loop playsinline webkit-playsinline autoplay preload="none" data-src="assets/videos/vid-3.mp4">
-            </video>
-          </div>
-        </article>
-
-        <!-- Item 11 -->
-        <article class="carousel-item" data-aspect-ratio="0.67">
-          <span class="item-index">11</span>
-          <div class="item-media">
-            <img src="assets/R0002034.jpg" alt="Blue ambient projection portrait" width="799" height="1200">
-          </div>
-        </article>
-
-        <!-- Item 12 -->
-        <article class="carousel-item" data-aspect-ratio="0.67">
-          <span class="item-index">12</span>
-          <div class="item-media">
-            <img src="assets/R0002068_2.jpg" alt="Interactive digital experience" width="803" height="1200">
-          </div>
-        </article>
-
-        <!-- Item 13 -->
-        <article class="carousel-item" data-aspect-ratio="0.67">
-          <span class="item-index">13</span>
-          <div class="item-media">
-            <img src="assets/R0002097_1.jpg" alt="Calculated Camouflage exhibition moment" width="1200" height="1063">
-          </div>
-        </article>
-
-        <!-- Item 14 - Video -->
-        <article class="carousel-item video-item" data-aspect-ratio="1.78">
-          <span class="item-index">14</span>
-          <div class="item-media">
-            <video muted loop playsinline webkit-playsinline autoplay preload="none" data-src="assets/videos/vid-4.mp4">
-            </video>
-          </div>
-        </article>
-
-        <!-- Item 15 -->
-        <article class="carousel-item" data-aspect-ratio="1.5">
-          <span class="item-index">15</span>
-          <div class="item-media">
-            <img src="assets/R0002355_1.jpg" alt="Particle projection with visitor silhouette" width="1200" height="799">
-          </div>
-        </article>
-
-        <!-- Item 16 -->
-        <article class="carousel-item" data-aspect-ratio="1.5">
-          <span class="item-index">16</span>
-          <div class="item-media">
-            <img src="assets/R0002358_1.jpg" alt="Gallery installation view" width="1200" height="799">
-          </div>
-        </article>
-
-        <!-- Item 17 -->
-        <article class="carousel-item" data-aspect-ratio="1.5">
-          <span class="item-index">17</span>
-          <div class="item-media">
-            <img src="assets/IMG_6459_1.jpg" alt="Exhibition moment" width="674" height="1200">
-          </div>
-        </article>
-
-        <!-- Item 18 - Video -->
-        <article class="carousel-item video-item" data-aspect-ratio="1.78">
-          <span class="item-index">18</span>
-          <div class="item-media">
-            <video muted loop playsinline webkit-playsinline autoplay preload="none" data-src="assets/videos/vid-5.mp4">
-            </video>
-          </div>
-        </article>
-
-        <!-- Item 19 -->
-        <article class="carousel-item" data-aspect-ratio="0.67">
-          <span class="item-index">19</span>
-          <div class="item-media">
-            <img src="assets/R0002071_1.jpg" alt="Visitor experience portrait" width="800" height="1200">
-          </div>
-        </article>
-      </div>
-    </div>
-    
-    
+      <nav class="redesign-nav gallery-nav" aria-label="Explore">
+        <a href="installation.html" class="redesign-pill">VIEW ROOM <span aria-hidden="true">→</span></a>
+        <a href="journal.html" class="redesign-pill">VIEWER JOURNAL <span aria-hidden="true">→</span></a>
+        <a href="gallery.html" class="redesign-pill is-current" aria-current="page">GALLERY <span aria-hidden="true">→</span></a>
+      </nav>
+      <p class="gallery-instruction">Scroll to explore the gallery.</p>
+    </header>
+    <section class="gallery-work" aria-label="Installation gallery"><div id="gallery-root"></div></section>
   </main>
-
-  <!-- Gallery JS for smooth horizontal scrolling -->
-  <script src="js/gallery.js"></script>
-  
-  <!-- Fade out page transition overlay -->
-  <script>
-    // #region agent log
-    window.addEventListener('DOMContentLoaded', function() {
-      const btn = document.querySelector('.btn');
-      if (btn) {
-        const cs = getComputedStyle(btn);
-        const text = btn.querySelector('.btn-text');
-        const arrow = btn.querySelector('.btn-arrow');
-        const textCs = text ? getComputedStyle(text) : null;
-        const arrowCs = arrow ? getComputedStyle(arrow) : null;
-        fetch('http://127.0.0.1:7243/ingest/b2a87bc5-0f45-4c1a-95fa-5aa2d366c868',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'gallery.html',message:'CTA computed styles',data:{page:'gallery',viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,btnPadding:cs.padding,btnGap:cs.gap,textFontSize:textCs?.fontSize,arrowFontSize:arrowCs?.fontSize},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C'})}).catch(()=>{});
-      }
-    });
-    // #endregion
-    window.addEventListener('load', function() {
-      requestAnimationFrame(function() {
-        requestAnimationFrame(function() {
-          var overlay = document.querySelector('.page-transition-overlay');
-          if (overlay) {
-            overlay.classList.add('hidden');
-            overlay.addEventListener('transitionend', function() {
-              overlay.remove();
-            }, { once: true });
-          }
-        });
-      });
-    });
-  </script>
 </body>
 </html>

@@ -2,476 +2,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="What Is This - Behind Calculated Camouflage Installation">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="The space, wall projections, centre piece and making of Calculated Camouflage.">
   <meta name="theme-color" content="#000000">
   <title>What Is This | Calculated Camouflage</title>
-  
-  <!-- Preload critical resources -->
-  <link rel="preload" href="fonts/403-super-vega-regular.woff" as="font" type="font/woff" crossorigin>
-  <link rel="preload" href="css/what-is-this.css" as="style">
-  
-  <!-- Google Fonts -->
+  <link rel="icon" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet"></noscript>
-  
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/style.css?v=9">
-  <link rel="stylesheet" href="css/what-is-this.css?v=14">
-  <link rel="stylesheet" href="css/what-is-this-figma.css?v=14">
+  <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/what-redesign.css?v=5">
   <script src="js/what-is-this-models.js?v=5" defer></script>
-  <script src="js/what-is-this-setup.js?v=1" defer></script>
-  <script src="js/what-is-this-phrases.js?v=1" defer></script>
-  
-  <style>
-    html, body {
-      background-color: #000000 !important;
-    }
-    .page-transition-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #000;
-      z-index: 9999;
-      opacity: 1;
-      transition: opacity 0.3s ease-out;
-      pointer-events: none;
-    }
-    .page-transition-overlay.hidden {
-      opacity: 0;
-    }
-  </style>
+  <script src="js/what-redesign.js?v=4" defer></script>
 </head>
 <body>
-  <!-- Page Transition Overlay -->
-  <div class="page-transition-overlay"></div>
-
-  <!-- Section 1: Hero (Full Viewport, Edge to Edge) -->
-  <section class="section-hero">
-    <!-- Corner Accents -->
-    <div class="corner-accent top-left"></div>
-    <div class="corner-accent top-right"></div>
-    <div class="corner-accent bottom-left"></div>
-    <div class="corner-accent bottom-right"></div>
-    
-    <!-- Back Button -->
-    <a href="index.html" class="back-button">
-      <span class="back-arrow">←</span>
-      <span class="back-text">BACK</span>
-    </a>
-    
-    <div class="hero-glitch hero-glitch-main" aria-hidden="true"></div>
-    <div class="hero-glitch hero-glitch-detail hero-glitch-detail-one" aria-hidden="true"></div>
-    <div class="hero-glitch hero-glitch-detail hero-glitch-detail-two" aria-hidden="true"></div>
-    <div class="hero-layout">
-      <h1 class="visually-hidden">What is this — Calculated Camouflage</h1>
-      <p class="hero-specs">1 17ft by 15 ft room. 2 projectors. 3 cameras. 1 55 inch TV. 2 speakers. 4 mid air hanging acrylic sheets. 3 days to install &amp; me.</p>
-      <div class="hero-image">
-        <img src="assets/IMG_6327.jpg" alt="Installation setup behind the scenes" width="900" height="1600">
+  <div class="corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <main>
+    <section class="overview screen" id="overview" aria-labelledby="overview-title">
+      <a href="index.html" class="home-link site-back" aria-label="Back to home">← BACK</a>
+      <header class="overview-head">
+        <nav class="site-nav" aria-label="Explore">
+          <a href="installation.html">VIEW ROOM <span>→</span></a>
+          <a href="#overview" class="current" aria-current="page">WHAT IS THIS</a>
+          <a href="journal.html">VIEWER JOURNAL <span>→</span></a>
+          <a href="gallery.html">GALLERY <span>→</span></a>
+        </nav>
+        <h1 id="overview-title">THE WHAT &amp; THE HOW</h1>
+        <p>1 17ft by 15 ft room. 2 projectors. 3 cameras. 1 55 inch TV. 2 speakers. 4 mid air hanging acrylic sheets. 3 days to install &amp; me.</p>
+      </header>
+      <div class="story-cards" aria-label="What is this topics">
+        <a href="#space" class="story-card yellow"><span class="card-label"><small>01</small> THE SPACE</span><span class="card-copy">Once I saw the gallery, I started planning how the experience would unfold.</span><span class="card-cta">EXPLORE <span>→</span></span></a>
+        <a href="#projections" class="story-card green"><span class="card-label"><small>02</small> WALL PROJECTIONS</span><span class="card-copy">A camera tracked visitors entering the space. Their silhouettes followed their every move.</span><span class="card-cta">EXPLORE <span>→</span></span></a>
+        <a href="#centrepiece" class="story-card red"><span class="card-label"><small>03</small> CENTRE PIECE</span><span class="card-copy">I found “You are your choices” to be the most true to what I wanted my piece to say.</span><span class="card-cta">EXPLORE <span>→</span></span></a>
+        <a href="#setup" class="story-card blue"><span class="card-label"><small>04</small> SETTING IT UP</span><span class="card-copy">Turning all of this into a physical installation meant figuring out things I had never done before.</span><span class="card-cta">EXPLORE <span>→</span></span></a>
       </div>
-    </div>
-  </section>
-
-  <!-- Main Content Container -->
-  <main class="what-is-this-page">
-    <div class="what-is-this-page-inner">
-
-    <!-- Section 2: Backstory -->
-    <section id="backstory" class="section section-backstory">
-      <div class="backstory-icon">
-        <img src="assets/figma-backstory-mark.svg" alt="" width="26" height="36" aria-hidden="true">
+      <div class="card-controls" role="group" aria-label="Browse story cards">
+        <button type="button" class="card-prev" aria-label="Previous card">←</button>
+        <span class="card-count" aria-live="polite">01 / 04</span>
+        <button type="button" class="card-next" aria-label="Next card">→</button>
       </div>
-      <div class="backstory-text">
-        <p>This project was my thesis for a graphic design MFA. We had four months to pick a personal topic, research it, build it, and install it.</p>
-        <p>For my theme, I spent a lot of time thinking about my first year in the US. Moving here, I had pushed myself to embrace discomfort. Initiating conversations, stepping outside my comfort zone, becoming someone new in order to find community. It worked. I found amazing friends and felt genuinely at home.</p>
-      </div>
-      <div class="backstory-text">
-        <p>But I also noticed how much I had changed. I kept asking myself whether I was losing my true self by adapting so much to different people and environments. The more I sat with this question, the more I realized I was thinking about it wrong. I don't need to hold onto a fixed "true self." I'm constantly evolving, shedding old versions to become new ones. That's not losing myself. That's being myself.</p>
-        <p>This became the core of my installation. The title "Calculated Camouflage" comes from this idea. We present different versions of ourselves in different environments, but that doesn't make us fake. We are our choices and whatever we make of them.</p>
-      </div>
+      <p class="overview-credit">Made by Siddharth. ©itsiddharth 2026</p>
     </section>
 
-    <!-- Section 5: The Space -->
-    <section class="section section-space">
-      <h2 class="section-title">the space</h2>
-      <div class="space-top-row">
-        <div class="model-placeholder room-model" data-model-slot="isometric-room"><span>3D ISOMETRIC ROOM</span></div>
-        <div class="space-image-tall"><img src="assets/IMG_4800.jpg" alt="Empty gallery room before installation" width="900" height="1600"></div>
-      </div>
-      <div class="space-images">
-        <div class="space-image-large">
-          <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/the space.mp4" preload="none">
-          </video>
+    <section class="detail screen yellow" id="space" aria-labelledby="space-title">
+      <nav class="detail-nav" aria-label="Section navigation"><a href="#overview" class="site-back" aria-label="Back to cards">← BACK</a><div><a href="journal.html">VIEWER JOURNAL <span>→</span></a><a href="gallery.html">GALLERY <span>→</span></a></div></nav>
+      <div class="detail-panel space-panel">
+        <div class="detail-copy"><span class="section-no">01</span><h2 id="space-title">THE SPACE</h2>
+          <p>Once I saw the gallery, I started planning how the experience would unfold. I wanted a central focal point at the far end of the room with body-tracking projections on both side walls. Visitors would be surrounded by responsive imagery as they moved toward the centerpiece.</p>
+          <p>I talked with my advisors about what equipment was available on campus, calculated projection sizes based on throw distances, and figured out camera placements. The technical setup started to take shape: cameras at eye level, projectors mounted to the ceiling on opposite walls.</p>
+        </div>
+        <div class="space-media">
+          <div class="model-slot room-model" data-model-slot="isometric-room" aria-label="Interactive 3D room view"><span>Loading 3D room…</span></div>
+          <div class="space-photos"><img src="assets/IMG_4800.jpg" alt="Empty gallery before installation" loading="lazy"><img src="assets/IMG_6327.jpg" alt="The installation under construction" loading="lazy"><img src="assets/R0002358_1.jpg" alt="Completed installation" loading="lazy"></div>
         </div>
       </div>
-      <div class="space-text">
-        <p>Once I saw the gallery, I started planning how the experience would unfold. I wanted a central focal point at the far end of the room with body-tracking projections on both side walls. Visitors would be surrounded by responsive imagery as they moved toward the centerpiece.</p>
-        <p>I talked with my advisors about what equipment was available on campus, calculated projection sizes based on throw distances, and figured out camera placements. The technical setup started to take shape: cameras at eye level, projectors mounted to the ceiling on opposite walls.</p>
-      </div>
+      <nav class="section-footer" aria-label="Continue"><a href="#overview">WHAT IS THIS</a><a href="#projections">NEXT: WALL PROJECTIONS →</a></nav>
+      <a class="mobile-back site-back" href="#overview" aria-label="Back to cards">← BACK</a>
     </section>
 
-    <!-- Section 5b: Wall Projections -->
-    <section class="section section-projections">
-      <h2 class="section-title">wall projections</h2>
-      <div class="projections-content">
-        <div class="projection-column">
-          <h3 class="projection-label">left wall</h3>
-          <p class="projection-text">A camera tracked visitors entering the space. Their silhouettes appeared on the wall, rendered as clouds of glowing white particles that followed their every move.</p>
-          <div class="projection-video projection-video-inline">
-            <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/left-wall-projection.mp4" preload="none">
-            </video>
-          </div>
-          <div class="model-placeholder projection-model" data-model-slot="left-wall-projection"><span>LEFT WALL WEBCAM PROJECTION</span></div>
-        </div>
-        <div class="projection-column">
-          <h3 class="projection-label">right wall</h3>
-          <p class="projection-text">The opposite wall mirrored the experience. Another camera, another particle silhouette. Visitors found themselves surrounded by ghostly digital echoes as they moved through the room.</p>
-          <div class="projection-video projection-video-inline">
-            <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/right-wall-projection.mp4" preload="none">
-            </video>
-          </div>
-          <div class="model-placeholder projection-model" data-model-slot="right-wall-projection"><span>RIGHT WALL WEBCAM PROJECTION</span></div>
+    <section class="detail screen green" id="projections" aria-labelledby="projections-title">
+      <nav class="detail-nav" aria-label="Section navigation"><a href="#overview" class="site-back" aria-label="Back to cards">← BACK</a><div><a href="journal.html">VIEWER JOURNAL <span>→</span></a><a href="gallery.html">GALLERY <span>→</span></a></div></nav>
+      <div class="detail-panel projections-panel">
+        <div class="detail-copy"><span class="section-no">02</span><h2 id="projections-title">WALL PROJECTIONS</h2><p>A camera tracked visitors entering the space. Their silhouettes appeared on the wall, rendered as clouds of glowing white particles that followed their every move.</p></div>
+        <div class="projection-grid">
+          <article><h3>LEFT WALL</h3><video src="assets/videos/left-wall-projection.mp4" muted playsinline loop autoplay controls preload="metadata" poster="assets/IMG_4179_2.jpg"></video><div class="model-slot" data-model-slot="left-wall-projection" aria-label="Interactive left wall projection"><span>Loading left wall projection…</span></div></article>
+          <article><h3>RIGHT WALL</h3><video src="assets/videos/right-wall-projection.mp4" muted playsinline loop autoplay controls preload="metadata" poster="assets/R0002355_1.jpg"></video><div class="model-slot" data-model-slot="right-wall-projection" aria-label="Interactive right wall projection"><span>Loading right wall projection…</span></div></article>
         </div>
       </div>
+      <nav class="section-footer" aria-label="Continue"><a href="#space">← THE SPACE</a><a href="#centrepiece">NEXT: CENTRE PIECE →</a></nav>
+      <a class="mobile-back site-back" href="#overview" aria-label="Back to cards">← BACK</a>
     </section>
 
-    <!-- Section 6: Centrepiece -->
-    <section class="section section-centrepiece">
-      <div class="centrepiece-top">
-        <div class="centrepiece-header">
-          <h2 class="section-title">centre piece</h2>
-          <p class="centrepiece-intro">I used p5.js to experiment with different face filters, and an RGB visual style started to emerge that I was drawn to. But I was struggling to find something that would tie the physical and digital elements together.</p>
+    <section class="detail screen red" id="centrepiece" aria-labelledby="centrepiece-title">
+      <nav class="detail-nav" aria-label="Section navigation"><a href="#overview" class="site-back" aria-label="Back to cards">← BACK</a><div><a href="journal.html">VIEWER JOURNAL <span>→</span></a><a href="gallery.html">GALLERY <span>→</span></a></div></nav>
+      <div class="detail-panel centre-panel">
+        <div class="detail-copy"><span class="section-no">03</span><h2 id="centrepiece-title">CENTRE PIECE</h2><p>I used p5.js to experiment with different face filters, and an RGB visual style started to emerge that I was drawn to. But I was struggling to find something that would tie the physical and digital elements together.</p>
+          <div class="rejected"><h3>REJECTED ITERATIONS</h3><video src="assets/videos/IMG_6065-720p.mp4" muted playsinline loop autoplay controls preload="metadata"></video></div>
         </div>
-      <!-- Rejected Iterations Carousel -->
-      <div class="rejected-iterations" id="rejected-iterations">
-        <div class="rejected-carousel" id="rejected-carousel">
-          <div class="rejected-carousel-track">
-            <div class="rejected-carousel-item" data-index="0">
-              <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/IMG_6065-720p.mp4" preload="none">
-              </video>
-            </div>
-            <div class="rejected-carousel-item" data-index="1">
-              <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/IMG_6067-720p.mp4" preload="none">
-              </video>
-            </div>
-            <div class="rejected-carousel-item" data-index="2">
-              <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/IMG_6075-720p.mp4" preload="none">
-              </video>
-            </div>
-            <div class="rejected-carousel-item" data-index="3">
-              <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/IMG_6079-720p.mp4" preload="none">
-              </video>
-            </div>
-            <div class="rejected-carousel-item" data-index="4">
-              <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/IMG_6059-720p.mp4" preload="none">
-              </video>
-            </div>
-          </div>
-        </div>
-        <div class="rejected-thumbnails" id="rejected-thumbnails">
-          <button class="rejected-thumb active" data-index="0">
-            <video muted playsinline webkit-playsinline data-src="assets/videos/IMG_6065-720p.mp4" preload="none">
-            </video>
-          </button>
-          <button class="rejected-thumb" data-index="1">
-            <video muted playsinline webkit-playsinline data-src="assets/videos/IMG_6067-720p.mp4" preload="none">
-            </video>
-          </button>
-          <button class="rejected-thumb" data-index="2">
-            <video muted playsinline webkit-playsinline data-src="assets/videos/IMG_6075-720p.mp4" preload="none">
-            </video>
-          </button>
-          <button class="rejected-thumb" data-index="3">
-            <video muted playsinline webkit-playsinline data-src="assets/videos/IMG_6079-720p.mp4" preload="none">
-            </video>
-          </button>
-          <button class="rejected-thumb" data-index="4">
-            <video muted playsinline webkit-playsinline data-src="assets/videos/IMG_6059-720p.mp4" preload="none">
-            </video>
-          </button>
-        </div>
-        <span class="rejected-iterations-label">rejected iterations</span>
-        </div>
+        <div class="centre-media"><p>After experimenting with a gazillion text options and sentences, I found “You are your choices” to be the most true to what I wanted my piece to say. For me this sentence embodied everything I wanted to communicate to the viewer. I feel that this is the crux of human identity and in the end we are not bound by anything except what we want ourselves to be. Our choices shape what we are and its only in retrospect that we can see how they've defined us.</p><h3>FINAL ANIMATION</h3><img src="assets/final style .png" alt="Final text silhouette artwork" loading="lazy"><div class="model-slot centre-model" data-model-slot="centre-tv" aria-label="Interactive centre TV view"><span>Loading 3D centre piece…</span></div></div>
       </div>
-      
-      <p class="centrepiece-text centrepiece-statement">After experimenting with a gazillion text options and sentences, I found "You are your choices" to be the most true to what I wanted my piece to say. For me this sentence embodied everything I wanted to communicate to the viewer. I feel that this is the crux of human identity and in the end we are not bound by anything except what we want ourselves to be. Our choices shape what we are and its only in retrospect that we can see how they've defined us.</p>
-      <span class="final-animation-label">final animation</span>
-      
-      <div class="centrepiece-media">
-        <img src="assets/final style .png" alt="Final style - text silhouette artwork" width="2302" height="1488">
-      </div>
-      <div class="centrepiece-acrylic">
-        <div class="centrepiece-acrylic-copy">
-          <span class="acrylic-label">with acrylic</span>
-          <p class="centrepiece-text">My advisor suggested colored acrylic sheets. Panels that block certain light wavelengths and filter what you see. The idea clicked immediately. To get the full picture, viewers would have to look through these colored windows. It worked both ways: practically, the acrylics filtered the RGB display. Conceptually, you need to look through different lenses to see the whole truth.</p>
-        </div>
-        <div class="centrepiece-video">
-          <video loop muted playsinline webkit-playsinline autoplay data-src="assets/videos/cewntrepiece vid.mp4" preload="none">
-          </video>
-        </div>
-      </div>
-      <div class="model-placeholder centre-tv-model" data-model-slot="centre-tv"><span>CENTRE TV</span></div>
+      <nav class="section-footer" aria-label="Continue"><a href="#projections">← WALL PROJECTIONS</a><a href="#setup">NEXT: SETTING IT UP →</a></nav>
+      <a class="mobile-back site-back" href="#overview" aria-label="Back to cards">← BACK</a>
     </section>
 
-    <!-- Section 7: Setting It Up -->
-    <section class="section section-setup">
-      <h2 class="section-title">setting it up</h2>
-      <p class="setup-intro">Turning all of this into a physical installation meant figuring out things I had never done before. Mounting projectors to ceilings, hanging acrylic in mid-air, getting cameras and code to work together in real time. I had a tight window to get everything installed, so I broke it down into phases.</p>
-      <!-- Setup video sequence -->
-      <div class="setup-videos-grid">
-        <div class="setup-video-item">
-          <video muted playsinline webkit-playsinline data-src="assets/videos/hanging acrylic - 1.mp4" preload="none">
-          </video>
-          <span class="setup-video-label">hanging acrylic</span>
-        </div>
-        <div class="setup-video-item">
-          <video muted playsinline webkit-playsinline data-src="assets/videos/setting up tv - 2.mp4" preload="none">
-          </video>
-          <span class="setup-video-label">setting up tv</span>
-        </div>
-        <div class="setup-video-item">
-          <video muted playsinline webkit-playsinline data-src="assets/videos/hang projector - 3.mp4" preload="none">
-          </video>
-          <span class="setup-video-label">hanging projectors</span>
-        </div>
-        <div class="setup-video-item">
-          <video muted playsinline webkit-playsinline data-src="assets/videos/setting up projectors - 4.mp4" preload="none">
-          </video>
-          <span class="setup-video-label">setting up projectors</span>
-        </div>
-        <div class="setup-video-item">
-          <video muted playsinline webkit-playsinline data-src="assets/videos/clean up - 5.mp4" preload="none">
-          </video>
-          <span class="setup-video-label">clean up</span>
-        </div>
-        <div class="setup-video-item">
-          <video muted playsinline webkit-playsinline data-src="assets/videos/clean up - 6.mp4" preload="none">
-          </video>
-          <span class="setup-video-label">clean up</span>
-        </div>
+    <section class="detail screen blue" id="setup" aria-labelledby="setup-title">
+      <nav class="detail-nav" aria-label="Section navigation"><a href="#overview" class="site-back" aria-label="Back to cards">← BACK</a><div><a href="journal.html">VIEWER JOURNAL <span>→</span></a><a href="gallery.html">GALLERY <span>→</span></a></div></nav>
+      <div class="detail-panel setup-panel">
+        <div class="detail-copy"><span class="section-no">04</span><h2 id="setup-title">SETTING IT UP</h2><p>Turning all of this into a physical installation meant figuring out things I had never done before. Mounting projectors to ceilings, hanging acrylic in mid-air, getting cameras and code to work together in real time. I had a tight window to get everything installed, so I broke it down into phases.</p></div>
+        <div class="setup-media"><figure><video src="assets/videos/hanging acrylic - 1.mp4" muted playsinline controls preload="metadata"></video><figcaption>HANGING ACRYLIC</figcaption></figure><figure><video src="assets/videos/setting up tv - 2.mp4" muted playsinline controls preload="metadata"></video><figcaption>SETTING UP TV</figcaption></figure><figure><video src="assets/videos/hang projector - 3.mp4" muted playsinline controls preload="metadata"></video><figcaption>HANGING PROJECTORS</figcaption></figure></div>
       </div>
+      <nav class="section-footer" aria-label="Continue"><a href="#centrepiece">← CENTRE PIECE</a><a href="#overview">BACK TO INDEX ↑</a></nav>
+      <a class="mobile-back site-back" href="#overview" aria-label="Back to cards">← BACK</a>
     </section>
-
-    <!-- Section 8: Personal Reflections -->
-    <section class="section section-reflections">
-      <h2 class="section-title">personal reflections &amp; credits</h2>
-      <p class="reflections-text">Having always designed on a screen, it was wild to see my work come alive in something bigger than a 32 inch monitor. I was overwhelmed with emotions when I saw people coming in and playing with the camera projections. People dancing, kids trying to touch their projections on the wall, one person crying. Seeing people react the way they did was eye-opening. It made me feel I could do so much more with the skills I have. It made me realise that design and art have the power to pull people out of their lives and mental state. If I could create work that makes people pause from their day to day lives and have a moment to themselves, that would be a great goal to accomplish.</p>
-      <div class="reflections-image">
-        <img src="assets/DSC_4952_1.jpg" alt="Personal reflection moment" width="1400" height="934">
-      </div>
-    </section>
-
-    <!-- Section 9: Credits -->
-    <section class="section section-credits">
-      <h2 class="section-title">credits</h2>
-      <div class="credits-text">
-        <p class="credits-intro">Nothing worth accomplishing is accomplished alone. This installation would never have been possible if I wasn't surrounded with love from the best and most talented people around me.</p>
-        <p>Thanks to Daniel Gratham for walking me through the intricacies of immersive installation. Thanks to Jason Gotleb for the creative inputs that helped me believe in my exhibition. Thanks to Nic Amsel for helping with the physical setup.</p>
-        <p>Thanks to my instructors, Maureen Weiss and Haylein Choi, for being patient and kind. Their softness and belief kept me going.</p>
-        <p>Thanks to Taro & Yoora for being my home away from home.</p>
-        <p>Thanks to my amazing classmates for believing in me more than I do in myself: Anita, Divya, Shadi, Juemin, Chris, Rithik, Annie, Arya, Fahmida, Ben, Anna, Nina, Caitlin, Abby, Ruiheng.</p>
-        <p>And to my best friends from back home, Shrishti, Dharam and Nandini, for accepting me as who I am and loving me unconditionally.</p>
-      </div>
-      <footer class="page-credit">Made by Siddharth. ©itsiddharth 2026</footer>
-    </section>
-
-    <nav class="page-end-nav" aria-label="Explore more">
-      <div class="page-end-glitch" aria-hidden="true"></div>
-      <p class="page-end-prompt">↳ See it for yourself</p>
-      <div class="page-end-links">
-        <a href="journal.html" class="btn btn-secondary"><span class="btn-text">viewer journal</span><span class="btn-arrow">→</span></a>
-        <a href="gallery.html" class="btn btn-secondary"><span class="btn-text">gallery</span><span class="btn-arrow">→</span></a>
-        <a href="installation.html" class="btn btn-primary"><span class="btn-text">VIEW ROOM</span><span class="btn-arrow">→</span></a>
-      </div>
-    </nav>
-
-    <!-- Bottom Corner Accents -->
-    <div class="corner-accents-bottom">
-      <div class="corner-accent-bottom left"></div>
-      <div class="corner-accent-bottom right"></div>
-    </div>
-
-    </div><!-- .what-is-this-page-inner -->
   </main>
-
-  <!-- Fade out page transition overlay + Lazy load videos -->
-  <script>
-    window.addEventListener('load', function() {
-      requestAnimationFrame(function() {
-        requestAnimationFrame(function() {
-          var overlay = document.querySelector('.page-transition-overlay');
-          if (overlay) {
-            overlay.classList.add('hidden');
-            overlay.addEventListener('transitionend', function() {
-              overlay.remove();
-            }, { once: true });
-          }
-        });
-      });
-    });
-    
-    // Lazy load videos and play/pause based on visibility
-    // Safari-compatible version
-    (function() {
-      var videos = document.querySelectorAll('video[data-src]');
-      if (!videos.length) return;
-      
-      // Observer for lazy loading (triggers once per video).
-      // root: null (viewport) works correctly here since this page uses normal vertical scroll.
-      var loadObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (entry.isIntersecting) {
-            var video = entry.target;
-            var container = video.parentElement;
-            var src = video.dataset.src;
-
-            if (src) {
-              video.muted = true;
-              video.setAttribute('muted', '');
-              video.setAttribute('playsinline', '');
-              video.setAttribute('webkit-playsinline', '');
-
-              video.src = src;
-              video.removeAttribute('data-src');
-
-              video.addEventListener('canplay', function() {
-                video.muted = true;
-                if (container) container.classList.add('video-loaded');
-                if (!video.closest('.setup-videos-grid')) {
-                  video.play().catch(function() {});
-                }
-              }, { once: true });
-
-              video.addEventListener('error', function() {
-                if (container) container.classList.add('video-loaded');
-              }, { once: true });
-
-              video.load();
-
-              setTimeout(function() {
-                if (container && !container.classList.contains('video-loaded')) {
-                  container.classList.add('video-loaded');
-                }
-              }, 2000);
-            }
-            loadObserver.unobserve(video);
-          }
-        });
-      }, { rootMargin: '200px', threshold: 0 });
-      
-      // Observer for play/pause based on visibility
-      var playObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          var video = entry.target;
-          video.muted = true;
-          
-          if (entry.isIntersecting) {
-            video.play().catch(function() {});
-          } else {
-            video.pause();
-          }
-        });
-      }, { threshold: 0.25 });
-      
-      videos.forEach(function(video) {
-        loadObserver.observe(video);
-        if (!video.closest('.setup-videos-grid')) {
-          playObserver.observe(video);
-        }
-      });
-    })();
-    
-    // Rejected Iterations Carousel - Auto-scroll and thumbnails
-    (function() {
-      var carousel = document.getElementById('rejected-carousel');
-      var thumbs = document.querySelectorAll('.rejected-thumb');
-      var items = document.querySelectorAll('.rejected-carousel-item');
-      var currentIndex = 0;
-      var totalItems = items.length;
-      var autoScrollInterval;
-      
-      if (!carousel || !thumbs.length) return;
-      
-      // Update active thumbnail
-      function updateActiveThumbnail(index) {
-        thumbs.forEach(function(thumb, i) {
-          thumb.classList.toggle('active', i === index);
-        });
-        currentIndex = index;
-      }
-      
-      // Scroll to specific index
-      function scrollToIndex(index) {
-        var item = items[index];
-        if (item) {
-          carousel.scrollTo({
-            left: item.offsetLeft,
-            behavior: 'smooth'
-          });
-          updateActiveThumbnail(index);
-        }
-      }
-      
-      // Auto-scroll to next video
-      function autoScroll() {
-        var nextIndex = (currentIndex + 1) % totalItems;
-        scrollToIndex(nextIndex);
-      }
-      
-      // Start auto-scroll
-      function startAutoScroll() {
-        stopAutoScroll();
-        autoScrollInterval = setInterval(autoScroll, 3000);
-      }
-      
-      // Stop auto-scroll
-      function stopAutoScroll() {
-        if (autoScrollInterval) {
-          clearInterval(autoScrollInterval);
-        }
-      }
-      
-      // Thumbnail click handlers
-      thumbs.forEach(function(thumb) {
-        thumb.addEventListener('click', function() {
-          var index = parseInt(thumb.dataset.index, 10);
-          scrollToIndex(index);
-          // Restart auto-scroll after manual interaction
-          startAutoScroll();
-        });
-      });
-      
-      // Detect scroll position to update active thumbnail
-      carousel.addEventListener('scroll', function() {
-        var scrollLeft = carousel.scrollLeft;
-        var carouselWidth = carousel.offsetWidth;
-        var newIndex = Math.round(scrollLeft / carouselWidth);
-        if (newIndex !== currentIndex && newIndex >= 0 && newIndex < totalItems) {
-          updateActiveThumbnail(newIndex);
-        }
-      });
-      
-      // Pause auto-scroll on hover
-      carousel.addEventListener('mouseenter', stopAutoScroll);
-      carousel.addEventListener('mouseleave', startAutoScroll);
-      
-      // Start auto-scroll when carousel is visible
-      var carouselObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (entry.isIntersecting) {
-            startAutoScroll();
-          } else {
-            stopAutoScroll();
-          }
-        });
-      }, { threshold: 0.5 });
-      
-      carouselObserver.observe(carousel);
-    })();
-  </script>
 </body>
 </html>
