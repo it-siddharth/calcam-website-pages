@@ -71,7 +71,7 @@
   const observer = new IntersectionObserver(entries => {
     for (const entry of entries) {
       const slot = entry.target;
-      if (entry.isIntersecting) {
+      if (entry.isIntersecting && !slot.closest('.detail')?.dataset.transitioning) {
         mount(slot);
       } else {
         clearTimeout(slot.unloadTimer);
@@ -86,4 +86,10 @@
     }
   }, { rootMargin: '160px 0px' });
   slots.forEach(slot => observer.observe(slot));
+  document.addEventListener('what-detail-opened', event => {
+    event.target.querySelectorAll('[data-model-slot]').forEach(slot => {
+      observer.unobserve(slot);
+      observer.observe(slot);
+    });
+  });
 })();

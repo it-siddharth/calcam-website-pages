@@ -14,8 +14,21 @@
   let current = 0;
   let active = null;
   let busy = false;
+  let rotating = false;
+  let queuedTurn = 0;
 
-  function updateCardControls(index) {
+  function placeCard(card, offset) {
+    card.dataset.carouselOffset = String(offset);
+    card.style.setProperty('--card-x', offset * 100 + '%');
+    card.style.setProperty('--card-z', -Math.abs(offset) * 90 + 'px');
+    card.style.setProperty('--card-turn', offset * 42 + 'deg');
+    card.classList.toggle('is-current', offset === 0);
+    card.classList.toggle('is-neighbor', Math.abs(offset) === 1);
+    card.classList.toggle('is-far', Math.abs(offset) > 1);
+    card.tabIndex = phoneLayout.matches && offset !== 0 ? -1 : 0;
+  }
+
+  function updateCardControls(index, farOffset = 2) {
     current = (index + cards.length) % cards.length;
     count.textContent = String(current + 1).padStart(2, '0') + ' / ' + String(cards.length).padStart(2, '0');
     previous.disabled = false;
@@ -23,23 +36,47 @@
     cards.forEach((card, cardIndex) => {
       let offset = (cardIndex - current + cards.length) % cards.length;
       if (offset > cards.length / 2) offset -= cards.length;
-      card.style.setProperty('--card-x', offset * 72 + '%');
-      card.style.setProperty('--card-z', -Math.abs(offset) * 105 + 'px');
-      card.style.setProperty('--card-turn', offset * 50 + 'deg');
-      card.classList.toggle('is-current', offset === 0);
-      card.classList.toggle('is-neighbor', Math.abs(offset) === 1);
-      card.classList.toggle('is-far', Math.abs(offset) > 1);
-      card.tabIndex = phoneLayout.matches && offset !== 0 ? -1 : 0;
+      if (Math.abs(offset) === cards.length / 2) offset = farOffset;
+      placeCard(card, offset);
     });
   }
 
   function goToCard(index) {
+    track.classList.add('carousel-instant');
     updateCardControls(index);
+    void track.offsetWidth;
+    track.classList.remove('carousel-instant');
   }
 
-  previous.addEventListener('click', () => goToCard(current - 1));
-  next.addEventListener('click', () => goToCard(current + 1));
-  phoneLayout.addEventListener('change', () => updateCardControls(current));
+  function rotate(direction) {
+    if (rotating) {
+      queuedTurn = direction;
+      return;
+    }
+    if (reducedMotion.matches) {
+      goToCard(current + direction);
+      return;
+    }
+    rotating = true;
+    const entering = cards[(current + direction * 2 + cards.length * 2) % cards.length];
+    entering.classList.add('carousel-instant');
+    placeCard(entering, direction * 2);
+    void entering.offsetWidth;
+    entering.classList.remove('carousel-instant');
+    requestAnimationFrame(() => updateCardControls(current + direction, -direction * 2));
+    setTimeout(() => {
+      rotating = false;
+      if (queuedTurn) {
+        const turn = queuedTurn;
+        queuedTurn = 0;
+        rotate(turn);
+      }
+    }, 570);
+  }
+
+  previous.addEventListener('click', () => rotate(-1));
+  next.addEventListener('click', () => rotate(1));
+  phoneLayout.addEventListener('change', () => goToCard(current));
 
   let pointerStart = null;
   let suppressClick = false;
@@ -54,7 +91,7 @@
     pointerStart = null;
     if (Math.abs(dx) < 35 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
     suppressClick = true;
-    goToCard(current + (dx < 0 ? 1 : -1));
+    rotate(dx < 0 ? 1 : -1);
     setTimeout(() => { suppressClick = false; }, 400);
   });
   track.addEventListener('pointercancel', () => { pointerStart = null; });
@@ -67,19 +104,21 @@
   track.addEventListener('keydown', event => {
     if (!phoneLayout.matches || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')) return;
     event.preventDefault();
-    goToCard(current + (event.key === 'ArrowRight' ? 1 : -1));
-    cards[current].focus({ preventScroll: true });
+    const direction = event.key === 'ArrowRight' ? 1 : -1;
+    const target = cards[(current + direction + cards.length) % cards.length];
+    rotate(direction);
+    target.focus({ preventScroll: true });
   });
 
   function cardFor(id) {
     return cards.find(card => card.hash === '#' + id);
   }
 
-  function pauseInactiveMedia() {
+  function pauseInactiveMedia(playActive = true) {
     for (const detail of details.values()) {
-      if (detail !== active) detail.querySelectorAll('video').forEach(video => video.pause());
+      if (detail !== active || !playActive) detail.querySelectorAll('video').forEach(video => video.pause());
     }
-    active?.querySelectorAll('video[autoplay]').forEach(video => video.play().catch(() => {}));
+    if (playActive) active?.querySelectorAll('video[autoplay]').forEach(video => video.play().catch(() => {}));
   }
 
   function focusDetail(detail) {
@@ -159,9 +198,11 @@
     detail.querySelector('.detail-panel').scrollTop = 0;
     const to = detail.querySelector('.detail-panel').getBoundingClientRect();
     active = detail;
-    pauseInactiveMedia();
+    const transitioning = animate && !reducedMotion.matches;
+    if (transitioning) detail.dataset.transitioning = 'true';
+    pauseInactiveMedia(false);
 
-    if (animate && !reducedMotion.matches) {
+    if (transitioning) {
       const ghost = makeGhost(card, from);
       card.classList.add('is-transition-source');
       requestAnimationFrame(() => {
@@ -177,6 +218,9 @@
     overview.classList.add('is-hidden');
     overview.inert = true;
     overview.setAttribute('aria-hidden', 'true');
+    delete detail.dataset.transitioning;
+    detail.dispatchEvent(new Event('what-detail-opened', { bubbles: true }));
+    pauseInactiveMedia();
     focusDetail(detail);
     busy = false;
   }
@@ -223,9 +267,10 @@
       event.preventDefault();
       if (busy) return;
       if (link.classList.contains('story-card') && phoneLayout.matches && link !== cards[current]) {
-        goToCard(cards.indexOf(link));
+        rotate(Number(link.dataset.carouselOffset) > 0 ? 1 : -1);
         return;
       }
+      if (link.classList.contains('story-card') && rotating) return;
       history.pushState(null, '', '#' + id);
       if (id === 'overview') closeDetail();
       else openDetail(id, cardFor(id) === link && !active);
@@ -246,6 +291,6 @@
     detail.inert = true;
     detail.setAttribute('aria-hidden', 'true');
   }
-  updateCardControls(0);
+  goToCard(0);
   routeFromHash();
 })();

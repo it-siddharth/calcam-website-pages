@@ -183,16 +183,16 @@ main { position:relative; width:100%; height:100vh; height:100dvh; overflow:hidd
     position:absolute;
     top:0;
     left:50%;
-    width:78%;
+    width:60%;
     height:100%;
     min-height:0;
+    padding:18px 16px;
     transform:translateX(calc(-50% + var(--card-x, 0%))) translateZ(var(--card-z, 0px)) rotateY(var(--card-turn, 0deg));
-    transform-style:preserve-3d;
     backface-visibility:hidden;
     opacity:.65;
-    filter:brightness(.72);
-    box-shadow:0 16px 35px #0008;
-    transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .35s ease,filter .35s ease;
+    filter:none;
+    will-change:transform,opacity;
+    transition:transform .55s cubic-bezier(.22,1,.36,1),opacity .35s ease;
     user-select:none;
     -webkit-user-drag:none;
   }
@@ -202,7 +202,10 @@ main { position:relative; width:100%; height:100vh; height:100dvh; overflow:hidd
     filter:none;
   }
   .story-card.is-neighbor { z-index:2; cursor:pointer; }
-  .story-card.is-far { z-index:1; opacity:0; visibility:hidden; pointer-events:none; }
+  .story-card.is-far { z-index:1; opacity:0; pointer-events:none; }
+  .story-card.carousel-instant,.story-cards.carousel-instant .story-card { transition:none !important; }
+  .story-card .card-label { font-size:14px; }
+  .story-card .card-copy { font-size:14px; line-height:19px; }
 }
 @media(max-width:650px) and (prefers-reduced-motion:reduce) {
   .story-card,.story-card:hover,.story-card:focus-visible { transition:none; }
