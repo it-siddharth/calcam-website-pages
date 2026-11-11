@@ -23,12 +23,12 @@
   function placeCard(card, offset) {
     card.dataset.carouselOffset = String(offset);
     card.style.setProperty('--card-x', offset * 100 + '%');
-    card.style.setProperty('--card-z', -Math.abs(offset) * 90 + 'px');
-    card.style.setProperty('--card-turn', offset * 42 + 'deg');
+    card.style.setProperty('--card-z', -Math.abs(offset) * 50 + 'px');
+    card.style.setProperty('--card-turn', offset * 24 + 'deg');
     card.classList.toggle('is-current', offset === 0);
     card.classList.toggle('is-neighbor', Math.abs(offset) === 1);
     card.classList.toggle('is-far', Math.abs(offset) > 1);
-    card.tabIndex = phoneLayout.matches && offset !== 0 ? -1 : 0;
+    card.tabIndex = offset !== 0 ? -1 : 0;
   }
 
   function updateCardControls(index, farOffset = 2) {
@@ -84,11 +84,11 @@
   let pointerStart = null;
   let suppressClick = false;
   track.addEventListener('pointerdown', event => {
-    if (!phoneLayout.matches || event.pointerType === 'mouse') return;
+    if (event.pointerType === 'mouse') return;
     pointerStart = { x: event.clientX, y: event.clientY };
   });
   track.addEventListener('pointerup', event => {
-    if (!pointerStart || !phoneLayout.matches) return;
+    if (!pointerStart) return;
     const dx = event.clientX - pointerStart.x;
     const dy = event.clientY - pointerStart.y;
     pointerStart = null;
@@ -105,7 +105,7 @@
     suppressClick = false;
   }, true);
   track.addEventListener('keydown', event => {
-    if (!phoneLayout.matches || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')) return;
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
     event.preventDefault();
     const direction = event.key === 'ArrowRight' ? 1 : -1;
     const target = cards[(current + direction + cards.length) % cards.length];
@@ -245,7 +245,7 @@
       if (id !== 'overview' && !details.has(id)) return;
       event.preventDefault();
       if (busy) return;
-      if (link.classList.contains('story-card') && phoneLayout.matches && link !== cards[current]) {
+      if (link.classList.contains('story-card') && link !== cards[current]) {
         rotate(Number(link.dataset.carouselOffset) > 0 ? 1 : -1);
         return;
       }

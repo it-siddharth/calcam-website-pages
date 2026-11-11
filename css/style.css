@@ -284,7 +284,7 @@ body {
 }
 
 .cta-section .btn-secondary {
-  border: .75px solid color-mix(in srgb, currentColor 80%, transparent);
+  border: .5px solid color-mix(in srgb, currentColor 80%, transparent);
 }
 
 .btn-secondary.active {

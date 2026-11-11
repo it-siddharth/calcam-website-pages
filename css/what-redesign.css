@@ -32,7 +32,7 @@ h1,h2 { font-family:'Calcam Display',sans-serif; font-weight:400; font-feature-s
 .story-card { background:var(--panel); }.story-card.red,.story-card.blue { color:#fff; }
 .card-label { font-size:18px; white-space:nowrap; }.card-label small { opacity:.55; font-size:15px; margin-right:5px; }
 .card-copy { font-size:18px; line-height:24px; margin-top:auto; max-width:250px; }
-.card-cta { align-self:flex-end; margin-top:20px; padding:7px 13px; border:.75px solid color-mix(in srgb, currentColor 80%, transparent); border-radius:20px; font:500 11px/1 'JetBrains Mono',monospace; }
+.card-cta { align-self:flex-end; margin-top:20px; padding:7px 13px; border:.5px solid color-mix(in srgb, currentColor 80%, transparent); border-radius:20px; font:500 11px/1 'JetBrains Mono',monospace; }
 .card-controls,.mobile-back { display:none; }
 .overview-credit { position:absolute; right:3.5%; bottom:20px; margin:0; color:#aaa; font:500 10px/1 'JetBrains Mono',monospace; }
 .detail { padding:65px 3.2% 52px; display:flex; flex-direction:column; gap:22px; }
@@ -91,11 +91,11 @@ h1,h2 { font-family:'Calcam Display',sans-serif; font-weight:400; font-feature-s
 @media(max-width:650px) {
   .corners i { width:15px; height:15px; }
   .overview { padding:80px 20px 58px; }
-  .home-link { left:50%; top:23px; transform:translateX(-50%); }
+  .home-link { left:20px; top:72px; transform:none; }
   .site-back,.detail-nav .site-back { min-height:34px; padding:7px 11px; font-size:11px; }
   .site-nav { display:none; }
   .site-nav a,.detail-nav a { font-size:10px; min-height:32px; padding:7px 10px; }
-  .overview h1 { font-size:clamp(36px,10vw,52px); }
+  .overview h1 { width:calc(100% - 80px); margin-left:80px; font-size:clamp(28px,7.7vw,30px); text-align:center; }
   .overview-head p { font-size:15px; line-height:21px; }
   .story-cards { display:flex; gap:12px; overflow-x:auto; margin-top:32px; padding:0 0 4px; scroll-snap-type:x mandatory; overscroll-behavior-inline:contain; scrollbar-width:none; }
   .story-cards::-webkit-scrollbar { display:none; }
@@ -166,7 +166,8 @@ main { position:relative; width:100%; height:100vh; height:100dvh; overflow:hidd
 }
 @media(max-height:600px) and (max-width:650px) {
   .overview { padding-top:63px; }
-  .overview h1 { font-size:34px; margin-bottom:8px; }
+  .home-link { top:63px; }
+  .overview h1 { margin-bottom:8px; }
   .overview-head p { font-size:13px; line-height:17px; }
   .story-card { padding:16px; }
   .card-copy { font-size:15px; line-height:20px; }
@@ -191,7 +192,7 @@ main { position:relative; width:100%; height:100vh; height:100dvh; overflow:hidd
     position:absolute;
     top:50%;
     left:50%;
-    width:60%;
+    width:78%;
     height:auto;
     min-height:0;
     padding:18px 16px;
@@ -217,6 +218,59 @@ main { position:relative; width:100%; height:100vh; height:100dvh; overflow:hidd
 }
 @media(max-width:650px) and (prefers-reduced-motion:reduce) {
   .story-card,.story-card:hover,.story-card:focus-visible { transition:none; }
+}
+
+/* Large cards wrap around a horizontal cylinder on wider screens. */
+@media(min-width:651px) {
+  .overview { padding-top:34px; padding-bottom:90px; }
+  .overview-head { padding-top:clamp(24px,6vh,52px); }
+  .home-link { top:calc(34px + clamp(24px,6vh,52px)); }
+  .site-nav { position:absolute; z-index:4; left:5%; bottom:40px; justify-content:flex-start; margin:0; }
+  .story-cards {
+    display:block;
+    position:relative;
+    flex:1;
+    align-self:stretch;
+    width:100%;
+    max-width:none;
+    min-height:0;
+    margin-top:clamp(16px,3vh,34px);
+    overflow:visible;
+    perspective:1300px;
+    perspective-origin:31% 50%;
+  }
+  .story-card,.story-card:hover,.story-card:focus-visible {
+    position:absolute;
+    top:50%;
+    left:31%;
+    width:min(36vw,440px);
+    min-width:330px;
+    height:min(52dvh,540px);
+    min-height:0;
+    padding:30px 26px 24px;
+    transform:translateX(calc(-50% + var(--card-x, 0%))) translateY(-50%) translateZ(var(--card-z, 0px)) rotateY(var(--card-turn, 0deg));
+    backface-visibility:hidden;
+    opacity:.82;
+    filter:none;
+    will-change:transform,opacity;
+    transition:transform var(--story-carousel-duration) var(--ease-smooth-out),opacity var(--duration-medium) ease;
+    user-select:none;
+    -webkit-user-drag:none;
+  }
+  .story-card.is-current,.story-card.is-current:hover,.story-card.is-current:focus-visible { z-index:3; opacity:1; }
+  .story-card.is-neighbor { z-index:2; cursor:pointer; }
+  .story-card.is-far { z-index:1; opacity:.35; pointer-events:none; }
+  .story-card[data-carousel-offset="-1"],.story-card[data-carousel-offset="-2"] { opacity:0; pointer-events:none; }
+  .story-card.carousel-instant,.story-cards.carousel-instant .story-card { transition:none !important; }
+  .card-controls { position:absolute; right:5%; bottom:40px; z-index:4; display:flex; align-items:center; justify-content:center; gap:22px; margin:0; }
+  .card-controls button { display:grid; place-items:center; width:40px; height:40px; border:1px solid #fff; border-radius:50%; background:transparent; color:#fff; font:500 20px/1 'JetBrains Mono',monospace; cursor:pointer; }
+  .card-controls button:hover,.card-controls button:focus-visible { background:#fff; color:#000; }
+  .card-controls button:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+  .card-count { min-width:68px; text-align:center; font:500 12px/1 'JetBrains Mono',monospace; letter-spacing:.06em; }
+}
+@media(min-width:651px) and (max-width:900px) {
+  .site-nav { gap:8px; }
+  .site-nav a { padding:7px 10px; font-size:11px; }
 }
 
 /* Match the Figma media frames while preserving each source's proportions. */

@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import * as Lightbox from '@ramka/react/lightbox';
 
 const items = [
   { type: 'video', src: 'assets/videos/vid-1.mp4', alt: 'Calculated Camouflage installation film', width: 16, height: 9 },
@@ -24,89 +23,68 @@ const items = [
   { src: 'assets/R0002071_1.jpg', alt: 'Visitor experience portrait', width: 800, height: 1200 },
 ];
 
+const thumbnailSource = (item) => item.type === 'video'
+  ? item.src.replace('assets/videos/', 'assets/gallery-thumbs/').replace('.mp4', '.jpg')
+  : item.src;
+
 function Gallery() {
+  const [active, setActive] = useState(items.length - 1);
+  const thumbnailRefs = useRef([]);
+  const touchStart = useRef(null);
+
+  const show = (index) => setActive((index + items.length) % items.length);
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = window.setTimeout(() => setActive((index) => (index + 1) % items.length), 3000);
+    return () => window.clearTimeout(timer);
+  }, [active]);
+
+  useEffect(() => {
+    thumbnailRefs.current[active]?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+  }, [active]);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.key === 'ArrowRight') show(active + 1);
+      if (event.key === 'ArrowLeft') show(active - 1);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [active]);
+
+  const item = items[active];
+
   return (
-    <Lightbox.Root count={items.length}>
-      <div className="gallery-grid">
-        {items.map((item, index) => (
-          <Lightbox.Trigger
-            key={item.src}
-            index={index}
-            className={`gallery-tile ${item.type === 'video' ? 'gallery-tile-video' : ''}`}
-            aria-label={`Open frame ${index + 1} of ${items.length}: ${item.alt}`}
-            crossfade={item.type === 'video' ? 'both' : undefined}
-          >
-            {({ imageRef }) => (
-              <>
-                <span className="tile-media">
-                  {item.type === 'video' ? (
-                    <video src={item.src} poster={item.src.replace('assets/videos/', 'assets/gallery-thumbs/').replace('.mp4', '.jpg')} muted loop autoPlay playsInline preload="metadata" aria-hidden="true" />
-                  ) : (
-                    <img ref={imageRef} src={item.src} alt="" width={item.width} height={item.height} loading={index < 4 ? 'eager' : 'lazy'} />
-                  )}
-                </span>
-                <span className="tile-meta"><span>{String(index + 1).padStart(2, '0')}</span><span>{item.type === 'video' ? 'FILM ↗' : 'VIEW ↗'}</span></span>
-              </>
-            )}
-          </Lightbox.Trigger>
+    <div className="gallery-viewer">
+      <div className="gallery-stage" aria-live="off"
+        onTouchStart={(event) => { touchStart.current = event.touches[0].clientX; }}
+        onTouchEnd={(event) => {
+          if (touchStart.current === null) return;
+          const distance = event.changedTouches[0].clientX - touchStart.current;
+          if (Math.abs(distance) > 40) show(active + (distance < 0 ? 1 : -1));
+          touchStart.current = null;
+        }}>
+        {item.type === 'video' ? (
+          <video key={item.src} src={item.src} poster={thumbnailSource(item)} muted loop autoPlay playsInline controls preload="metadata" aria-label={item.alt} />
+        ) : (
+          <img key={item.src} src={item.src} alt={item.alt} width={item.width} height={item.height} />
+        )}
+      </div>
+      <div className="gallery-controls">
+        <button className="gallery-control" type="button" onClick={() => show(active - 1)} aria-label="Previous image">← PREV</button>
+        <p className="gallery-caption"><span className="gallery-count">{String(active + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}</span>{item.alt}</p>
+        <button className="gallery-control" type="button" onClick={() => show(active + 1)} aria-label="Next image">NEXT →</button>
+      </div>
+      <div className="gallery-thumbnail-strip" aria-label="Gallery thumbnails">
+        {items.map((entry, index) => (
+          <button key={entry.src} ref={(node) => { thumbnailRefs.current[index] = node; }} className="gallery-thumbnail" type="button" onClick={() => show(index)} aria-label={`Show ${entry.alt}, ${index + 1} of ${items.length}`} aria-current={index === active ? 'true' : undefined}>
+            <img src={thumbnailSource(entry)} alt="" loading={index < 8 ? 'eager' : 'lazy'} />
+            {entry.type === 'video' && <span className="thumbnail-play" aria-hidden="true">▶</span>}
+          </button>
         ))}
       </div>
-
-      <Lightbox.Portal>
-        <Lightbox.Backdrop className="lightbox-backdrop" />
-        <Lightbox.Content className="lightbox-content" aria-label="Gallery viewer">
-          <div className="lightbox-topbar">
-            <span>CALCULATED CAMOUFLAGE / GALLERY</span>
-            <Lightbox.Counter className="lightbox-counter" />
-            <Lightbox.Close className="lightbox-control lightbox-close" aria-label="Close gallery viewer">CLOSE ✕</Lightbox.Close>
-          </div>
-
-          <Lightbox.Slides className="lightbox-slides" aria-label="Gallery frames" aria-roledescription="carousel" preload={1}>
-            {items.map((item, index) => (
-              <Lightbox.Slide className="lightbox-slide" key={item.src}>
-                <Lightbox.Item index={index} caption={item.alt} aria-roledescription="slide" aria-label={`${index + 1} of ${items.length}`}>
-                  <Lightbox.Zoom>
-                    <Lightbox.Media width={item.width} height={item.height}>
-                      {item.type === 'video' ? (
-                        <video src={item.src} muted loop autoPlay controls playsInline preload="metadata" aria-label={item.alt} />
-                      ) : (
-                        <img src={item.src} alt={item.alt} width={item.width} height={item.height} />
-                      )}
-                    </Lightbox.Media>
-                  </Lightbox.Zoom>
-                </Lightbox.Item>
-              </Lightbox.Slide>
-            ))}
-          </Lightbox.Slides>
-
-          <div className="lightbox-bottombar">
-            <Lightbox.Previous className="lightbox-control" aria-label="Previous frame">← PREV</Lightbox.Previous>
-            <Lightbox.Caption className="lightbox-caption" />
-            <Lightbox.Next className="lightbox-control" aria-label="Next frame">NEXT →</Lightbox.Next>
-          </div>
-
-          <Lightbox.ThumbnailStrip className="lightbox-thumbnail-strip">
-            <Lightbox.ThumbnailStripTrack className="lightbox-thumbnail-track" aria-label="Gallery thumbnails">
-              {items.map((item, index) => (
-                <Lightbox.Thumbnail
-                  className="lightbox-thumbnail"
-                  key={item.src}
-                  index={index}
-                  aria-label={`Show frame ${index + 1}: ${item.alt}`}
-                >
-                  <img
-                    src={item.type === 'video' ? item.src.replace('assets/videos/', 'assets/gallery-thumbs/').replace('.mp4', '.jpg') : item.src}
-                    alt=""
-                    loading="lazy"
-                  />
-                  {item.type === 'video' && <span className="thumbnail-play" aria-hidden="true">▶</span>}
-                </Lightbox.Thumbnail>
-              ))}
-            </Lightbox.ThumbnailStripTrack>
-          </Lightbox.ThumbnailStrip>
-        </Lightbox.Content>
-      </Lightbox.Portal>
-    </Lightbox.Root>
+    </div>
   );
 }
 
