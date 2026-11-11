@@ -253,7 +253,7 @@ body {
   border-radius: 30px;
   text-decoration: none;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: opacity .2s ease, transform .2s cubic-bezier(.22,1,.36,1);
   pointer-events: auto;
   width: fit-content;
   flex-shrink: 0;
@@ -322,7 +322,7 @@ body {
   text-transform: uppercase;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  transition: all 0.2s ease;
+  transition: background .2s ease, border-color .2s ease;
   width: fit-content;
   flex-shrink: 0;
   white-space: nowrap;
@@ -359,7 +359,7 @@ body {
   z-index: 1000;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  transition: all 0.2s ease;
+  transition: background .2s ease, border-color .2s ease, transform .2s cubic-bezier(.22,1,.36,1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -388,7 +388,7 @@ body {
   z-index: 1000;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  transition: all 0.15s ease;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -517,7 +517,7 @@ body.pointer-locked:hover .music-toggle {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  transition: all 0.15s ease;
+  transition: background .15s ease, color .15s ease;
 }
 
 .controls-close:hover {
@@ -664,7 +664,7 @@ body.pointer-locked:hover .music-toggle {
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
 }
 
 .control-buttons button:hover {
@@ -1031,7 +1031,7 @@ body:not(.cinematic-intro) .skip-hint {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: background .2s ease, color .2s ease;
 }
 
 .anchor-info-panel .panel-close:hover {
@@ -1050,7 +1050,7 @@ body:not(.cinematic-intro) .skip-hint {
   cursor: pointer;
   z-index: 50;
   transform: translate(-50%, -50%);
-  transition: all 0.3s ease;
+  transition: transform .25s cubic-bezier(.22,1,.36,1), background .2s ease, border-color .2s ease, opacity .2s ease;
   pointer-events: auto;
   opacity: 1;
   display: block;
@@ -1092,13 +1092,11 @@ body:not(.cinematic-intro) .skip-hint {
 
 @keyframes anchor-pulse {
   0% {
-    width: 32px;
-    height: 32px;
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
   100% {
-    width: 60px;
-    height: 60px;
+    transform: translate(-50%, -50%) scale(1.875);
     opacity: 0;
   }
 }
@@ -1222,13 +1220,11 @@ body.anchor-focused .anchor-indicator:not(.active) {
   
   @keyframes anchor-pulse {
     0% {
-      width: 36px;
-      height: 36px;
+      transform: translate(-50%, -50%) scale(1);
       opacity: 1;
     }
     100% {
-      width: 60px;
-      height: 60px;
+      transform: translate(-50%, -50%) scale(1.667);
       opacity: 0;
     }
   }
@@ -1403,7 +1399,7 @@ body.anchor-focused .mobile-controls {
   z-index: 1000;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  transition: all 0.15s ease;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1551,7 +1547,7 @@ body.pointer-locked:hover .projection-toggle {
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  transition: all 0.15s ease;
+  transition: background .15s ease, color .15s ease;
 }
 
 .projection-controls .controls-close:hover {
@@ -1744,4 +1740,12 @@ body.pointer-locked:hover .projection-toggle.right {
    ============================================ */
 .hidden {
   display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

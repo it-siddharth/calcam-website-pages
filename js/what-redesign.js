@@ -10,7 +10,10 @@
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const phoneLayout = window.matchMedia('(max-width: 650px)');
-  const duration = 550;
+  const motionStyles = getComputedStyle(document.documentElement);
+  const openDuration = parseFloat(motionStyles.getPropertyValue('--story-open-duration')) || 370;
+  const closeDuration = parseFloat(motionStyles.getPropertyValue('--story-close-duration')) || 250;
+  const carouselDuration = parseFloat(motionStyles.getPropertyValue('--story-carousel-duration')) || 500;
   let current = 0;
   let active = null;
   let busy = false;
@@ -71,7 +74,7 @@
         queuedTurn = 0;
         rotate(turn);
       }
-    }, 570);
+    }, carouselDuration);
   }
 
   previous.addEventListener('click', () => rotate(-1));
@@ -129,41 +132,19 @@
     }
   }
 
-  function makeGhost(card, rect) {
-    const ghost = document.createElement('div');
-    const style = getComputedStyle(card);
-    ghost.className = 'card-transition-ghost';
-    ghost.style.background = style.backgroundColor;
-    ghost.style.color = style.color;
-    ghost.style.borderRadius = style.borderRadius;
-    Object.assign(ghost.style, {
-      top: rect.top + 'px', left: rect.left + 'px',
-      width: rect.width + 'px', height: rect.height + 'px'
+  function waitForFade(element, duration) {
+    return new Promise(resolve => {
+      const finish = () => {
+        clearTimeout(fallback);
+        element.removeEventListener('transitionend', onEnd);
+        resolve();
+      };
+      const onEnd = event => {
+        if (event.target === element && event.propertyName === 'opacity') finish();
+      };
+      const fallback = setTimeout(finish, duration + 80);
+      element.addEventListener('transitionend', onEnd);
     });
-    ghost.append(card.querySelector('.card-label').cloneNode(true));
-    document.body.append(ghost);
-    return ghost;
-  }
-
-  async function moveGhost(ghost, from, to, reverse = false) {
-    const start = {
-      top: from.top + 'px', left: from.left + 'px',
-      width: from.width + 'px', height: from.height + 'px',
-      borderRadius: reverse ? '14px' : '0px'
-    };
-    const end = {
-      top: to.top + 'px', left: to.left + 'px',
-      width: to.width + 'px', height: to.height + 'px',
-      borderRadius: reverse ? '0px' : '14px'
-    };
-    try {
-      await ghost.animate([start, end], {
-        duration, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards'
-      }).finished;
-    } catch (_) {
-      // The final state still applies if a resize cancels the animation.
-    }
-    ghost.remove();
   }
 
   async function openDetail(id, animate = true) {
@@ -191,28 +172,24 @@
       return;
     }
 
-    const from = card.getBoundingClientRect();
-    detail.classList.add('is-active', 'is-opening');
+    const transitioning = animate && !reducedMotion.matches;
+    if (transitioning) detail.dataset.transitioning = 'true';
+    detail.classList.add('is-active');
+    if (transitioning) detail.classList.add('is-opening');
     detail.inert = false;
     detail.setAttribute('aria-hidden', 'false');
     detail.querySelector('.detail-panel').scrollTop = 0;
-    const to = detail.querySelector('.detail-panel').getBoundingClientRect();
     active = detail;
-    const transitioning = animate && !reducedMotion.matches;
-    if (transitioning) detail.dataset.transitioning = 'true';
     pauseInactiveMedia(false);
 
     if (transitioning) {
-      const ghost = makeGhost(card, from);
-      card.classList.add('is-transition-source');
+      // Commit the hidden start state before changing classes on the next frame.
+      void detail.offsetWidth;
       requestAnimationFrame(() => {
         detail.classList.remove('is-opening');
         overview.classList.add('is-leaving');
       });
-      await moveGhost(ghost, from, to);
-      card.classList.remove('is-transition-source');
-    } else {
-      detail.classList.remove('is-opening');
+      await waitForFade(detail.querySelector('.detail-panel'), openDuration);
     }
 
     overview.classList.add('is-hidden');
@@ -231,18 +208,20 @@
     const detail = active;
     const card = cardFor(detail.id);
     goToCard(cards.indexOf(card));
-    overview.classList.remove('is-hidden', 'is-leaving');
+    overview.classList.remove('is-hidden');
     overview.inert = false;
     overview.setAttribute('aria-hidden', 'false');
 
     if (animate && !reducedMotion.matches) {
-      const from = detail.querySelector('.detail-panel').getBoundingClientRect();
-      const to = card.getBoundingClientRect();
-      const ghost = makeGhost(card, from);
+      void overview.offsetWidth;
       detail.classList.add('is-closing');
-      card.classList.add('is-transition-source');
-      await moveGhost(ghost, from, to, true);
-      card.classList.remove('is-transition-source');
+      requestAnimationFrame(() => overview.classList.remove('is-leaving'));
+      await Promise.all([
+        waitForFade(detail.querySelector('.detail-panel'), closeDuration),
+        new Promise(resolve => setTimeout(resolve, closeDuration))
+      ]);
+    } else {
+      overview.classList.remove('is-leaving');
     }
 
     detail.classList.remove('is-active', 'is-closing');

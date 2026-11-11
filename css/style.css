@@ -243,7 +243,7 @@ body {
   border-radius: 30px;
   text-decoration: none;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: opacity .2s ease, transform .2s cubic-bezier(.22,1,.36,1);
   width: fit-content;
   flex-shrink: 0;
   overflow: visible;
@@ -281,6 +281,10 @@ body {
   border: 1px solid var(--color-text);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+}
+
+.cta-section .btn-secondary {
+  border: .75px solid color-mix(in srgb, currentColor 80%, transparent);
 }
 
 .btn-secondary.active {
@@ -359,7 +363,7 @@ body {
   transform: translateY(20px);
   opacity: 0;
   visibility: hidden;
-  transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
+  transition: transform .25s cubic-bezier(.22,1,.36,1), opacity .25s ease, visibility .25s;
   display: flex;
   flex-direction: column;
   will-change: transform, opacity;
@@ -403,7 +407,7 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  transition: all 0.15s ease;
+  transition: color .15s ease, background .15s ease;
 }
 
 .settings-close:hover {
@@ -513,7 +517,7 @@ body {
   font-size: 11px;
   cursor: pointer;
   outline: none;
-  transition: all 0.15s ease;
+  transition: background .15s ease, border-color .15s ease;
 }
 
 .setting-row select:hover {
@@ -587,7 +591,7 @@ body {
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
 }
 
 .setting-buttons button:hover {
@@ -963,7 +967,7 @@ body.cinematic-revealed .credit,
 body.cinematic-revealed .corner-accent {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition: opacity .5s cubic-bezier(.22,1,.36,1), transform .5s cubic-bezier(.22,1,.36,1);
 }
 
 /* Staggered reveal delays */
@@ -972,19 +976,19 @@ body.cinematic-revealed .corner-accent {
 }
 
 body.cinematic-revealed .title {
-  transition-delay: 0.1s;
+  transition-delay: .04s;
 }
 
 body.cinematic-revealed .description {
-  transition-delay: 0.2s;
+  transition-delay: .08s;
 }
 
 body.cinematic-revealed .meta-info {
-  transition-delay: 0.3s;
+  transition-delay: .12s;
 }
 
 body.cinematic-revealed .cta-section {
-  transition-delay: 0.4s;
+  transition-delay: .16s;
 }
 
 /* Scene gradient hidden during zoom, fades in after */
@@ -998,7 +1002,18 @@ body.cinematic-revealed .cta-section {
 }
 
 body.cinematic-revealed .credit {
-  transition-delay: 0.6s;
+  transition-delay: .2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.cinematic-revealed .title,
+  body.cinematic-revealed .description,
+  body.cinematic-revealed .meta-info,
+  body.cinematic-revealed .cta-section,
+  body.cinematic-revealed .credit,
+  body.cinematic-revealed .corner-accent,
+  .scene-gradient,
+  .settings-panel { transition: none !important; }
 }
 
 /* ============================================

@@ -42,8 +42,8 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet"></noscript>
   
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=9">
-  <link rel="stylesheet" href="css/redesign.css?v=1">
+  <link rel="stylesheet" href="css/style.css?v=11">
+  <link rel="stylesheet" href="css/redesign.css?v=5">
   
   <!-- Critical inline styles to prevent white flash and hide text during intro -->
   <style>
@@ -129,22 +129,18 @@
           <span class="cta-text">See it for yourself</span>
           <a href="installation.html" class="btn btn-primary">
             <span class="btn-text">VIEW ROOM</span>
-            <span class="btn-arrow">→</span>
           </a>
         </div>
         
         <div class="nav-links">
           <a href="what-is-this.html" class="btn btn-secondary">
             <span class="btn-text">what is this</span>
-            <span class="btn-arrow">→</span>
           </a>
           <a href="journal.html" class="btn btn-secondary">
             <span class="btn-text">viewer journal</span>
-            <span class="btn-arrow">→</span>
           </a>
           <a href="gallery.html" class="btn btn-secondary">
             <span class="btn-text">gallery</span>
-            <span class="btn-arrow">→</span>
           </a>
         </div>
       </div>
@@ -161,8 +157,8 @@
     <footer class="credit">Made by Siddharth. ©itsiddharth 2026</footer>
   </main>
 
-  <!-- Hidden iframe for WORD SILHOUETTE (lazy loaded) -->
-  <iframe id="silhouette-iframe" src="WORD SILHOUETTE.html" loading="lazy" style="position: absolute; left: -9999px; width: 640px; height: 480px;"></iframe>
+  <!-- Hidden iframe for WORD SILHOUETTE -->
+  <iframe id="silhouette-iframe" src="WORD SILHOUETTE.html" allow="camera" style="position: absolute; left: -9999px; width: 640px; height: 480px;"></iframe>
   
   <!-- TV Video (used by scene.js) - hidden, plays on TV screen in 3D scene -->
   <video id="tv-video" loop muted playsinline webkit-playsinline preload="auto" autoplay style="display: none;">
@@ -176,6 +172,15 @@
         "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
         "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
       }
+    }
+  </script>
+  <script src="js/site-camera.js"></script>
+  <script>
+    // Ask once on the landing page, before any embedded camera effect starts.
+    if (window.siteCamera) {
+      window.siteCamera.request({ video: true, audio: false })
+        .then(stream => stream.getTracks().forEach(track => track.stop()))
+        .catch(() => {});
     }
   </script>
   <script type="module" src="js/scene.js"></script>

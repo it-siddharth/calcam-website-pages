@@ -1,5 +1,6 @@
 /* Shared presentation layer for the 2026 Figma redesign. Scene code remains in place. */
 @font-face { font-family: 'Calcam Display'; src: url('../fonts/Matrix-TM-Regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Max Hana'; src: url('../fonts/hana-min-a-latin.woff2') format('woff2'); font-weight: 400; font-display: swap; }
 
 .redesign-nav { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .redesign-pill { display: inline-flex; align-items: center; gap: 5px; min-height: 36px; padding: 8px 14px; border: 1px solid currentColor; border-radius: 30px; color: #fff; text-decoration: none; white-space: nowrap; font: 500 14px/1 'JetBrains Mono', monospace; transition: background .2s ease, color .2s ease; }
@@ -32,7 +33,7 @@
 
 /* Home */
 .landing-page .content-section { width: 45%; padding-top: 35px; }
-.landing-page .title { font-family: 'Calcam Display', sans-serif; font-feature-settings: 'calt' 1; letter-spacing: -.095em; line-height: .97; margin-bottom: 34px; transform: none; width: auto; }
+.landing-page .title { font-family: 'Max Hana', serif; letter-spacing: -.04em; line-height: .97; margin-bottom: 34px; transform: none; width: auto; }
 .landing-page .description { max-width: 510px; text-align: justify; text-justify: inter-word; }
 .landing-page .meta-info { gap: clamp(24px, 5vw, 66px); }
 .landing-page .meta-item { flex: 0 0 auto; }
