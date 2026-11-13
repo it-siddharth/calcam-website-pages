@@ -928,6 +928,78 @@ body:not(.cinematic-intro) .skip-hint {
   
 }
 
+/* Live controls for both wall projections and the TV image. */
+.visual-settings-toggle {
+  position: fixed;
+  right: 20px;
+  bottom: 82px;
+  z-index: 1000;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: 100px;
+  background: rgba(0, 0, 0, .82);
+  color: #fff;
+  font: 12px 'JetBrains Mono', monospace;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+.visual-settings-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 130px;
+  z-index: 1001;
+  width: min(340px, calc(100vw - 32px));
+  max-height: min(590px, calc(100dvh - 155px));
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 14px;
+  background: rgba(8, 8, 8, .96);
+  color: #fff;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .7);
+  font: 12px 'JetBrains Mono', monospace;
+}
+.visual-settings-panel[hidden],
+.visual-settings-content[hidden] { display: none; }
+.visual-settings-header,
+.visual-settings-tabs { display: flex; align-items: center; }
+.visual-settings-header { justify-content: space-between; padding: 15px 16px 8px; }
+.visual-settings-header h2 { margin: 0; font-size: 13px; font-weight: 500; letter-spacing: .08em; }
+.visual-settings-header button { border: 0; background: none; color: #fff; font-size: 24px; line-height: 1; cursor: pointer; }
+.visual-settings-tabs { gap: 4px; padding: 0 12px 12px; border-bottom: 1px solid #333; }
+.visual-settings-tabs button { flex: 1; padding: 8px 3px; border: 1px solid #555; border-radius: 20px; background: none; color: #fff; font: 10px 'JetBrains Mono', monospace; cursor: pointer; }
+.visual-settings-tabs button[aria-selected="true"] { background: #fff; color: #000; }
+.visual-settings-content { padding: 8px 16px 16px; }
+.visual-settings-content label { display: block; margin-top: 14px; color: #ddd; }
+.visual-settings-content output { float: right; color: #fff; }
+.visual-settings-content input[type="range"] { display: block; width: 100%; margin: 11px 0 0; accent-color: #fff; }
+.visual-settings-content .visual-settings-inline { display: flex; align-items: center; justify-content: space-between; min-height: 31px; }
+.visual-settings-content input[type="checkbox"] { width: 18px; height: 18px; accent-color: #fff; }
+.visual-settings-content input[type="color"] { width: 40px; height: 28px; border: 0; background: none; cursor: pointer; }
+.visual-settings-preset { padding: 12px 16px 14px; border-top: 1px solid #333; }
+.visual-settings-preset details { margin-top: 12px; }
+.visual-settings-preset summary { cursor: pointer; letter-spacing: .05em; }
+.visual-settings-preset label { display: block; margin: 12px 0 7px; color: #bbb; line-height: 1.4; }
+.visual-settings-preset textarea { box-sizing: border-box; width: 100%; min-height: 170px; resize: vertical; padding: 10px; border: 1px solid #555; border-radius: 8px; background: #161616; color: #fff; font: 11px/1.45 'JetBrains Mono', monospace; }
+.visual-settings-preset-actions { display: flex; gap: 8px; }
+.visual-settings-preset-actions button,
+.visual-settings-apply { padding: 9px 12px; border: 1px solid #777; border-radius: 20px; background: transparent; color: #fff; font: 11px 'JetBrains Mono', monospace; cursor: pointer; }
+.visual-settings-preset-actions button { flex: 1; }
+.visual-settings-preset-actions .visual-settings-lock { background: #fff; color: #000; }
+.visual-settings-preset-actions .visual-settings-lock[aria-pressed="true"] { background: transparent; color: #fff; }
+.visual-settings-apply { width: 100%; margin-top: 9px; }
+.visual-settings-preset button:disabled { opacity: .45; cursor: not-allowed; }
+.visual-settings-preset p { min-height: 1em; margin: 8px 0 0; color: #bbb; line-height: 1.4; }
+.visual-settings-preset p:empty { display: none; }
+body.cinematic-intro .visual-settings-toggle,
+body.cinematic-intro .visual-settings-panel,
+body.anchor-focused .visual-settings-toggle,
+body.pointer-locked .visual-settings-toggle { opacity: 0; pointer-events: none; }
+body.pointer-locked .visual-settings-panel { display: none; }
+@media screen and (max-width: 768px) {
+  .visual-settings-toggle { right: 24px; bottom: 82px; }
+  .visual-settings-panel { right: 12px; bottom: 130px; max-height: calc(100dvh - 155px); }
+}
+
 /* Extra small screens (iPhone SE, etc.) */
 @media screen and (max-width: 480px) {
   :root {

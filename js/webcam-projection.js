@@ -74,7 +74,7 @@ export class WebcamProjection {
     
     // Sampling grid - positions where we check brightness
     this.sampleGrid = [];
-    this.maxSamples = this.isMobile ? 9000 : 16000; // Fewer samples on mobile for performance
+    this.maxSamples = this.isMobile ? 18000 : 32000; // Higher ceiling, with a smaller mobile budget
     
     console.log('📽️ WebcamProjection created:', width, 'x', height, this.isMobile ? '(mobile)' : '(desktop)');
   }
@@ -162,11 +162,17 @@ export class WebcamProjection {
     const invert = this.settings.invert;
     const flipH = this.settings.flipHorizontal;
     const flipV = this.settings.flipVertical;
-    const maxSamples = this.maxSamples;
+    const density = this.settings.pixelDensity;
+    const defaultDensity = this.isMobile ? 160 : 260;
+    const defaultSamples = this.isMobile ? 9000 : 16000;
+    const maxDensity = 800;
+    const maxSamples = Math.min(this.maxSamples, Math.max(1, Math.round(density <= defaultDensity
+      ? defaultSamples * density / defaultDensity
+      : defaultSamples + (this.maxSamples - defaultSamples) * (density - defaultDensity) / (maxDensity - defaultDensity))));
     
     // Calculate sample step based on density (optimized)
     // Higher density = smaller step = more samples
-    const densityFactor = this.settings.pixelDensity / 100;
+    const densityFactor = density / 100;
     const baseStep = Math.max(1, Math.floor(3 / densityFactor));
     
     // Pre-calculate width inverse for normalization

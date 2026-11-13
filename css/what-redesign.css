@@ -212,6 +212,10 @@ main { position:relative; width:100%; height:100vh; height:100dvh; overflow:hidd
   }
   .story-card.is-neighbor { z-index:2; cursor:pointer; }
   .story-card.is-far { z-index:1; opacity:0; pointer-events:none; }
+  .story-card[data-carousel-offset="-1"] { opacity:0; pointer-events:none; }
+  .story-card.is-left-visible { opacity:1; pointer-events:none; }
+  .story-card.is-neighbor .card-label,.story-card.is-neighbor .card-copy,.story-card.is-neighbor .card-cta { opacity:0; }
+  .story-card.is-left-visible .card-label,.story-card.is-left-visible .card-copy,.story-card.is-left-visible .card-cta { opacity:1; }
   .story-card.carousel-instant,.story-cards.carousel-instant .story-card { transition:none !important; }
   .story-card .card-label { font-size:14px; }
   .story-card .card-copy { font-size:14px; line-height:19px; }
@@ -222,30 +226,32 @@ main { position:relative; width:100%; height:100vh; height:100dvh; overflow:hidd
 
 /* Large cards wrap around a horizontal cylinder on wider screens. */
 @media(min-width:651px) {
-  .overview { padding-top:34px; padding-bottom:90px; }
-  .overview-head { padding-top:clamp(24px,6vh,52px); }
-  .home-link { top:calc(34px + clamp(24px,6vh,52px)); }
+  .overview { padding-top:40px; padding-bottom:90px; }
+  .overview-head { padding-top:0; }
+  .home-link { top:40px; }
   .site-nav { position:absolute; z-index:4; left:5%; bottom:40px; justify-content:flex-start; margin:0; }
   .story-cards {
     display:block;
     position:relative;
-    flex:1;
+    flex:none;
     align-self:stretch;
     width:100%;
     max-width:none;
+    height:min(52dvh,540px,calc(100dvh - 330px));
     min-height:0;
-    margin-top:clamp(16px,3vh,34px);
+    margin-top:auto;
+    margin-bottom:auto;
     overflow:visible;
     perspective:1300px;
-    perspective-origin:31% 50%;
+    perspective-origin:52% 50%;
   }
   .story-card,.story-card:hover,.story-card:focus-visible {
     position:absolute;
     top:50%;
-    left:31%;
+    left:52%;
     width:min(36vw,440px);
     min-width:330px;
-    height:min(52dvh,540px);
+    height:100%;
     min-height:0;
     padding:30px 26px 24px;
     transform:translateX(calc(-50% + var(--card-x, 0%))) translateY(-50%) translateZ(var(--card-z, 0px)) rotateY(var(--card-turn, 0deg));
@@ -259,8 +265,9 @@ main { position:relative; width:100%; height:100vh; height:100dvh; overflow:hidd
   }
   .story-card.is-current,.story-card.is-current:hover,.story-card.is-current:focus-visible { z-index:3; opacity:1; }
   .story-card.is-neighbor { z-index:2; cursor:pointer; }
-  .story-card.is-far { z-index:1; opacity:.35; pointer-events:none; }
+  .story-card.is-far { z-index:1; opacity:0; pointer-events:none; }
   .story-card[data-carousel-offset="-1"],.story-card[data-carousel-offset="-2"] { opacity:0; pointer-events:none; }
+  .story-card.is-left-visible { opacity:1; pointer-events:none; }
   .story-card.carousel-instant,.story-cards.carousel-instant .story-card { transition:none !important; }
   .card-controls { position:absolute; right:5%; bottom:40px; z-index:4; display:flex; align-items:center; justify-content:center; gap:22px; margin:0; }
   .card-controls button { display:grid; place-items:center; width:40px; height:40px; border:1px solid #fff; border-radius:50%; background:transparent; color:#fff; font:500 20px/1 'JetBrains Mono',monospace; cursor:pointer; }

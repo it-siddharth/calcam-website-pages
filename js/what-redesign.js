@@ -21,10 +21,11 @@
   let queuedTurn = 0;
 
   function placeCard(card, offset) {
+    const phone = phoneLayout.matches;
     card.dataset.carouselOffset = String(offset);
-    card.style.setProperty('--card-x', offset * 100 + '%');
-    card.style.setProperty('--card-z', -Math.abs(offset) * 50 + 'px');
-    card.style.setProperty('--card-turn', offset * 24 + 'deg');
+    card.style.setProperty('--card-x', offset * (phone ? 100 : 106) + '%');
+    card.style.setProperty('--card-z', -Math.abs(offset) * (phone ? 30 : 70) + 'px');
+    card.style.setProperty('--card-turn', offset * (phone ? 12 : 10) + 'deg');
     card.classList.toggle('is-current', offset === 0);
     card.classList.toggle('is-neighbor', Math.abs(offset) === 1);
     card.classList.toggle('is-far', Math.abs(offset) > 1);
@@ -46,6 +47,7 @@
 
   function goToCard(index) {
     track.classList.add('carousel-instant');
+    cards.forEach(card => card.classList.remove('is-left-visible'));
     updateCardControls(index);
     void track.offsetWidth;
     track.classList.remove('carousel-instant');
@@ -61,6 +63,9 @@
       return;
     }
     rotating = true;
+    const exitingLeft = direction > 0 ? cards.find(card => card.classList.contains('is-left-visible') && card.dataset.carouselOffset === '-1') : null;
+    if (direction > 0) cards[current].classList.add('is-left-visible');
+    const returningCurrent = direction < 0 ? cards[(current - 1 + cards.length) % cards.length] : null;
     const entering = cards[(current + direction * 2 + cards.length * 2) % cards.length];
     entering.classList.add('carousel-instant');
     placeCard(entering, direction * 2);
@@ -68,6 +73,8 @@
     entering.classList.remove('carousel-instant');
     requestAnimationFrame(() => updateCardControls(current + direction, -direction * 2));
     setTimeout(() => {
+      exitingLeft?.classList.remove('is-left-visible');
+      returningCurrent?.classList.remove('is-left-visible');
       rotating = false;
       if (queuedTurn) {
         const turn = queuedTurn;

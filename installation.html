@@ -22,8 +22,8 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet"></noscript>
   
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="css/installation.css?v=14">
-  <link rel="stylesheet" href="css/redesign.css?v=12">
+  <link rel="stylesheet" href="css/installation.css?v=18">
+  <link rel="stylesheet" href="css/redesign.css?v=14">
   
   <!-- Critical inline styles to prevent white flash and text flash -->
   <style>
@@ -170,6 +170,54 @@
     </svg>
   </button>
 
+  <button id="visual-settings-toggle" class="visual-settings-toggle" type="button" aria-controls="visual-settings-panel" aria-expanded="false">PROJECTIONS</button>
+  <aside id="visual-settings-panel" class="visual-settings-panel" aria-label="Projection settings" hidden>
+    <div class="visual-settings-header">
+      <h2>PROJECTIONS</h2>
+      <button id="visual-settings-close" type="button" aria-label="Close projection settings">×</button>
+    </div>
+    <div class="visual-settings-tabs" role="tablist" aria-label="Projection source">
+      <button type="button" role="tab" aria-selected="true" aria-controls="settings-left-wall" id="tab-left-wall">LEFT WALL</button>
+      <button type="button" role="tab" aria-selected="false" aria-controls="settings-right-wall" id="tab-right-wall">RIGHT WALL</button>
+      <button type="button" role="tab" aria-selected="false" aria-controls="settings-tv" id="tab-tv">TV</button>
+    </div>
+    <div id="settings-left-wall" class="visual-settings-content" role="tabpanel" aria-labelledby="tab-left-wall">
+      <label>Threshold <output id="val-threshold">96</output><input id="ctrl-threshold" type="range" min="0" max="255" value="96"></label>
+      <label>Pixel size <output id="val-pixelsize">0.160</output><input id="ctrl-pixelsize" type="range" min="0.05" max="0.5" step="0.005" value="0.16"></label>
+      <label>Pixel density <output id="val-pixeldensity">260%</output><input id="ctrl-pixeldensity" type="range" min="50" max="800" step="5" value="260"></label>
+      <label>Brightness <output id="val-projintensity">0.4</output><input id="ctrl-projintensity" type="range" min="0" max="1" step="0.05" value="0.4"></label>
+      <label class="visual-settings-inline">Color <input id="ctrl-pixelcolor" type="color" value="#ffffff"></label>
+      <label class="visual-settings-inline">Invert <input id="ctrl-invert" type="checkbox"></label>
+    </div>
+    <div id="settings-right-wall" class="visual-settings-content" role="tabpanel" aria-labelledby="tab-right-wall" hidden>
+      <label>Threshold <output id="val-threshold-right">96</output><input id="ctrl-threshold-right" type="range" min="0" max="255" value="96"></label>
+      <label>Pixel size <output id="val-pixelsize-right">0.160</output><input id="ctrl-pixelsize-right" type="range" min="0.05" max="0.5" step="0.005" value="0.16"></label>
+      <label>Pixel density <output id="val-pixeldensity-right">260%</output><input id="ctrl-pixeldensity-right" type="range" min="50" max="800" step="5" value="260"></label>
+      <label>Brightness <output id="val-projintensity-right">0.4</output><input id="ctrl-projintensity-right" type="range" min="0" max="1" step="0.05" value="0.4"></label>
+      <label class="visual-settings-inline">Color <input id="ctrl-pixelcolor-right" type="color" value="#ffffff"></label>
+      <label class="visual-settings-inline">Invert <input id="ctrl-invert-right" type="checkbox"></label>
+    </div>
+    <div id="settings-tv" class="visual-settings-content" role="tabpanel" aria-labelledby="tab-tv" hidden>
+      <label>Threshold <output id="val-tv-threshold">83</output><input id="ctrl-tv-threshold" type="range" min="0" max="255" value="83"></label>
+      <label>Text density <output id="val-tv-density">1.15</output><input id="ctrl-tv-density" type="range" min="0.5" max="3" step="0.05" value="1.15"></label>
+      <label>Brightness <output id="val-tv-brightness">100%</output><input id="ctrl-tv-brightness" type="range" min="0.2" max="1" step="0.05" value="1"></label>
+      <label class="visual-settings-inline">Invert <input id="ctrl-tv-invert" type="checkbox"></label>
+    </div>
+    <div class="visual-settings-preset">
+      <div class="visual-settings-preset-actions">
+        <button id="visual-settings-copy" type="button">COPY JSON</button>
+        <button id="visual-settings-lock" class="visual-settings-lock" type="button" aria-pressed="false">LOCK SETTINGS</button>
+      </div>
+      <p id="visual-settings-status" role="status" aria-live="polite"></p>
+      <details id="visual-settings-json-details">
+        <summary>JSON PRESET</summary>
+        <label for="visual-settings-json">Edit the values, then apply or lock them.</label>
+        <textarea id="visual-settings-json" spellcheck="false" aria-label="Projection settings JSON"></textarea>
+        <button id="visual-settings-apply" class="visual-settings-apply" type="button">APPLY JSON</button>
+      </details>
+    </div>
+  </aside>
+
 
   <!-- Background Music Controller -->
   <script>
@@ -268,7 +316,7 @@
   <!-- Hidden iframe for WORD SILHOUETTE (webcam-based) - used on desktop -->
   <iframe 
     id="silhouette-iframe" 
-    src="WORD SILHOUETTE.html" 
+    src="WORD SILHOUETTE.html?v=2"
     allow="camera; microphone" 
     style="position: fixed; left: -9999px; top: 0; width: 640px; height: 480px; border: none;"
   ></iframe>
@@ -283,6 +331,6 @@
     }
   </script>
   <script src="js/site-camera.js"></script>
-  <script type="module" src="js/installation-scene.js"></script>
+  <script type="module" src="js/installation-scene.js?v=9"></script>
 </body>
 </html>

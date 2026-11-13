@@ -24,7 +24,7 @@ const items = [
 ];
 
 const thumbnailSource = (item) => item.type === 'video'
-  ? item.src.replace('assets/videos/', 'assets/gallery-thumbs/').replace('.mp4', '.jpg')
+  ? item.src.replace('assets/videos/', 'assets/gallery-thumbs/').replace('.mp4', '.jpg?v=2')
   : item.src;
 
 function Gallery() {

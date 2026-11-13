@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { WebcamTextRenderer } from './webcam-text-renderer.js';
-import { WebcamProjection } from './webcam-projection.js';
+import { WebcamProjection } from './webcam-projection.js?v=2';
 
 // The story page embeds focused views of this same installation scene.
 const embedView = new URLSearchParams(window.location.search).get('embed');
@@ -110,6 +110,7 @@ let walls = [], floor, ceiling, backWall;
 let speakers = [];
 let silhouetteCanvas, silhouetteCtx;
 let webcamRenderer = null; // Native webcam text renderer (Safari-compatible)
+const tvSettings = { threshold: 83, density: 1.15, brightness: 1, invert: false };
 let webcamProjection = null; // Webcam projection for left wall
 let projectionInitialized = false;
 
@@ -120,7 +121,7 @@ let projectionInitializedRight = false;
 
 // Shared geometry for projection pixels
 let pixelGeometry = null;
-const PIXEL_COUNT = 16000; // Higher cap so both wall projections can render denser square fields
+const PIXEL_COUNT = 32000; // Maximum particles per wall projection
 
 // Cached Three.js objects for performance (avoid garbage collection)
 const _tempMatrix = new THREE.Matrix4();
@@ -134,6 +135,7 @@ const _rightWallRotation = new THREE.Quaternion();
 let moveForward = false, moveBackward = false;
 let moveLeft = false, moveRight = false;
 let isSprinting = false;
+let joystickActive = false;
 let prevTime = performance.now();
 
 // Touch controls for mobile
@@ -729,6 +731,7 @@ function init() {
     setupModelControls();
     setupProjectionControls();
     setupProjectionControlsRight();
+    setupVisualSettingsPanel();
     setupAnchorPoints();
   }
   
@@ -1290,8 +1293,6 @@ function setupProjectionWebcam() {
 function createProjectionRight() {
   // Initialize webcam projection handler (lower resolution for performance)
   webcamProjectionRight = new WebcamProjection(240, 180);
-  
-  // Set right wall defaults (invert is true by default)
   webcamProjectionRight.setSetting('invert', true);
   
   // Material for right wall
@@ -1449,6 +1450,7 @@ function setupSafariTVRenderer() {
   webcamRenderer.settings.contourColor = '#FFFFFF';
   webcamRenderer.settings.contourSensitivity = 4;
   webcamRenderer.settings.contourDensity = 2;
+  applyTVSettings();
   console.log('✏️ Contour lines enabled for Safari TV');
   
   // Initialize webcam - same pattern as wall projections
@@ -1551,11 +1553,13 @@ function tuneSilhouetteIframeDensity(iframe) {
 }
 
 function startIframeCapture(iframe) {
+  // The iframe can load again after capture begins; restore its live settings each time.
+  tuneSilhouetteIframeDensity(iframe);
+  applyTVSettings();
   if (iframeCaptureStarted) return;
   iframeCaptureStarted = true;
   
   console.log('🖼️ Starting iframe capture for TV screen');
-  tuneSilhouetteIframeDensity(iframe);
   
   let iframeFrameCount = 0;
   let lastCaptureTime = 0;
@@ -1754,6 +1758,7 @@ function setupMobileArrowControls() {
   
   function resetJoystick() {
     isDragging = false;
+    joystickActive = false;
     thumb.classList.remove('active');
     thumb.style.transform = 'translate(-50%, -50%)';
     moveForward = false;
@@ -1766,6 +1771,7 @@ function setupMobileArrowControls() {
   joystick.addEventListener('touchstart', (e) => {
     e.preventDefault();
     isDragging = true;
+    joystickActive = true;
     thumb.classList.add('active');
     const touch = e.touches[0];
     updateJoystick(touch.clientX, touch.clientY);
@@ -1792,6 +1798,7 @@ function setupMobileArrowControls() {
   joystick.addEventListener('mousedown', (e) => {
     e.preventDefault();
     isDragging = true;
+    joystickActive = true;
     thumb.classList.add('active');
     updateJoystick(e.clientX, e.clientY);
   });
@@ -2180,6 +2187,254 @@ window.resetRoomSettings = function() {
   );
 };
 
+function applyTVSettings() {
+  if (tvScreen) tvScreen.material.color.setRGB(tvSettings.brightness, tvSettings.brightness, tvSettings.brightness);
+  if (webcamRenderer) {
+    webcamRenderer.settings.threshold = tvSettings.threshold;
+    webcamRenderer.settings.textDensity = tvSettings.density;
+    webcamRenderer.settings.invertColors = tvSettings.invert;
+  }
+
+  const iframe = document.getElementById('silhouette-iframe');
+  try {
+    const doc = iframe?.contentDocument;
+    if (!doc || doc.readyState !== 'complete') return;
+    for (const [id, value, eventName] of [
+      ['threshold', tvSettings.threshold, 'input'],
+      ['textDensity', tvSettings.density, 'input'],
+      ['invertColors', tvSettings.invert, 'change']
+    ]) {
+      const input = doc.getElementById(id);
+      if (!input) continue;
+      if (input.type === 'checkbox') input.checked = value;
+      else input.value = value;
+      input.dispatchEvent(new Event(eventName, { bubbles: true }));
+    }
+  } catch (error) {
+    console.warn('Could not update TV projection controls:', error);
+  }
+}
+
+const PROJECTION_PRESET_KEY = 'calcam-projection-preset-v1';
+
+function getProjectionPreset() {
+  const wall = projection => {
+    const settings = projection.getSettings();
+    return {
+      threshold: settings.threshold,
+      pixelSize: settings.pixelSize,
+      pixelDensity: settings.pixelDensity,
+      brightness: settings.intensity,
+      color: settings.pixelColor,
+      invert: settings.invert
+    };
+  };
+  return {
+    leftWall: wall(webcamProjection),
+    rightWall: wall(webcamProjectionRight),
+    tv: {
+      threshold: tvSettings.threshold,
+      textDensity: tvSettings.density,
+      brightness: tvSettings.brightness,
+      invert: tvSettings.invert
+    }
+  };
+}
+
+function validateProjectionPreset(preset) {
+  const ranges = {
+    threshold: [0, 255],
+    pixelSize: [0.05, 0.5],
+    pixelDensity: [50, 800],
+    brightness: [0, 1],
+    textDensity: [0.5, 3]
+  };
+  // Expand presets saved while the walls used one shared control.
+  const normalized = preset?.walls
+    ? { leftWall: preset.walls, rightWall: preset.walls, tv: preset.tv }
+    : preset;
+  for (const section of ['leftWall', 'rightWall', 'tv']) {
+    const values = normalized[section];
+    if (!values || typeof values !== 'object' || Array.isArray(values)) throw new Error(`Missing ${section} settings.`);
+    const keys = section === 'tv'
+      ? ['threshold', 'textDensity', 'brightness']
+      : ['threshold', 'pixelSize', 'pixelDensity', 'brightness'];
+    for (const key of keys) {
+      const value = values[key];
+      const [min, max] = ranges[key];
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max) {
+        throw new Error(`${section}.${key} must be between ${min} and ${max}.`);
+      }
+    }
+    if (typeof values.invert !== 'boolean') throw new Error(`${section}.invert must be true or false.`);
+    if (section !== 'tv' && !/^#[0-9a-f]{6}$/i.test(values.color)) {
+      throw new Error(`${section}.color must be a six-digit hex color.`);
+    }
+  }
+  return normalized;
+}
+
+function applyProjectionPreset(preset) {
+  const setInput = (id, value, eventName = 'input') => {
+    const input = document.getElementById(id);
+    if (input.type === 'checkbox') input.checked = value;
+    else input.value = value;
+    input.dispatchEvent(new Event(eventName, { bubbles: true }));
+  };
+  for (const [section, suffix] of [['leftWall', ''], ['rightWall', '-right']]) {
+    const values = preset[section];
+    setInput(`ctrl-threshold${suffix}`, values.threshold);
+    setInput(`ctrl-pixelsize${suffix}`, values.pixelSize);
+    setInput(`ctrl-pixeldensity${suffix}`, values.pixelDensity);
+    setInput(`ctrl-projintensity${suffix}`, values.brightness);
+    setInput(`ctrl-pixelcolor${suffix}`, values.color);
+    setInput(`ctrl-invert${suffix}`, values.invert, 'change');
+  }
+  setInput('ctrl-tv-threshold', preset.tv.threshold);
+  setInput('ctrl-tv-density', preset.tv.textDensity);
+  setInput('ctrl-tv-brightness', preset.tv.brightness);
+  setInput('ctrl-tv-invert', preset.tv.invert, 'change');
+}
+
+function setupVisualSettingsPanel() {
+  const toggle = document.getElementById('visual-settings-toggle');
+  const panel = document.getElementById('visual-settings-panel');
+  const close = document.getElementById('visual-settings-close');
+  if (!toggle || !panel || !close) return;
+
+  function setOpen(open) {
+    panel.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+  }
+  toggle.addEventListener('click', () => setOpen(panel.hidden));
+  close.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !panel.hidden) setOpen(false);
+  });
+
+  const tabs = [...panel.querySelectorAll('[role="tab"]')];
+  for (const tab of tabs) {
+    tab.addEventListener('click', () => {
+      for (const item of tabs) {
+        const selected = item === tab;
+        item.setAttribute('aria-selected', String(selected));
+        document.getElementById(item.getAttribute('aria-controls')).hidden = !selected;
+      }
+    });
+  }
+
+  for (const [id, key, format] of [
+    ['threshold', 'threshold', value => String(value)],
+    ['density', 'density', value => value.toFixed(2)],
+    ['brightness', 'brightness', value => `${Math.round(value * 100)}%`]
+  ]) {
+    const input = document.getElementById(`ctrl-tv-${id}`);
+    const output = document.getElementById(`val-tv-${id}`);
+    input.addEventListener('input', () => {
+      tvSettings[key] = Number(input.value);
+      output.textContent = format(tvSettings[key]);
+      applyTVSettings();
+    });
+  }
+  document.getElementById('ctrl-tv-invert').addEventListener('change', (event) => {
+    tvSettings.invert = event.target.checked;
+    applyTVSettings();
+  });
+  applyTVSettings();
+
+  // Match both walls' controls to their live projection defaults.
+  for (const [projection, suffix] of [[webcamProjection, ''], [webcamProjectionRight, '-right']]) {
+    const settings = projection.getSettings();
+    document.getElementById(`ctrl-pixelcolor${suffix}`).value = settings.pixelColor;
+    document.getElementById(`ctrl-invert${suffix}`).checked = settings.invert;
+  }
+
+  const details = document.getElementById('visual-settings-json-details');
+  const editor = document.getElementById('visual-settings-json');
+  const copyButton = document.getElementById('visual-settings-copy');
+  const applyButton = document.getElementById('visual-settings-apply');
+  const lockButton = document.getElementById('visual-settings-lock');
+  const status = document.getElementById('visual-settings-status');
+  const controls = [...panel.querySelectorAll('.visual-settings-content input')];
+  let locked = false;
+  const currentJSON = () => JSON.stringify(getProjectionPreset(), null, 2);
+  const refreshEditor = () => { if (document.activeElement !== editor) editor.value = currentJSON(); };
+  const report = message => { status.textContent = message; };
+
+  function setLocked(value) {
+    locked = value;
+    controls.forEach(input => { input.disabled = value; });
+    editor.disabled = value;
+    applyButton.disabled = value;
+    lockButton.textContent = value ? 'UNLOCK SETTINGS' : 'LOCK SETTINGS';
+    lockButton.setAttribute('aria-pressed', String(value));
+  }
+
+  function applyEditor() {
+    const preset = validateProjectionPreset(JSON.parse(editor.value));
+    applyProjectionPreset(preset);
+    editor.value = currentJSON();
+  }
+
+  details.addEventListener('toggle', () => { if (details.open) refreshEditor(); });
+  panel.addEventListener('input', event => {
+    if (controls.includes(event.target)) refreshEditor();
+  });
+  panel.addEventListener('change', event => {
+    if (controls.includes(event.target)) refreshEditor();
+  });
+  copyButton.addEventListener('click', async () => {
+    const json = currentJSON();
+    editor.value = json;
+    try {
+      await navigator.clipboard.writeText(json);
+      report('Current settings copied.');
+    } catch {
+      editor.focus();
+      editor.select();
+      report('Select and copy the JSON above.');
+    }
+  });
+  applyButton.addEventListener('click', () => {
+    try {
+      applyEditor();
+      report('JSON settings applied.');
+    } catch (error) {
+      report(`Could not apply JSON: ${error.message}`);
+    }
+  });
+  lockButton.addEventListener('click', () => {
+    if (locked) {
+      try { localStorage.removeItem(PROJECTION_PRESET_KEY); } catch { /* session-only unlock */ }
+      setLocked(false);
+      report('Settings unlocked.');
+      return;
+    }
+    try {
+      if (details.open && editor.value.trim() && editor.value !== currentJSON()) applyEditor();
+      const json = currentJSON();
+      localStorage.setItem(PROJECTION_PRESET_KEY, json);
+      editor.value = json;
+      setLocked(true);
+      report('Settings locked and saved in this browser.');
+    } catch (error) {
+      report(`Could not lock settings: ${error.message}`);
+    }
+  });
+
+  try {
+    const saved = localStorage.getItem(PROJECTION_PRESET_KEY);
+    if (saved) {
+      applyProjectionPreset(validateProjectionPreset(JSON.parse(saved)));
+      setLocked(true);
+      report('Saved settings loaded.');
+    }
+  } catch (error) {
+    report(`Saved settings could not load: ${error.message}`);
+  }
+  refreshEditor();
+}
+
 // ============================================
 // Projection Controls Toggle (Left Wall)
 // ============================================
@@ -2224,6 +2479,7 @@ window.toggleProjectionControlsRight = function() {
 // Setup Projection Controls
 // ============================================
 function setupProjectionControls() {
+  const setWallSetting = (key, value) => webcamProjection?.setSetting(key, value);
   const toggle = document.getElementById('projection-toggle');
   if (toggle) {
     toggle.addEventListener('click', window.toggleProjectionControls);
@@ -2272,9 +2528,7 @@ function setupProjectionControls() {
     thresholdCtrl.addEventListener('input', (e) => {
       const v = parseInt(e.target.value);
       document.getElementById('val-threshold').textContent = v;
-      if (webcamProjection) {
-        webcamProjection.setSetting('threshold', v);
-      }
+      setWallSetting('threshold', v);
     });
   }
   
@@ -2284,9 +2538,7 @@ function setupProjectionControls() {
     pixelSizeCtrl.addEventListener('input', (e) => {
       const v = parseFloat(e.target.value);
       document.getElementById('val-pixelsize').textContent = v.toFixed(3);
-      if (webcamProjection) {
-        webcamProjection.setSetting('pixelSize', v);
-      }
+      setWallSetting('pixelSize', v);
     });
   }
   
@@ -2296,9 +2548,7 @@ function setupProjectionControls() {
     pixelDensityCtrl.addEventListener('input', (e) => {
       const v = parseInt(e.target.value);
       document.getElementById('val-pixeldensity').textContent = v + '%';
-      if (webcamProjection) {
-        webcamProjection.setSetting('pixelDensity', v);
-      }
+      setWallSetting('pixelDensity', v);
     });
   }
   
@@ -2312,9 +2562,7 @@ function setupProjectionControls() {
       if (projectionMaterial) {
         projectionMaterial.opacity = v;
       }
-      if (webcamProjection) {
-        webcamProjection.setSetting('intensity', v);
-      }
+      setWallSetting('intensity', v);
     });
   }
   
@@ -2322,9 +2570,7 @@ function setupProjectionControls() {
   const pixelColorCtrl = document.getElementById('ctrl-pixelcolor');
   if (pixelColorCtrl) {
     pixelColorCtrl.addEventListener('input', (e) => {
-      if (webcamProjection) {
-        webcamProjection.setSetting('pixelColor', e.target.value);
-      }
+      setWallSetting('pixelColor', e.target.value);
     });
   }
   
@@ -2332,9 +2578,7 @@ function setupProjectionControls() {
   const pixelStyleCtrl = document.getElementById('ctrl-pixelstyle');
   if (pixelStyleCtrl) {
     pixelStyleCtrl.addEventListener('change', (e) => {
-      if (webcamProjection) {
-        webcamProjection.setSetting('pixelStyle', e.target.value);
-      }
+      setWallSetting('pixelStyle', e.target.value);
       // Update material based on style
       if (projectionMaterial) {
         if (e.target.value === 'squares') {
@@ -2350,9 +2594,7 @@ function setupProjectionControls() {
   const flipHCtrl = document.getElementById('ctrl-fliph');
   if (flipHCtrl) {
     flipHCtrl.addEventListener('change', (e) => {
-      if (webcamProjection) {
-        webcamProjection.setSetting('flipHorizontal', e.target.checked);
-      }
+      setWallSetting('flipHorizontal', e.target.checked);
     });
   }
   
@@ -2360,9 +2602,7 @@ function setupProjectionControls() {
   const flipVCtrl = document.getElementById('ctrl-flipv');
   if (flipVCtrl) {
     flipVCtrl.addEventListener('change', (e) => {
-      if (webcamProjection) {
-        webcamProjection.setSetting('flipVertical', e.target.checked);
-      }
+      setWallSetting('flipVertical', e.target.checked);
     });
   }
   
@@ -2375,9 +2615,7 @@ function setupProjectionControls() {
       invertCtrl.checked = settings.invert;
     }
     invertCtrl.addEventListener('change', (e) => {
-      if (webcamProjection) {
-        webcamProjection.setSetting('invert', e.target.checked);
-      }
+      setWallSetting('invert', e.target.checked);
     });
   }
   
@@ -2590,22 +2828,15 @@ function updateProjection(time) {
     // Set color once (reuse cached object)
     _tempColor.setRGB(color.r, color.g, color.b);
     
-    const posCount = webcamPositions.length;
-    for (let i = 0; i < PIXEL_COUNT; i++) {
-      if (i < posCount) {
-        const wp = webcamPositions[i];
-        
-        _tempPosition.set(0, (1 - wp.y) * projHeight + projBaseY, (wp.x - 0.5) * projWidth + projCenterZ);
-        _tempScale.set(pixelScale, pixelScale, 1);
-        _tempMatrix.compose(_tempPosition, _leftWallRotation, _tempScale);
-        projectionMesh.setMatrixAt(i, _tempMatrix);
-        projectionMesh.setColorAt(i, _tempColor);
-      } else {
-        // Hide unused instances (scale to 0)
-        _tempScale.set(0, 0, 0);
-        _tempMatrix.compose(_tempPosition, _leftWallRotation, _tempScale);
-        projectionMesh.setMatrixAt(i, _tempMatrix);
-      }
+    const visibleCount = Math.min(webcamPositions.length, PIXEL_COUNT);
+    projectionMesh.count = visibleCount;
+    for (let i = 0; i < visibleCount; i++) {
+      const wp = webcamPositions[i];
+      _tempPosition.set(0, (1 - wp.y) * projHeight + projBaseY, (wp.x - 0.5) * projWidth + projCenterZ);
+      _tempScale.set(pixelScale, pixelScale, 1);
+      _tempMatrix.compose(_tempPosition, _leftWallRotation, _tempScale);
+      projectionMesh.setMatrixAt(i, _tempMatrix);
+      projectionMesh.setColorAt(i, _tempColor);
     }
   } else {
     // Webcam not ready - show placeholder shimmer
@@ -2648,21 +2879,15 @@ function updateProjectionRight(time) {
     // Set color once
     _tempColor.setRGB(color.r, color.g, color.b);
     
-    const posCount = webcamPositions.length;
-    for (let i = 0; i < PIXEL_COUNT; i++) {
-      if (i < posCount) {
-        const wp = webcamPositions[i];
-        
-        _tempPosition.set(0, (1 - wp.y) * projHeight + projBaseY, (wp.x - 0.5) * projWidth + projCenterZ);
-        _tempScale.set(pixelScale, pixelScale, 1);
-        _tempMatrix.compose(_tempPosition, _rightWallRotation, _tempScale);
-        projectionMeshRight.setMatrixAt(i, _tempMatrix);
-        projectionMeshRight.setColorAt(i, _tempColor);
-      } else {
-        _tempScale.set(0, 0, 0);
-        _tempMatrix.compose(_tempPosition, _rightWallRotation, _tempScale);
-        projectionMeshRight.setMatrixAt(i, _tempMatrix);
-      }
+    const visibleCount = Math.min(webcamPositions.length, PIXEL_COUNT);
+    projectionMeshRight.count = visibleCount;
+    for (let i = 0; i < visibleCount; i++) {
+      const wp = webcamPositions[i];
+      _tempPosition.set(0, (1 - wp.y) * projHeight + projBaseY, (wp.x - 0.5) * projWidth + projCenterZ);
+      _tempScale.set(pixelScale, pixelScale, 1);
+      _tempMatrix.compose(_tempPosition, _rightWallRotation, _tempScale);
+      projectionMeshRight.setMatrixAt(i, _tempMatrix);
+      projectionMeshRight.setColorAt(i, _tempColor);
     }
   } else {
     // Webcam not ready - show placeholder shimmer
@@ -2678,6 +2903,14 @@ function updateProjectionRight(time) {
 // ============================================
 // Placeholder Animation for Right Wall (InstancedMesh)
 // ============================================
+function getPlaceholderGrid(projection) {
+  const defaultDensity = projection.isMobile ? 160 : 260;
+  const scale = Math.sqrt(projection.getSettings().pixelDensity / defaultDensity);
+  const maxColumns = Math.floor(Math.sqrt(Math.min(PIXEL_COUNT, projection.maxSamples) * 4 / 3));
+  const columns = Math.min(maxColumns, Math.max(40, Math.round(120 * scale)));
+  return { columns, rows: Math.round(columns * 3 / 4) };
+}
+
 function updateProjectionPlaceholderRight(time, mesh, rotation) {
   // Use 80% of wall height for placeholder with empty space at top
   const wallHeight = CONFIG.room.height;
@@ -2687,10 +2920,11 @@ function updateProjectionPlaceholderRight(time, mesh, rotation) {
   const projCenterZ = 0;
   
   // Dense grid for tight square spacing on the wall.
-  const gridCols = 120;
-  const gridRows = 90;
+  const { columns: gridCols, rows: gridRows } = getPlaceholderGrid(webcamProjectionRight);
   const totalGridPoints = gridCols * gridRows;
-  const pixelScale = 0.14;
+  const pixelScale = 0.14 * 120 / gridCols;
+  mesh.count = totalGridPoints;
+  _tempColor.setRGB(1, 1, 1);
   
   // Set material to full white, 100% opacity for shimmer
   if (mesh.material) {
@@ -2698,8 +2932,7 @@ function updateProjectionPlaceholderRight(time, mesh, rotation) {
     mesh.material.color.setRGB(1, 1, 1);
   }
   
-  for (let i = 0; i < PIXEL_COUNT; i++) {
-    if (i < totalGridPoints) {
+  for (let i = 0; i < totalGridPoints; i++) {
       const col = i % gridCols;
       const row = Math.floor(i / gridCols);
       
@@ -2718,14 +2951,10 @@ function updateProjectionPlaceholderRight(time, mesh, rotation) {
         const pulseScale = pixelScale * (0.9 + shimmer * 0.3); // Slight size variation
         _tempScale.set(pulseScale, pulseScale, 1);
         // Set pure white color for each visible pixel
-        mesh.setColorAt(i, new THREE.Color(1, 1, 1));
+        mesh.setColorAt(i, _tempColor);
       } else {
         _tempScale.set(0, 0, 0);
       }
-    } else {
-      _tempScale.set(0, 0, 0);
-    }
-    
     _tempMatrix.compose(_tempPosition, rotation, _tempScale);
     mesh.setMatrixAt(i, _tempMatrix);
   }
@@ -2747,10 +2976,11 @@ function updateProjectionPlaceholder(time, mesh, rotation) {
   const projCenterZ = 0;
   
   // Dense grid for tight square spacing on the wall.
-  const gridCols = 120;
-  const gridRows = 90;
+  const { columns: gridCols, rows: gridRows } = getPlaceholderGrid(webcamProjection);
   const totalGridPoints = gridCols * gridRows;
-  const pixelScale = 0.14;
+  const pixelScale = 0.14 * 120 / gridCols;
+  mesh.count = totalGridPoints;
+  _tempColor.setRGB(1, 1, 1);
   
   // Set material to full white, 100% opacity for shimmer
   if (mesh.material) {
@@ -2758,8 +2988,7 @@ function updateProjectionPlaceholder(time, mesh, rotation) {
     mesh.material.color.setRGB(1, 1, 1);
   }
   
-  for (let i = 0; i < PIXEL_COUNT; i++) {
-    if (i < totalGridPoints) {
+  for (let i = 0; i < totalGridPoints; i++) {
       const col = i % gridCols;
       const row = Math.floor(i / gridCols);
       
@@ -2778,14 +3007,10 @@ function updateProjectionPlaceholder(time, mesh, rotation) {
         const pulseScale = pixelScale * (0.9 + shimmer * 0.3); // Slight size variation
         _tempScale.set(pulseScale, pulseScale, 1);
         // Set pure white color for each visible pixel
-        mesh.setColorAt(i, new THREE.Color(1, 1, 1));
+        mesh.setColorAt(i, _tempColor);
       } else {
         _tempScale.set(0, 0, 0);
       }
-    } else {
-      _tempScale.set(0, 0, 0);
-    }
-    
     _tempMatrix.compose(_tempPosition, rotation, _tempScale);
     mesh.setMatrixAt(i, _tempMatrix);
   }
@@ -2820,7 +3045,7 @@ function updateMovement(delta) {
   // Normalize input for diagonal movement
   const inputLength = Math.sqrt(inputZ * inputZ + inputX * inputX);
   
-  const speed = CONFIG.player.speed * (isSprinting ? CONFIG.player.sprintMultiplier : 1);
+  const speed = CONFIG.player.speed * (isSprinting ? CONFIG.player.sprintMultiplier : 1) * (joystickActive ? 0.9 : 1);
   const moveDistance = speed * delta;
   
   // Apply movement directly to camera position
