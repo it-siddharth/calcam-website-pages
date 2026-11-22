@@ -28,13 +28,13 @@
   <meta name="twitter:image" content="https://calculatedcamouflage.com/assets/og-image.png">
   
   <!-- Preload critical resources -->
-  <link rel="preload" href="fonts/403-super-vega-regular.woff" as="font" type="font/woff" crossorigin>
   <link rel="preload" href="css/style.css" as="style">
   
   <!-- DNS prefetch for external resources -->
   <link rel="dns-prefetch" href="https://unpkg.com">
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   
+  <link rel="stylesheet" href="https://use.typekit.net/ayy2ljq.css">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,8 +42,8 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet"></noscript>
   
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=12">
-  <link rel="stylesheet" href="css/redesign.css?v=14">
+  <link rel="stylesheet" href="css/style.css?v=13">
+    <link rel="stylesheet" href="css/redesign.css?v=22">
   
   <!-- Critical inline styles to prevent white flash and hide text during intro -->
   <style>
@@ -129,18 +129,22 @@
           <span class="cta-text">See it for yourself</span>
           <a href="installation.html" class="btn btn-primary">
             <span class="btn-text">VIEW ROOM</span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
           </a>
         </div>
         
         <div class="nav-links">
-          <a href="what-is-this.html" class="btn btn-secondary">
+          <a href="what-is-this.html?from=home" class="btn btn-secondary">
             <span class="btn-text">what is this</span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
           </a>
           <a href="journal.html" class="btn btn-secondary">
             <span class="btn-text">viewer journal</span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
           </a>
           <a href="gallery.html" class="btn btn-secondary">
             <span class="btn-text">gallery</span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
           </a>
         </div>
       </div>
@@ -183,7 +187,7 @@
         .catch(() => {});
     }
   </script>
-  <script type="module" src="js/scene.js"></script>
+    <script type="module" src="js/scene.js?v=15"></script>
   
   <!-- Fade out page transition overlay -->
   <script>

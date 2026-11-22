@@ -40,12 +40,25 @@
 .landing-page .meta-value { white-space: nowrap; }
 .landing-page .cta-section { padding-bottom: 0; }
 .landing-page .credit { font-size: 11px; }
+body.story-departing .content-section,
+body.story-departing .scene-gradient,
+body.story-departing .credit { opacity: 0; pointer-events: none; transition: opacity 300ms ease; }
+.story-background { position:fixed; inset:0; z-index:898; visibility:hidden; background:#000; pointer-events:none; }
+.story-layout-frame { position:fixed; inset:0; width:100vw; height:100dvh; border:0; z-index:900; visibility:hidden; opacity:0; pointer-events:none; }
+.story-flight-panel { position:fixed; top:0; left:0; z-index:899; pointer-events:none; border:1px solid #ffffff55; mix-blend-mode:screen; transform-origin:top left; will-change:transform,opacity; }
+@media (max-width: 768px) {
+  body.story-departing .scene-section { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100dvh !important; min-height: 0 !important; z-index: 20 !important; }
+}
 
 /* Installation */
 .installation-title { display: block; top: 40px; left: 50%; right: auto; transform: translateX(-50%); font-family: 'Max Hana', serif; font-size: clamp(44px, 4.1vw, 58px); font-weight: 400; line-height: 1; letter-spacing: -.02em; text-align: center; }
+.anchor-info-panel .panel-title { font-family: 'Max Hana', serif; font-weight: 400; letter-spacing: -.02em; }
 .installation-title .title-word { display: inline; }
 .installation-title .title-word-the::after { content: ' '; white-space: pre; }
 .installation-footer { width: auto; position: fixed; right: max(85px, 7%); bottom: 42px; margin: 0; text-align: right; align-items: flex-end; }
+.installation-tour-cta { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 38px; margin-top: 12px; padding: 9px 14px; border: 1px solid #fff; border-radius: 24px; background: #fff; color: #000; font: 500 12px/1 'JetBrains Mono', monospace; cursor: pointer; white-space: nowrap; transition: background .2s ease, color .2s ease; }
+.installation-tour-cta:hover { background: #000; color: #fff; }
+.installation-tour-cta:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 .installation-nav { position: fixed; left: 5%; bottom: 40px; z-index: 30; pointer-events: auto; }
 .installation-nav .redesign-pill.is-current { background: transparent; color: #fff; }
 .installation-nav .redesign-pill.is-current:hover { background: #fff; color: #000; }
@@ -53,7 +66,7 @@
 
 /* Journal */
 .journal-page { display: block !important; position: relative; width: 100vw; height: 100vh; height: 100dvh; }
-.journal-content { position: absolute; inset: 0; width: 100% !important; max-width: none !important; height: 100% !important; padding: 0 !important; pointer-events: none; z-index: 60; }
+.journal-content { position: absolute; inset: 0; width: 100% !important; max-width: none !important; height: 100% !important; padding: 0 !important; pointer-events: none; z-index: auto; }
 .journal-content .back-button { position: fixed; top: 40px; left: 30px; pointer-events: auto; }
 .journal-title { position: absolute !important; top: 40px; left: 50%; transform: translateX(-50%); width: max-content; margin: 0 !important; font-family: 'Max Hana', serif !important; font-size: clamp(44px, 4.1vw, 58px) !important; line-height: 1 !important; letter-spacing: -.02em !important; text-align: center; }
 .journal-content .journal-description.desktop-only { display: block; position: fixed; right: 5%; bottom: 33px; width: 330px; margin: 0; text-align: left; }
@@ -80,13 +93,12 @@
 .gallery-title { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); margin: 0; font: 400 clamp(44px, 4.1vw, 58px)/1 'Max Hana', serif; letter-spacing: -.02em; }
 .gallery-nav { position: absolute; left: 5%; bottom: 40px; pointer-events: auto; }
 .gallery-nav .is-current { background: transparent; color: #fff; }
-.gallery-instruction { position: absolute; right: 5%; bottom: 41px; margin: 0; color: #fff; font: 700 18px/24px 'Nanum Myeongjo', serif; }
 .gallery-work { position: absolute; top: clamp(138px, 16dvh, 190px); right: 0; bottom: 104px; left: 0; min-height: 0; }
 #gallery-root { width: 100%; height: 100%; }
 
 @media (max-width: 900px) {
   .installation-nav, .gallery-nav, .journal-info { left: 24px; }
-  .installation-footer, .gallery-instruction { right: 24px; }
+  .installation-footer { right: 24px; }
 }
 
 @media (max-width: 768px) {
@@ -99,6 +111,7 @@
   .landing-page .meta-value { white-space: normal; }
   .installation-title { top: 83px; font-size: clamp(32px, 8vw, 52px); }
   .installation-footer { right: 20px; left: 20px; bottom: 85px; align-items: center; text-align: center; }
+  .installation-tour-cta { min-height: 36px; margin-top: 10px; padding: 8px 12px; font-size: 11px; }
   .installation-nav { display: none; }
   .installation-overlay .back-button { top: 83px; left: 16px; padding-right: 9px; padding-left: 9px; }
   .journal-content .back-button { top: 65px; left: 20px; }
@@ -118,7 +131,6 @@
   .gallery-home { top: 65px; left: 20px; }
   .gallery-title { top: 65px; font-size: clamp(42px, 11vw, 66px); }
   .gallery-nav { display: none; }
-  .gallery-instruction { left: 20px; right: 20px; bottom: 18px; text-align: center; font-size: 13px; }
   .gallery-work { top: 125px; bottom: 66px; }
 }
 
@@ -132,4 +144,89 @@
 /* Keep the journal's desktop page links off phones, including landscape phones. */
 @media (max-width: 900px), (hover: none) and (pointer: coarse) {
   .journal-content .journal-info { display: none !important; }
+}
+
+/* Figma Section 2: shared display typography and desktop composition. */
+:root { --font-display-redesign: 'slight-chance', 'Slight Chance', 'Max Hana', serif; }
+.landing-page .title,
+.installation-title,
+.anchor-info-panel .panel-title,
+.journal-title,
+.gallery-title {
+  font-family: var(--font-display-redesign) !important;
+  font-feature-settings: 'salt' 1, 'dlig' 1;
+  font-weight: 400;
+  letter-spacing: -2.5px;
+}
+.landing-page .content-section { padding-top: 65px; padding-bottom: 55px; }
+.landing-page .title { font-size: clamp(64px, 6.87vw, 99px); line-height: .869; margin-bottom: 32px; }
+.landing-page .description { margin-bottom: 25px; text-align: left; }
+.landing-page .meta-info { gap: clamp(40px, 9.5vw, 136px); }
+.landing-page .meta-item { gap: 14px; }
+.landing-page .btn-arrow { font: italic 18px/18px 'Alegreya', serif; }
+
+.journal-title { top: 61px; left: 30px; transform: none; font-size: clamp(64px, 6.87vw, 99px) !important; line-height: .869 !important; }
+.journal-title span { display: block; }
+.journal-content .back-button { top: 30px; left: auto; right: 30px; }
+.journal-content .journal-description.desktop-only { top: 269px; left: 30px; right: auto; bottom: auto; width: 373px; max-width: 31vw; }
+.journal-info { left: 30px !important; bottom: 55px !important; }
+.journal-info .cta-primary-row { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+.journal-info .cta-primary-row .btn { background: #fff; color: #000; }
+.journal-info .nav-links { gap: 10px; }
+.journal-info .btn-arrow { font: italic 18px/18px 'Alegreya', serif; }
+.book-section { inset: 0 12% 0 36% !important; width: 52% !important; height: 100% !important; }
+/* The open spread is wider than the right column. Give WebGL room to draw both pages. */
+@media (min-width: 769px) {
+  .book-section #book-container { left: -16vw !important; right: auto !important; width: calc(100% + 32vw) !important; }
+}
+@media (min-width: 769px) and (max-width: 1299px) {
+  .book-section #book-container { left: -30vw !important; width: calc(100% + 60vw) !important; }
+}
+.page-controls .arrow-btn { top: auto; bottom: 95px; transform: none; }
+.page-controls .arrow-btn:active, .page-controls .arrow-btn.pressed { transform: scale(.92); }
+.page-controls .arrow-left { left: calc(50% - 82px); }
+.page-controls .arrow-right { right: calc(50% - 82px); }
+.page-controls .page-indicator { top: auto; bottom: 108px; left: 50%; transform: translateX(-50%); }
+.journal-footer { bottom: 54px !important; }
+.journal-footer .instruction-text { display: block !important; }
+
+@media (min-width: 769px) {
+  .journal-footer { position: absolute !important; left: 0 !important; right: 0 !important; width: 100% !important; transform: none !important; }
+}
+
+@media (min-width: 1300px) {
+  .book-section { left: 32% !important; }
+}
+
+@media (min-width: 769px) and (max-height: 700px) {
+  .journal-title { top: 30px; font-size: clamp(56px, 4.7vw, 78px) !important; }
+  .journal-content .journal-description.desktop-only { top: 195px; width: min(600px, 40vw); max-width: 40vw; }
+  #book-container { transform: translateY(-40px); }
+}
+
+.gallery-title { top: 61px; left: 29px; transform: none; font-size: clamp(64px, 6.87vw, 99px); line-height: .869; }
+.gallery-home { top: 30px; left: auto; right: 30px; }
+.gallery-description { position: absolute; top: calc(79px + clamp(56px, 5.97vw, 86px)); left: 29px; width: 373px; max-width: 31vw; margin: 0; font: 700 18px/24px 'Nanum Myeongjo', serif; }
+.gallery-nav { left: 29px; bottom: 55px; }
+.gallery-cta { position: absolute; left: 29px; bottom: 111px; display: flex; align-items: center; gap: 10px; font: 700 18px/24px 'Nanum Myeongjo', serif; pointer-events: auto; }
+.gallery-cta .redesign-pill { background: #fff; color: #000; }
+.gallery-work { top: 104px; right: 0; bottom: 112px; left: 0; z-index: 3; }
+
+@media (max-width: 768px) {
+  .landing-page .content-section { padding-top: 83px; padding-bottom: 30px; }
+  .landing-page .title { font-size: clamp(46px, 12vw, 92px); line-height: .9; margin-bottom: 20px; }
+  .landing-page .description { margin-bottom: 20px; }
+  .journal-title { top: 100px; left: 20px; font-size: clamp(44px, 11vw, 66px) !important; }
+  .journal-content .back-button { top: 62px; left: 20px; right: auto; }
+  .book-section { inset: 200px 0 100px !important; width: 100% !important; height: auto !important; }
+  .page-controls .arrow-btn { bottom: 68px; }
+  .page-controls .arrow-left { left: 12px; }
+  .page-controls .arrow-right { right: 12px; }
+  .page-controls .page-indicator { bottom: 78px; }
+  .journal-footer { bottom: 142px !important; left: 50% !important; }
+  .gallery-title { top: 118px; left: 20px; font-size: clamp(48px, 12vw, 72px); }
+  .gallery-home { top: 65px; left: 20px; right: auto; }
+  .gallery-description { top: calc(136px + clamp(42px, 10.4vw, 63px)); left: 20px; width: calc(100% - 40px); max-width: 373px; font-size: 15px; line-height: 21px; }
+  .gallery-cta { display: none; }
+  .gallery-work { top: 265px; right: 0; bottom: 65px; left: 0; }
 }
