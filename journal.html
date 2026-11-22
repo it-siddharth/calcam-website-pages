@@ -8,8 +8,8 @@
   <title>Viewer Journal | Calculated Camouflage</title>
   
   <!-- Preload critical resources -->
-  <link rel="preload" href="fonts/403-super-vega-regular.woff" as="font" type="font/woff" crossorigin>
   
+  <link rel="stylesheet" href="https://use.typekit.net/ayy2ljq.css">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,7 +36,7 @@
       --color-text: #FFFFFF;
       --color-acrylic-yellow: #FDFF00;
       
-      --font-title: '403 Super Vega', sans-serif;
+      --font-title: 'slight-chance', 'Slight Chance', '403 Super Vega', sans-serif;
       --font-body: 'Nanum Myeongjo', serif;
       --font-mono: 'JetBrains Mono', monospace;
       --font-arrow: 'Alegreya', serif;
@@ -338,6 +338,7 @@
       overflow: visible !important;
       position: relative;
       z-index: 20;
+      filter: drop-shadow(-16px 18px 20px rgba(0, 0, 0, 0.8));
     }
 
     /* ============================================
@@ -716,7 +717,7 @@
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
     }
   </style>
-  <link rel="stylesheet" href="css/redesign.css?v=17">
+  <link rel="stylesheet" href="css/redesign.css?v=32">
 </head>
 <body>
   <!-- Page Transition Overlay -->
@@ -732,14 +733,10 @@
   <main class="journal-page">
     <!-- Left Content Section -->
     <section class="journal-content">
-      <!-- Back Button -->
-      <a href="index.html" class="back-button site-back" aria-label="Back to home">
-        <span class="back-text">BACK</span>
-      </a>
-      <h1 class="journal-title">VIEWER JOURNAL</h1>
+      <h1 class="journal-title"><span>VIEWER</span><span>JOURNAL</span></h1>
       
       <p class="journal-description desktop-only">
-        While the installation ran, a journal sat open, inviting visitors to leave their mark.
+        While the installation ran, a journal sat open, inviting visitors to leave their mark.<br><br>Given this was my first installation, this memento for me is incredibly special. In moments of self doubt over my personal art practice, I often revisit this to remind myself that I have the capability and proof of making people feel something via my work.
       </p>
       
       <div class="journal-info">
@@ -748,18 +745,16 @@
           <span class="cta-text">See it for yourself</span>
           <a href="installation.html" class="btn btn-primary">
             <span class="btn-text">VIEW ROOM</span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
           </a>
         </div>
         
         <nav class="nav-links">
-          <a href="installation.html" class="btn btn-secondary">
-            <span class="btn-text">view room</span>
-          </a>
-          <a href="journal.html" class="btn btn-secondary active" aria-current="page">
-            <span class="btn-text">viewer journal</span>
+          <a href="what-is-this.html" class="btn btn-secondary">
+            <span class="btn-text">what is this</span><span class="btn-arrow" aria-hidden="true">→</span>
           </a>
           <a href="gallery.html" class="btn btn-secondary">
-            <span class="btn-text">gallery</span>
+            <span class="btn-text">gallery</span><span class="btn-arrow" aria-hidden="true">→</span>
           </a>
         </nav>
       </div>
@@ -792,7 +787,7 @@
 
       <!-- Instruction Footer -->
       <footer class="journal-footer">
-        <p class="instruction-text mobile-only">Pinch to zoom. Tap to flip.</p>
+        <p class="instruction-text mobile-only">Swipe to rotate. Tap pages to flip.</p>
       </footer>
     </section>
     
@@ -1136,7 +1131,7 @@
           this._url2Loader.set(url, new Promise((resolve, reject) => {
             new THREE.TextureLoader().load(
               source,
-              (texture) => resolve(this.textureToMaterial(texture, side)),
+              (texture) => resolve(this.textureToMaterial(texture, side, source === pageImages[0])),
               undefined,
               (err) => resolve(null)
             );
@@ -1148,7 +1143,41 @@
         });
       }
 
-      textureToMaterial(texture, side) {
+      textureToMaterial(texture, side, isFrontCover = false) {
+        if (isFrontCover) {
+          const source = texture.image;
+          const cover = document.createElement('canvas');
+          cover.width = source.naturalWidth || source.width;
+          cover.height = source.naturalHeight || source.height;
+          const ctx = cover.getContext('2d');
+          ctx.drawImage(source, 0, 0);
+
+          // A fixed grain pattern gives the cover a matte, printed-paper feel
+          // without changing the supplied artwork or shifting every frame.
+          const grain = document.createElement('canvas');
+          grain.width = grain.height = 192;
+          const grainCtx = grain.getContext('2d');
+          let seed = 2171;
+          const random = () => {
+            seed = (seed * 1664525 + 1013904223) >>> 0;
+            return seed / 4294967296;
+          };
+          for (let y = 0; y < grain.height; y += 3) {
+            for (let x = 0; x < grain.width; x += 3) {
+              const shade = Math.round(82 + random() * 112);
+              grainCtx.fillStyle = `rgb(${shade}, ${shade}, ${shade})`;
+              grainCtx.fillRect(x, y, 3, 3);
+            }
+          }
+          ctx.globalCompositeOperation = 'soft-light';
+          ctx.globalAlpha = 0.42;
+          ctx.fillStyle = ctx.createPattern(grain, 'repeat');
+          ctx.fillRect(0, 0, cover.width, cover.height);
+          ctx.globalAlpha = 1;
+          ctx.globalCompositeOperation = 'source-over';
+          texture.dispose();
+          texture = new THREE.CanvasTexture(cover);
+        }
         texture.magFilter = THREE.LinearFilter;
         texture.minFilter = THREE.LinearMipmapLinearFilter;
         texture.generateMipmaps = true;
@@ -1158,7 +1187,7 @@
         return new THREE.MeshStandardMaterial({
           color: "white",
           map: texture,
-          roughness: 0.2,
+          roughness: isFrontCover ? 0.86 : 0.2,
           aoMapIntensity: 0.7,
           aoMap: side == 1 ? AOTexture() : null,
           toneMapped: false
@@ -1242,11 +1271,19 @@
           page.position.y = rightPileY + yProgress * (leftPileY - rightPileY);
         }
 
-        const offset = activeIndex == 0 ? -0.5 + 0.5 * activeProgress :
-          activeIndex == totalPages - 1 ? 0.5 * activeProgress :
-          activeIndex == totalPages ? 0.5 : 0;
+        // A closed cover spans x=0..1, so offset its center by half a page.
+        const coverOffset = 0.5;
+        const offset = activeIndex == 0 ? -coverOffset + coverOffset * activeProgress :
+          activeIndex == totalPages - 1 ? coverOffset * activeProgress :
+          activeIndex == totalPages ? coverOffset : 0;
 
-        this.position.x = offset * this.scale.x;
+        // At narrower desktop widths, let the full-size spread move into the
+        // text column instead of clipping its far page at the window edge.
+        const openAmount = Math.max(0, Math.min(1, this._currentProgress, totalPages - this._currentProgress));
+        const shiftFactor = window.innerWidth <= 768 ? 0 :
+          Math.max(0, Math.min(0.25, (1500 - window.innerWidth) / 1200));
+        const shiftWorld = this.scale.x * shiftFactor * openAmount;
+        this.position.x = offset * this.scale.x - shiftWorld;
       }
 
       dispose() {
@@ -1312,7 +1349,6 @@
     });
 
     book.scale.x = 0.8;
-    book.position.x = -0.3; // Shifted left on desktop to prevent right-side clipping
     scene.add(book);
 
     book.setPages(pageImages);
@@ -1402,6 +1438,7 @@
     
     function applyZoom() {
       if (!isMobile()) return;
+      camera.filmGauge = 35;
       
       // Pull the camera back far enough that the tilted open book
       // stays inside the shorter mobile canvas (header + controls).
@@ -1431,17 +1468,23 @@
         // Shrink uniformly so the tilted open spread fits the short canvas.
         book.scale.set(0.78, 0.78, 0.78);
       } else {
-        const titleBottom = document.querySelector('.journal-title').getBoundingClientRect().bottom;
-        const availableHeight = window.innerHeight - 180 - titleBottom - 64;
-        // An open spread is roughly 41.5% of the viewport width at the base size.
-        const growth = Math.max(1, Math.min(1.15, availableHeight / (window.innerWidth * 0.415)));
-        book.scale.set(1.04 * growth, 1.3 * growth, 1.3 * growth);
+        const bookSection = container.parentElement;
+        const height = bookSection.clientHeight;
+        const width = bookSection.clientWidth;
+        // Keep one size for the cover and every open page. The wider drawing
+        // canvas lets the spread extend over the text column when needed.
+        const fit = Math.min(
+          1.1,
+          (height / 720) ** 2,
+          1600 / height,
+          width / 680
+        );
+        book.scale.set(1.5 * fit, 1.75 * fit, 1.75 * fit);
       }
     }
 
     function adjustCameraForDevice() {
-      // Use the book-section (parent) dimensions, not the book-container
-      // because book-container is 200% width (for overflow effects)
+      // Frame the book against its layout column, not the wider drawing canvas.
       const bookSection = container.parentElement;
       const sectionWidth = bookSection.clientWidth;
       const sectionHeight = bookSection.clientHeight;
@@ -1451,10 +1494,15 @@
       if (isMobile()) {
         // Mobile: apply current zoom level
         applyZoom();
+        book.flipPages();
         return; // applyZoom handles everything for mobile
       } else {
         // Reset zoom when switching to desktop
         currentZoom = 1;
+        // A wider transparent canvas prevents page clipping. Preserve the
+        // original vertical field of view so widening it cannot zoom the book.
+        camera.filmGauge = 35 * Math.max(camera.aspect, 1) /
+          Math.max(sectionWidth / sectionHeight, 1);
         // Desktop - use WINDOW width for viewport check
         const viewportWidth = window.innerWidth;
         
@@ -1490,6 +1538,8 @@
       }
       camera.lookAt(0, 0, 0);
       camera.updateProjectionMatrix();
+      // Recenter the cover and align the controls using the current camera.
+      book.flipPages();
     }
 
     // ============================================
