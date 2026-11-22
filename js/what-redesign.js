@@ -64,9 +64,12 @@
     }
     rotating = true;
     const exitingLeft = direction > 0 ? cards.find(card => card.classList.contains('is-left-visible') && card.dataset.carouselOffset === '-1') : null;
+    const exitingRight = direction < 0 ? cards.find(card => card.dataset.carouselOffset === '1') : null;
     if (direction > 0) cards[current].classList.add('is-left-visible');
+    exitingRight?.classList.add('is-right-visible');
     const returningCurrent = direction < 0 ? cards[(current - 1 + cards.length) % cards.length] : null;
     const entering = cards[(current + direction * 2 + cards.length * 2) % cards.length];
+    if (direction < 0) entering.classList.add('is-left-visible');
     entering.classList.add('carousel-instant');
     placeCard(entering, direction * 2);
     void entering.offsetWidth;
@@ -74,6 +77,7 @@
     requestAnimationFrame(() => updateCardControls(current + direction, -direction * 2));
     setTimeout(() => {
       exitingLeft?.classList.remove('is-left-visible');
+      exitingRight?.classList.remove('is-right-visible');
       returningCurrent?.classList.remove('is-left-visible');
       rotating = false;
       if (queuedTurn) {
@@ -246,6 +250,10 @@
     else closeDetail(false);
   }
 
+  function writeStoryHash(id) {
+    history[window.parent === window ? 'pushState' : 'replaceState'](null, '', '#' + id);
+  }
+
   document.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', event => {
       const id = link.hash.slice(1);
@@ -257,7 +265,7 @@
         return;
       }
       if (link.classList.contains('story-card') && rotating) return;
-      history.pushState(null, '', '#' + id);
+      writeStoryHash(id);
       if (id === 'overview') closeDetail();
       else openDetail(id, cardFor(id) === link && !active);
     });
@@ -266,7 +274,7 @@
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && active && !busy) {
       event.preventDefault();
-      history.pushState(null, '', '#overview');
+      writeStoryHash('overview');
       closeDetail();
     }
   });
