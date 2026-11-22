@@ -8,13 +8,13 @@
   <title>The Installation | Calculated Camouflage</title>
   
   <!-- Preload critical resources -->
-  <link rel="preload" href="fonts/403-super-vega-regular.woff" as="font" type="font/woff" crossorigin>
   <link rel="preload" href="css/installation.css" as="style">
   
   <!-- DNS prefetch for external resources -->
   <link rel="dns-prefetch" href="https://unpkg.com">
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   
+  <link rel="stylesheet" href="https://use.typekit.net/ayy2ljq.css">
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,8 +22,8 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Alegreya:ital@1&family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet"></noscript>
   
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="css/installation.css?v=18">
-  <link rel="stylesheet" href="css/redesign.css?v=14">
+  <link rel="stylesheet" href="css/installation.css?v=20">
+  <link rel="stylesheet" href="css/redesign.css?v=24">
   
   <!-- Critical inline styles to prevent white flash and text flash -->
   <style>
@@ -80,10 +80,6 @@
   <main class="installation-overlay">
     <!-- Header Section -->
     <header class="installation-header">
-      <!-- Back Button -->
-      <a href="index.html" class="back-button site-back" aria-label="Back to home">
-        <span class="back-text">BACK</span>
-      </a>
       <h1 class="installation-title" aria-label="The Installation">
         <span class="title-word title-word-the">THE</span>
         <span class="title-word title-word-installation">INSTALLATION</span>
@@ -94,6 +90,7 @@
     <footer class="installation-footer">
       <p class="instruction-text desktop-only">Click and use W/A/S/D to move around.</p>
       <p class="instruction-text mobile-only">Swipe to look around.<br>Use the joystick to move.</p>
+      <button id="start-installation-tour" class="installation-tour-cta" type="button">EXPLORE THE INSTALLATION <span aria-hidden="true">→</span></button>
     </footer>
     <nav class="redesign-nav installation-nav" aria-label="Explore">
       <a href="installation.html" class="redesign-pill is-current" aria-current="page">VIEW ROOM</a>
@@ -115,30 +112,33 @@
 
   <!-- Info Panels for Anchor Points -->
   <div class="anchor-info-panel" id="info-center">
-    <button class="panel-close" onclick="closeAnchorPanel()">×</button>
-    <h3 class="panel-title">THE CENTRE PIECE</h3>
+    <button class="panel-close" type="button" onclick="closeAnchorPanel()" aria-label="Close centre piece details">×</button>
+    <h3 class="panel-title" tabindex="-1">THE CENTRE PIECE</h3>
     <div class="panel-description">
       <p>The TV screen displays a real-time silhouette made of words—words that describe identity, perception, and the self we present to the world.</p>
       <p>The acrylic panels in front filter and fragment your view, creating layers of color and meaning.</p>
     </div>
+    <button class="panel-next" type="button" data-tour-next="left">NEXT: LEFT WALL <span aria-hidden="true">→</span></button>
   </div>
   
   <div class="anchor-info-panel" id="info-left">
-    <button class="panel-close" onclick="closeAnchorPanel()">×</button>
-    <h3 class="panel-title">LEFT WALL</h3>
+    <button class="panel-close" type="button" onclick="closeAnchorPanel()" aria-label="Close left wall details">×</button>
+    <h3 class="panel-title" tabindex="-1">LEFT WALL</h3>
     <div class="panel-description">
       <p>A particle projection dances on this wall, forming a human silhouette from thousands of points of light.</p>
       <p>It represents the fragmented nature of digital identity—how we exist as data points in the modern world.</p>
     </div>
+    <button class="panel-next" type="button" data-tour-next="right">NEXT: RIGHT WALL <span aria-hidden="true">→</span></button>
   </div>
   
   <div class="anchor-info-panel" id="info-right">
-    <button class="panel-close" onclick="closeAnchorPanel()">×</button>
-    <h3 class="panel-title">RIGHT WALL</h3>
+    <button class="panel-close" type="button" onclick="closeAnchorPanel()" aria-label="Close right wall details">×</button>
+    <h3 class="panel-title" tabindex="-1">RIGHT WALL</h3>
     <div class="panel-description">
       <p>The opposite perspective. A mirror to the projection, this wall holds the space where your shadow would fall.</p>
       <p>In the contrast between light and dark, we find the boundaries of self.</p>
     </div>
+    <button class="panel-next" type="button" data-tour-next="finish">FINISH TOUR <span aria-hidden="true">✓</span></button>
   </div>
 
   <!-- Background Music -->
@@ -331,6 +331,6 @@
     }
   </script>
   <script src="js/site-camera.js"></script>
-  <script type="module" src="js/installation-scene.js?v=9"></script>
+  <script type="module" src="js/installation-scene.js?v=10"></script>
 </body>
 </html>

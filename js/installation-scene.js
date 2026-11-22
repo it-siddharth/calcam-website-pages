@@ -402,6 +402,21 @@ function setupAnchorPoints() {
       }, { passive: false });
     }
   });
+
+  document.getElementById('start-installation-tour')?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    if (isCinematicIntro) skipCinematicIntro();
+    focusOnAnchor('center');
+  });
+
+  document.querySelectorAll('[data-tour-next]').forEach(button => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const next = button.dataset.tourNext;
+      if (next === 'finish') closeAnchorPanel();
+      else focusOnAnchor(next);
+    });
+  });
   
   // Click/tap anywhere on the scene to unfocus (when not in pointer lock)
   const threeContainer = document.getElementById('three-container');
@@ -595,6 +610,7 @@ function focusOnAnchor(anchorKey) {
         anchor.panel.style.left = `${panelX}px`;
         anchor.panel.style.top = `${panelY}px`;
         anchor.panel.classList.add('visible');
+        anchor.panel.querySelector('.panel-title')?.focus({ preventScroll: true });
       }
       
       // Sync camera euler for mobile touch controls
@@ -611,6 +627,8 @@ function focusOnAnchor(anchorKey) {
 
 function closeAnchorPanel() {
   if (!isAnchorFocused) return;
+
+  const panelHadFocus = document.activeElement?.closest('.anchor-info-panel');
   
   // Cancel any ongoing animation
   if (anchorAnimationId) {
@@ -628,6 +646,7 @@ function closeAnchorPanel() {
   activeAnchor = null;
   isAnchorFocused = false;
   document.body.classList.remove('anchor-focused');
+  if (panelHadFocus) document.getElementById('start-installation-tour')?.focus({ preventScroll: true });
   
   // Optionally animate back to saved position (or just let user continue from current position)
   // For now, we let user continue from the focused position - feels more natural

@@ -22,7 +22,7 @@
   --color-acrylic-blue: #2600FF;
   
   /* Typography - Desktop */
-  --font-title: '403 Super Vega', sans-serif;
+  --font-title: 'slight-chance', 'Slight Chance', '403 Super Vega', sans-serif;
   --font-installation-title: 'Nanum Myeongjo', serif;
   --font-body: 'Nanum Myeongjo', serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -1086,6 +1086,24 @@ body.pointer-locked .visual-settings-panel { display: none; }
 .anchor-info-panel .panel-description p:last-child {
   margin-bottom: 0;
 }
+
+.anchor-info-panel .panel-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  background: transparent;
+  color: #fff;
+  font: 500 11px/1 'JetBrains Mono', monospace;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+}
+
+.anchor-info-panel .panel-next:hover { background: #fff; color: #000; }
+.anchor-info-panel .panel-next:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
 /* Close button for info panel */
 .anchor-info-panel .panel-close {
