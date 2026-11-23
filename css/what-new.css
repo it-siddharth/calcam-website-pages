@@ -166,13 +166,8 @@
   .hero-links .pill{min-height:34px;padding:7px 11px;font-size:11px}
 }
 
-/* BTS clips stay selectable before playback and seekable at every point. */
+/* BTS clips stay selectable before their native video controls appear. */
 .setup-strip .setup-play{position:absolute;top:50%;left:50%;z-index:4;transform:translate(-50%,-50%);min-width:58px;min-height:36px;padding:8px 12px;border:1.1px solid #fff;border-radius:30px;background:#000b;color:#fff;font:500 11px/1 var(--mono);cursor:pointer}
 .setup-strip .motion-media:not(.is-playing){cursor:pointer}
 .setup-strip .motion-media.is-playing .setup-play{display:none}
-.setup-strip .setup-play:focus-visible,.setup-scrubber input:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.setup-scrubber{display:flex;align-items:center;gap:10px;width:288px;margin-top:10px;color:#fff;font:500 10px/1 var(--mono)}
-.setup-scrubber input{min-width:0;flex:1;accent-color:#fff;cursor:pointer}
-.setup-scrubber input:disabled{opacity:.5;cursor:default}
-.setup-scrubber span{white-space:nowrap}
-@media(max-width:700px){.setup-scrubber{width:210px}}
+.setup-strip .setup-play:focus-visible{outline:2px solid #fff;outline-offset:3px}

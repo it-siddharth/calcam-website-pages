@@ -231,11 +231,6 @@ let setupIndex = 0;
 let setupFinished = false;
 let setupUserChosen = false;
 
-function formatTime(seconds) {
-  if (!Number.isFinite(seconds)) return '0:00';
-  return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
-}
-
 function selectSetup(index) {
   setupUserChosen = true;
   setupFinished = false;
@@ -277,35 +272,6 @@ setupMedia.forEach((media, index) => {
     }
   });
 
-  const scrubber = document.createElement('div');
-  scrubber.className = 'setup-scrubber';
-  const range = document.createElement('input');
-  range.type = 'range';
-  range.min = '0';
-  range.max = '1000';
-  range.value = '0';
-  range.disabled = true;
-  range.setAttribute('aria-label', `Scrub BTS clip ${index + 1}`);
-  const timing = document.createElement('span');
-  timing.textContent = '0:00 / 0:00';
-  scrubber.append(range, timing);
-  media.after(scrubber);
-  const updateScrubber = () => {
-    const duration = video.duration;
-    range.disabled = !Number.isFinite(duration) || duration <= 0;
-    range.value = Number.isFinite(duration) && duration > 0
-      ? String(Math.round(video.currentTime / duration * 1000)) : '0';
-    timing.textContent = `${formatTime(video.currentTime)} / ${formatTime(duration)}`;
-  };
-  video.addEventListener('loadedmetadata', updateScrubber);
-  video.addEventListener('durationchange', updateScrubber);
-  video.addEventListener('timeupdate', updateScrubber);
-  range.addEventListener('input', () => {
-    if (!Number.isFinite(video.duration) || video.duration <= 0) return;
-    video.currentTime = Number(range.value) / 1000 * video.duration;
-    selectSetup(index);
-    updateScrubber();
-  });
   video.addEventListener('playing', () => {
     setupIndex = index;
     setupMedia.forEach((other) => {
@@ -320,7 +286,6 @@ setupMedia.forEach((media, index) => {
     video.pause();
     video.currentTime = 0;
     media.classList.remove('is-playing', 'is-sequence-active');
-    updateScrubber();
     if (setupUserChosen) return;
     setupIndex = index + 1;
     if (setupIndex >= setupMedia.length) {
