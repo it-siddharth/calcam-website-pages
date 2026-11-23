@@ -169,6 +169,15 @@
 /* Installation clips can still be selected without an overlay. */
 .setup-strip .motion-media{cursor:pointer}
 .setup-strip .motion-media:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.setup-strip video::-webkit-media-controls{display:none!important}
+.setup-transport{display:flex;align-items:center;gap:10px;width:288px;max-width:100%;margin-top:10px;color:#fff;font:500 11px/1 var(--mono)}
+.setup-toggle{flex:none;border:1px solid #fff;border-radius:16px;padding:5px 7px;background:#000;color:#fff;font:inherit;cursor:pointer}
+.setup-toggle:hover,.setup-toggle:focus-visible{background:#fff;color:#000}
+.setup-scrubber{flex:1;min-width:0;height:4px;margin:0;appearance:none;-webkit-appearance:none;border:0;border-radius:0;background:linear-gradient(90deg,#fff 0 var(--played,0%),#626262 var(--played,0%) 100%);cursor:pointer}
+.setup-scrubber::-webkit-slider-thumb{width:10px;height:14px;appearance:none;-webkit-appearance:none;border:0;border-radius:0;background:#fff}
+.setup-scrubber::-moz-range-thumb{width:10px;height:14px;border:0;border-radius:0;background:#fff}
+.setup-time{flex:none;white-space:nowrap}
+@media(max-width:700px){.setup-transport{width:210px;gap:6px;font-size:9px}.setup-toggle{padding:5px}.setup-time{font-size:8px}}
 
 /* The still stays clickable if a browser declines muted autoplay. */
 .motion-media .media-play{position:absolute;top:50%;left:50%;z-index:4;transform:translate(-50%,-50%);min-width:58px;min-height:36px;padding:8px 12px;border:1.1px solid #fff;border-radius:30px;background:#000b;color:#fff;font:500 11px/1 var(--mono);cursor:pointer}

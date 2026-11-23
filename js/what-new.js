@@ -229,6 +229,11 @@ const setupReady = new WeakSet();
 let setupIndex = 0;
 let setupFinished = false;
 let setupInView = false;
+const formatSetupTime = (seconds) => {
+  if (!Number.isFinite(seconds)) return '0:00';
+  const value = Math.max(0, Math.floor(seconds));
+  return `${Math.floor(value / 60)}:${String(value % 60).padStart(2, '0')}`;
+};
 
 function selectSetup(index) {
   setupFinished = false;
@@ -266,6 +271,55 @@ setupMedia.forEach((media, index) => {
   video.preload = 'metadata';
   video.loop = false;
   video.controls = false;
+  video.removeAttribute('controls');
+
+  const transport = document.createElement('div');
+  transport.className = 'setup-transport';
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'setup-toggle';
+  toggle.textContent = 'PLAY';
+  toggle.setAttribute('aria-label', `Play installation clip ${index + 1}`);
+  const scrubber = document.createElement('input');
+  scrubber.className = 'setup-scrubber';
+  scrubber.type = 'range';
+  scrubber.min = '0';
+  scrubber.max = '1000';
+  scrubber.value = '0';
+  scrubber.setAttribute('aria-label', `Seek installation clip ${index + 1}`);
+  const time = document.createElement('span');
+  time.className = 'setup-time';
+  time.textContent = '0:00 / 0:00';
+  transport.append(toggle, scrubber, time);
+  media.after(transport);
+
+  const updateTransport = () => {
+    const duration = Number.isFinite(video.duration) ? video.duration : 0;
+    scrubber.value = duration ? String(Math.round(video.currentTime / duration * 1000)) : '0';
+    scrubber.style.setProperty('--played', `${Number(scrubber.value) / 10}%`);
+    time.textContent = `${formatSetupTime(video.currentTime)} / ${formatSetupTime(duration)}`;
+    const playing = !video.paused && !video.ended;
+    toggle.textContent = playing ? 'PAUSE' : 'PLAY';
+    toggle.setAttribute('aria-label', `${playing ? 'Pause' : 'Play'} installation clip ${index + 1}`);
+  };
+  toggle.addEventListener('click', (event) => {
+    event.stopPropagation();
+    if (setupIndex === index && !video.paused) video.pause();
+    else if (setupIndex === index) video.play().catch(() => {});
+    else selectSetup(index);
+  });
+  scrubber.addEventListener('click', (event) => event.stopPropagation());
+  scrubber.addEventListener('input', (event) => {
+    event.stopPropagation();
+    const requestedPosition = Number(scrubber.value) / 1000;
+    if (setupIndex !== index) selectSetup(index);
+    if (Number.isFinite(video.duration)) video.currentTime = requestedPosition * video.duration;
+    updateTransport();
+  });
+  video.addEventListener('loadedmetadata', updateTransport);
+  video.addEventListener('durationchange', updateTransport);
+  video.addEventListener('timeupdate', updateTransport);
+  video.addEventListener('seeked', updateTransport);
   media.tabIndex = 0;
   media.setAttribute('role', 'button');
   media.setAttribute('aria-label', `Play installation clip ${index + 1}`);
@@ -284,8 +338,12 @@ setupMedia.forEach((media, index) => {
       other.classList.remove('is-playing', 'is-sequence-active');
     });
     media.classList.add('is-playing', 'is-sequence-active');
+    updateTransport();
   });
-  video.addEventListener('pause', () => media.classList.remove('is-sequence-active'));
+  video.addEventListener('pause', () => {
+    media.classList.remove('is-sequence-active');
+    updateTransport();
+  });
   video.addEventListener('ended', () => {
     video.pause();
     video.currentTime = 0;
@@ -303,6 +361,7 @@ setupMedia.forEach((media, index) => {
     }
     playCurrentSetup();
   });
+  updateTransport();
 });
 
 // Give every non-BTS clip an explicit play target if muted autoplay is blocked.
