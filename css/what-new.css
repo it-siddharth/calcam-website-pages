@@ -183,3 +183,10 @@
 .motion-media .media-play{position:absolute;top:50%;left:50%;z-index:4;transform:translate(-50%,-50%);min-width:58px;min-height:36px;padding:8px 12px;border:1.1px solid #fff;border-radius:30px;background:#000b;color:#fff;font:500 11px/1 var(--mono);cursor:pointer}
 .motion-media.is-playing .media-play{display:none}
 .motion-media .media-play:focus-visible{outline:2px solid #fff;outline-offset:3px}
+
+/* Keep the research copy and portrait on one left edge at narrow widths. */
+@media(max-width:900px){
+  .research-grid{grid-template-columns:minmax(0,1fr);justify-content:start;gap:48px}
+  .research-grid>p{max-width:541px}
+  .research-grid>div{justify-self:start;margin-left:0;max-width:min(100%,390px)}
+}
