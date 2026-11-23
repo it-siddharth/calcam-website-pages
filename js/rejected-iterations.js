@@ -2,8 +2,7 @@
  * Rejected iteration gallery, adapted from Siddharth's original experiments:
  * Webcam_Green-Text_Working (threshold blocks and floating messages),
  * Webcam_PixelContour_Words_Working (brightness-gated word grids),
- * Webcam_Test_Ascii_Archive_0.2 (character-density mapping), and
- * Webcam_Contour_Archive_v0.4 (neighbor-difference contours).
+ * Webcam_Test_Ascii_Archive_0.2 (character-density mapping).
  * The installation recording supplies motion until a visitor opts into camera.
  */
 (() => {
@@ -130,9 +129,8 @@
           const r = data[p], g = data[p + 1], b = data[p + 2];
           mask[i] = isLive ? Number((r + g + b) / 3 < 105) : Number(g > 80 && g > r * 1.15 && g > b * 1.1);
         }
-        stage.dataset.sample = 'video';
         return mask;
-      } catch (error) { stage.dataset.sample = error.name; }
+      } catch (_) { /* Draw the built-in silhouette if a frame cannot be sampled. */ }
     }
     // A code-generated placeholder keeps the gallery alive while video loads.
     for (let y = 0; y < sample.height; y++) for (let x = 0; x < sample.width; x++) {
@@ -142,7 +140,6 @@
       const arm = x > 25 && x < 75 && y > 56 && y < 71;
       mask[y * sample.width + x] = Number(head || body || arm);
     }
-    stage.dataset.sample = 'fallback';
     return mask;
   }
 

@@ -7,6 +7,7 @@
   <title>Text Silhouette Lab — Calculated Camouflage</title>
   <link rel="icon" href="favicon.png">
   <link rel="stylesheet" href="css/text-animation-lab.css">
+  <link rel="stylesheet" href="css/acrylic-view.css">
 </head>
 <body>
   <main class="lab-shell">
@@ -25,6 +26,10 @@
       <div class="preview-column">
         <div class="preview-frame" id="previewFrame">
           <div class="preview-canvas" id="canvasMount"></div>
+          <div class="acrylic-view-control">
+            <span id="acrylicViewState">NON ACRYLIC VIEW</span>
+            <button class="t-toggle" id="acrylicViewSwitch" type="button" role="switch" aria-label="Acrylic view" aria-checked="false" data-on="false"><span class="t-toggle-thumb" aria-hidden="true"></span></button>
+          </div>
           <div class="start-card" id="startCard">
             <p class="eyebrow">LIVE INPUT</p>
             <h2>Turn your camera into words.</h2>
@@ -118,6 +123,7 @@
   </main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="js/site-camera.js"></script>
+  <script src="js/acrylic-view.js"></script>
   <script type="module" src="js/text-animation-lab.js"></script>
 </body>
 </html>

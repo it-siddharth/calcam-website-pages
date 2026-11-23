@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Webcam Text Silhouette</title>
   <script src="js/site-camera.js"></script>
+  <script src="js/acrylic-view.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <link rel="stylesheet" href="css/acrylic-view.css">
   <style>
     body {
       margin: 0;
@@ -112,9 +114,20 @@
     .checkbox-label input[type="checkbox"] {
       margin-right: 8px;
     }
+    .acrylic-view-control {
+      position: fixed;
+      top: auto;
+      bottom: 16px;
+      left: 16px;
+      z-index: 200;
+    }
   </style>
 </head>
 <body>
+  <div class="acrylic-view-control">
+    <span id="acrylicViewState">NON ACRYLIC VIEW</span>
+    <button class="t-toggle" id="acrylicViewSwitch" type="button" role="switch" aria-label="Acrylic view" aria-checked="false" data-on="false"><span class="t-toggle-thumb" aria-hidden="true"></span></button>
+  </div>
   <!-- Error message container -->
   <div id="errorMessage" class="hidden"></div>
   
@@ -314,6 +327,7 @@
     let cellWidthMultiplier = 0.7;
     let fontSize = 10;
     let showContour = true;
+    let acrylicView = false;
     let pixelSize = 1;
     let contourSensitivity = 5;
     let contourColor = "#FFFFFF";
@@ -769,6 +783,10 @@
         // Apply glitch effect if enabled
         if (enableGlitch) {
           applyGlitchEffect();
+        }
+
+        if (acrylicView) {
+          window.applyAcrylicView(drawingContext, width, height);
         }
         
         // Note: We removed the expensive get() call here
@@ -1407,6 +1425,13 @@
     }
     
     function setupEventListeners() {
+      document.getElementById('acrylicViewSwitch').addEventListener('click', function() {
+        acrylicView = this.dataset.on !== 'true';
+        this.classList.add('is-init');
+        this.dataset.on = String(acrylicView);
+        this.setAttribute('aria-checked', String(acrylicView));
+        document.getElementById('acrylicViewState').textContent = acrylicView ? 'ACRYLIC VIEW' : 'NON ACRYLIC VIEW';
+      });
       // Camera selection
       document.getElementById('cameraSelect').addEventListener('change', function() {
         const selectedCameraId = this.value;

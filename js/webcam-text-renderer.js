@@ -515,6 +515,10 @@ export class WebcamTextRenderer {
       if (this.settings.enableGlitch) {
         this.applyGlitchEffect();
       }
+
+      if (this.settings.acrylicView) {
+        window.applyAcrylicView(this.ctx, this.canvas.width, this.canvas.height);
+      }
       
       this.frameCount++;
     } catch (error) {
@@ -605,6 +609,10 @@ export class WebcamTextRenderer {
     this.ctx.fillText('Allow camera access to see live feed', w / 2, h / 2);
     
     this.ctx.restore();
+
+    if (this.settings.acrylicView) {
+      window.applyAcrylicView(this.ctx, w, h);
+    }
     
     this.frameCount++;
   }

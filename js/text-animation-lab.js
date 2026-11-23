@@ -22,6 +22,7 @@ const cameraSelect = $('cameraSelect');
 const cameraStatus = $('cameraStatus');
 const wordsList = $('wordsList');
 const toast = $('toast');
+const acrylicViewSwitch = $('acrylicViewSwitch');
 let animationFrame = 0;
 let toastTimer = 0;
 
@@ -161,6 +162,15 @@ $('animationType').addEventListener('change', (event) => {
 $('flipVideo').addEventListener('change', (event) => { renderer.settings.flipVideo = event.target.checked; });
 $('invertColors').addEventListener('change', (event) => { renderer.settings.invertColors = event.target.checked; });
 $('showContour').addEventListener('change', (event) => { renderer.settings.showContour = event.target.checked; });
+acrylicViewSwitch.addEventListener('click', () => {
+  const enabled = acrylicViewSwitch.dataset.on !== 'true';
+  acrylicViewSwitch.classList.add('is-init');
+  acrylicViewSwitch.dataset.on = String(enabled);
+  acrylicViewSwitch.setAttribute('aria-checked', String(enabled));
+  $('acrylicViewState').textContent = enabled ? 'ACRYLIC VIEW' : 'NON ACRYLIC VIEW';
+  renderer.settings.acrylicView = enabled;
+  if (!renderer.currentStream) renderer.drawPlaceholder();
+});
 $('enableGlitch').addEventListener('change', (event) => { renderer.settings.enableGlitch = event.target.checked; });
 $('glitchType').addEventListener('change', (event) => { renderer.settings.glitchType = event.target.value; });
 

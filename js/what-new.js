@@ -225,14 +225,12 @@ if (!reduceMotion.matches && 'IntersectionObserver' in window) {
 // it is actually playing, and the next one starts after the previous ends.
 const setupStrip = document.querySelector('.setup-strip');
 const setupMedia = [...setupStrip.querySelectorAll('.motion-media')];
-const setupVisible = new Set();
 const setupReady = new WeakSet();
 let setupIndex = 0;
 let setupFinished = false;
-let setupUserChosen = false;
+let setupInView = false;
 
 function selectSetup(index) {
-  setupUserChosen = true;
   setupFinished = false;
   setupIndex = index;
   const media = setupMedia[index];
@@ -242,15 +240,23 @@ function selectSetup(index) {
     other.querySelector('video').pause();
     other.classList.remove('is-playing', 'is-sequence-active');
   });
-  media.dataset.activated = 'true';
-  setupReady.add(media);
-  video.play().catch(() => {});
+  video.currentTime = 0;
+  playCurrentSetup();
 }
 
 function playCurrentSetup() {
-  if (setupFinished || setupUserChosen) return;
+  if (setupFinished || !setupInView) return;
   const media = setupMedia[setupIndex];
-  if (!media || !setupVisible.has(media) || !setupReady.has(media)) return;
+  if (!media) return;
+  if (!setupReady.has(media)) {
+    if (media.dataset.activated) return;
+    media.dataset.activated = 'true';
+    revealWithDither(media.querySelector('.media-cover'), () => {
+      setupReady.add(media);
+      if (setupMedia[setupIndex] === media) playCurrentSetup();
+    });
+    return;
+  }
   const video = media.querySelector('video');
   if (video.paused && !video.ended) video.play().catch(() => {});
 }
@@ -259,17 +265,15 @@ setupMedia.forEach((media, index) => {
   const video = media.querySelector('video');
   video.preload = 'metadata';
   video.loop = false;
-  const playButton = document.createElement('button');
-  playButton.type = 'button';
-  playButton.className = 'setup-play';
-  playButton.textContent = 'PLAY';
-  playButton.setAttribute('aria-label', `Play BTS clip ${index + 1}`);
-  playButton.addEventListener('click', () => selectSetup(index));
-  media.append(playButton);
-  media.addEventListener('click', (event) => {
-    if (event.target !== playButton && !media.classList.contains('is-playing')) {
-      selectSetup(index);
-    }
+  video.controls = false;
+  media.tabIndex = 0;
+  media.setAttribute('role', 'button');
+  media.setAttribute('aria-label', `Play installation clip ${index + 1}`);
+  media.addEventListener('click', () => selectSetup(index));
+  media.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    selectSetup(index);
   });
 
   video.addEventListener('playing', () => {
@@ -286,7 +290,6 @@ setupMedia.forEach((media, index) => {
     video.pause();
     video.currentTime = 0;
     media.classList.remove('is-playing', 'is-sequence-active');
-    if (setupUserChosen) return;
     setupIndex = index + 1;
     if (setupIndex >= setupMedia.length) {
       setupFinished = true;
@@ -321,28 +324,21 @@ document.querySelectorAll('.motion-media').forEach((media) => {
   video.addEventListener('playing', () => media.classList.add('is-playing'));
 });
 
-// Begin footage only after its still has assembled; stop decoding off screen.
+// Start the first clip when the strip enters view, then pause off screen.
+const setupObserver = new IntersectionObserver((entries) => {
+  setupInView = entries[0].isIntersecting;
+  if (setupInView) {
+    playCurrentSetup();
+  } else {
+    setupMedia[setupIndex]?.querySelector('video').pause();
+  }
+}, { threshold: .08 });
+setupObserver.observe(setupStrip);
+
+// Begin other footage only after its still has assembled; stop decoding off screen.
 const mediaObserver = new IntersectionObserver((entries) => {
   entries.forEach(({ target, isIntersecting }) => {
     const video = target.querySelector('video');
-    if (target.closest('.setup-strip')) {
-      if (!isIntersecting) {
-        setupVisible.delete(target);
-        video.pause();
-        return;
-      }
-      setupVisible.add(target);
-      if (!target.dataset.activated) {
-        target.dataset.activated = 'true';
-        revealWithDither(target.querySelector('.media-cover'), () => {
-          setupReady.add(target);
-          playCurrentSetup();
-        });
-      } else {
-        playCurrentSetup();
-      }
-      return;
-    }
     if (!isIntersecting) {
       video.pause();
       return;
@@ -359,4 +355,6 @@ const mediaObserver = new IntersectionObserver((entries) => {
     });
   });
 }, { threshold: .08 });
-document.querySelectorAll('.motion-media').forEach((media) => mediaObserver.observe(media));
+document.querySelectorAll('.motion-media').forEach((media) => {
+  if (!media.closest('.setup-strip')) mediaObserver.observe(media);
+});
