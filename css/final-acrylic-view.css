@@ -1,0 +1,5 @@
+.final-art-preview{position:relative;display:block}
+.final-art-preview canvas{position:absolute;inset:0;display:none;width:100%;height:100%;border:1px solid #fff;pointer-events:none}
+.final-art-preview.is-acrylic canvas{display:block}
+.final-art-preview .acrylic-view-control{top:16px;left:16px;right:auto;bottom:auto}
+@media(max-width:700px){.final-art-preview .acrylic-view-control{top:10px;left:10px}}
