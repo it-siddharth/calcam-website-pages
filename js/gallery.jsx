@@ -223,9 +223,9 @@ function Gallery() {
       <button className="lightbox-close" type="button" onClick={close} ref={closeRef} aria-label="Close media">CLOSE ×</button>
       <div className="lightbox-media"><Media item={items[selected]} spotlight /></div>
       <div className="lightbox-footer">
-        <button type="button" onClick={() => setSelected((selected - 1 + items.length) % items.length)} aria-label="Previous media">←</button>
+        <button type="button" onClick={() => setSelected((selected - 1 + items.length) % items.length)} aria-label="Previous media">PREV</button>
         <p><span>{String(selected + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}</span>{items[selected].alt}</p>
-        <button type="button" onClick={() => setSelected((selected + 1) % items.length)} aria-label="Next media">→</button>
+        <button type="button" onClick={() => setSelected((selected + 1) % items.length)} aria-label="Next media">NEXT</button>
       </div>
     </div>}
   </div>;

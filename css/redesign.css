@@ -230,3 +230,45 @@ body.story-departing .credit { opacity: 0; pointer-events: none; transition: opa
   .gallery-cta { display: none; }
   .gallery-work { top: 265px; right: 0; bottom: 65px; left: 0; }
 }
+
+/* Align page furniture to the same 30px desktop / 20px phone gutter. */
+.installation-nav,.journal-info,.gallery-nav,.gallery-cta{left:30px}
+.installation-footer{right:30px}
+.gallery-title,.gallery-description{left:30px}
+@media (max-width:768px){
+  .installation-overlay .back-button{left:20px}
+  .installation-footer{right:20px}
+  .journal-info{left:20px !important}
+  .gallery-title,.gallery-description,.gallery-nav,.gallery-cta{left:20px}
+  .gallery-description{width:calc(100% - 40px)}
+}
+
+/* One CTA treatment across the home, room, journal, and gallery. */
+.landing-page .cta-section .btn,
+.journal-info .btn,
+.redesign-pill,
+.site-back,
+.installation-overlay .site-back,
+.journal-content .site-back,
+.installation-tour-cta,
+.anchor-info-panel .panel-next{
+  min-height:36px;
+  padding:8px 14px;
+  border:1.1px solid #fff;
+  border-radius:30px;
+  font:500 14px/1 'JetBrains Mono',monospace;
+}
+.landing-page .cta-section .btn-text,.journal-info .btn-text{font:inherit}
+.page-controls .arrow-btn{width:54px;height:36px;border:1.1px solid #fff;border-radius:30px;font:500 11px/1 'JetBrains Mono',monospace}
+@media(max-width:768px){
+  .landing-page .cta-section .btn,
+  .journal-info .btn,
+  .redesign-pill,
+  .site-back,
+  .installation-overlay .site-back,
+  .journal-content .site-back,
+  .installation-tour-cta{min-height:34px;padding:7px 11px;font-size:11px}
+  .landing-page .cta-section .btn,.journal-info .btn{padding:7px 11px !important}
+  .landing-page .cta-section .btn-text,.journal-info .btn-text{font-size:11px !important}
+  .page-controls .arrow-btn{width:50px;height:34px}
+}

@@ -717,7 +717,7 @@
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
     }
   </style>
-  <link rel="stylesheet" href="css/redesign.css?v=32">
+  <link rel="stylesheet" href="css/redesign.css?v=34">
 </head>
 <body>
   <!-- Page Transition Overlay -->
@@ -741,20 +741,18 @@
       
       <div class="journal-info">
         <div class="cta-primary-row">
-          <span class="cta-arrow">↳</span>
           <span class="cta-text">See it for yourself</span>
           <a href="installation.html" class="btn btn-primary">
             <span class="btn-text">VIEW ROOM</span>
-            <span class="btn-arrow" aria-hidden="true">→</span>
           </a>
         </div>
         
         <nav class="nav-links">
           <a href="what-is-this.html" class="btn btn-secondary">
-            <span class="btn-text">what is this</span><span class="btn-arrow" aria-hidden="true">→</span>
+            <span class="btn-text">what is this</span>
           </a>
           <a href="gallery.html" class="btn btn-secondary">
-            <span class="btn-text">gallery</span><span class="btn-arrow" aria-hidden="true">→</span>
+            <span class="btn-text">gallery</span>
           </a>
         </nav>
       </div>
@@ -772,15 +770,11 @@
       <div class="page-controls" id="page-controls">
         <div class="page-dpad">
           <button class="arrow-btn arrow-left" id="btn-prev" aria-label="Previous page">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 12H5M12 5l-7 7 7 7"/>
-            </svg>
+            PREV
           </button>
           <span class="page-indicator"><span id="current-page">1</span> / <span id="total-pages">36</span></span>
           <button class="arrow-btn arrow-right" id="btn-next" aria-label="Next page">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
+            NEXT
           </button>
         </div>
       </div>
@@ -815,23 +809,6 @@
   }
   </script>
 
-  <!-- Debug instrumentation -->
-  <script>
-    // #region agent log
-    window.addEventListener('DOMContentLoaded', function() {
-      const btn = document.querySelector('.btn');
-      if (btn) {
-        const cs = getComputedStyle(btn);
-        const text = btn.querySelector('.btn-text');
-        const arrow = btn.querySelector('.btn-arrow');
-        const textCs = text ? getComputedStyle(text) : null;
-        const arrowCs = arrow ? getComputedStyle(arrow) : null;
-        fetch('http://127.0.0.1:7243/ingest/b2a87bc5-0f45-4c1a-95fa-5aa2d366c868',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'journal.html',message:'CTA computed styles',data:{page:'journal',viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,btnPadding:cs.padding,btnGap:cs.gap,textFontSize:textCs?.fontSize,arrowFontSize:arrowCs?.fontSize},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'A,B,C'})}).catch(()=>{});
-      }
-    });
-    // #endregion
-  </script>
-  
   <script type="module">
     import * as THREE from 'three';
     import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -1027,6 +1004,32 @@
       };
     })();
 
+    // A small repeating grain adds paper relief without altering the scanned pages.
+    const PaperGrain = (() => {
+      let texture;
+      return () => {
+        if (!texture) {
+          const canvas = document.createElement('canvas');
+          canvas.width = canvas.height = 128;
+          const ctx = canvas.getContext('2d');
+          const image = ctx.createImageData(128, 128);
+          let seed = 9037;
+          for (let i = 0; i < image.data.length; i += 4) {
+            seed = (seed * 1664525 + 1013904223) >>> 0;
+            const shade = 205 + (seed >>> 24) % 40;
+            image.data[i] = image.data[i + 1] = image.data[i + 2] = shade;
+            image.data[i + 3] = 255;
+          }
+          ctx.putImageData(image, 0, 0);
+          texture = new THREE.CanvasTexture(canvas);
+          texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(8, 10);
+          texture.generateMipmaps = true;
+        }
+        return texture;
+      };
+    })();
+
     class FlipBook extends THREE.Mesh {
       constructor(config) {
         super();
@@ -1106,8 +1109,11 @@
       loadPage(source, side, page) {
         if (!source || source === '') {
           const blankPage = new THREE.MeshStandardMaterial({
-            color: "white",
-            roughness: 0.2,
+            color: 0xf6f3ed,
+            roughness: 1,
+            roughnessMap: PaperGrain(),
+            bumpMap: PaperGrain(),
+            bumpScale: 0.008,
             aoMapIntensity: 0.7,
             aoMap: side == 1 ? AOTexture() : null
           });
@@ -1185,9 +1191,12 @@
         texture.colorSpace = THREE.SRGBColorSpace;
 
         return new THREE.MeshStandardMaterial({
-          color: "white",
+          color: isFrontCover ? 0xffffff : 0xf6f3ed,
           map: texture,
-          roughness: isFrontCover ? 0.86 : 0.2,
+          roughness: isFrontCover ? 0.86 : 1,
+          roughnessMap: isFrontCover ? null : PaperGrain(),
+          bumpMap: isFrontCover ? null : PaperGrain(),
+          bumpScale: isFrontCover ? 0 : 0.008,
           aoMapIntensity: 0.7,
           aoMap: side == 1 ? AOTexture() : null,
           toneMapped: false
@@ -1311,7 +1320,7 @@
     scene.background = null;
 
     // Lighting (matching demo)
-    const light = new THREE.DirectionalLight(0xffffff, 1);
+    const light = new THREE.DirectionalLight(0xffffff, 0.45);
     light.position.set(0.2, 1, 0);
     light.castShadow = true;
     light.shadow.mapSize.width = 512 * 4;
@@ -1321,7 +1330,7 @@
     light.shadow.bias = -0.003;
     scene.add(light);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
     // Camera (zoomed out for smaller book)

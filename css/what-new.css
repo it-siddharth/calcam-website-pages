@@ -136,3 +136,43 @@
   .projection-grid{grid-template-rows:none;row-gap:45px}
   .projection-grid article{display:block;grid-row:auto}
 }
+
+/* Use the same viewport gutter as the other site pages. Keep only the
+   horizontal carousels bleeding to the edge of the screen. */
+.hero,.story{max-width:none;width:100%}
+.hero-left{padding-left:30px}
+.hero-left .small{margin-left:0}
+.hero-right{padding-right:30px}
+.hero-links{left:30px}
+.pad{padding-left:30px;padding-right:30px}
+.artist-rail,.setup-strip{margin-right:-30px}
+.artist-footer{padding-right:30px}
+@media(max-width:768px){
+  .hero-left{padding-left:20px;padding-right:20px}
+  .hero-right{padding-left:20px;padding-right:20px}
+  .hero-links{left:20px;right:20px}
+  .pad{padding-left:20px;padding-right:20px}
+  .artist-rail,.setup-strip{margin-right:-20px}
+  .artist-footer{padding-right:20px}
+}
+
+/* The room photograph is a 9:16 portrait; let its height set its width. */
+.hero-photo{width:auto;aspect-ratio:9/16;object-fit:contain;object-position:center}
+
+/* Match the shared site CTA size and increase the outline by 10%. */
+.hero-links .pill{min-height:36px;padding:8px 14px;border:1.1px solid #fff;font:500 14px/1 var(--mono)}
+.rail-controls button{width:54px;height:36px;border:1.1px solid #fff;border-radius:30px;font:500 11px/1 var(--mono)}
+@media(max-width:768px){
+  .hero-links .pill{min-height:34px;padding:7px 11px;font-size:11px}
+}
+
+/* BTS clips stay selectable before playback and seekable at every point. */
+.setup-strip .setup-play{position:absolute;top:50%;left:50%;z-index:4;transform:translate(-50%,-50%);min-width:58px;min-height:36px;padding:8px 12px;border:1.1px solid #fff;border-radius:30px;background:#000b;color:#fff;font:500 11px/1 var(--mono);cursor:pointer}
+.setup-strip .motion-media:not(.is-playing){cursor:pointer}
+.setup-strip .motion-media.is-playing .setup-play{display:none}
+.setup-strip .setup-play:focus-visible,.setup-scrubber input:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.setup-scrubber{display:flex;align-items:center;gap:10px;width:288px;margin-top:10px;color:#fff;font:500 10px/1 var(--mono)}
+.setup-scrubber input{min-width:0;flex:1;accent-color:#fff;cursor:pointer}
+.setup-scrubber input:disabled{opacity:.5;cursor:default}
+.setup-scrubber span{white-space:nowrap}
+@media(max-width:700px){.setup-scrubber{width:210px}}
