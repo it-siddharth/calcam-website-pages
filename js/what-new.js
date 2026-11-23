@@ -302,6 +302,25 @@ setupMedia.forEach((media, index) => {
   });
 });
 
+// Give every non-BTS clip an explicit play target if muted autoplay is blocked.
+document.querySelectorAll('.motion-media').forEach((media) => {
+  if (media.closest('.setup-strip')) return;
+  const video = media.querySelector('video');
+  const playButton = document.createElement('button');
+  playButton.type = 'button';
+  playButton.className = 'media-play';
+  playButton.textContent = 'PLAY';
+  playButton.setAttribute('aria-label', `Play ${video.getAttribute('aria-label') || 'video'}`);
+  playButton.addEventListener('click', () => video.play().catch(() => {}));
+  media.append(playButton);
+  media.addEventListener('click', (event) => {
+    if (event.target !== playButton && !media.classList.contains('is-playing')) {
+      video.play().catch(() => {});
+    }
+  });
+  video.addEventListener('playing', () => media.classList.add('is-playing'));
+});
+
 // Begin footage only after its still has assembled; stop decoding off screen.
 const mediaObserver = new IntersectionObserver((entries) => {
   entries.forEach(({ target, isIntersecting }) => {
@@ -333,7 +352,6 @@ const mediaObserver = new IntersectionObserver((entries) => {
       return;
     }
     target.dataset.activated = 'true';
-    video.addEventListener('playing', () => target.classList.add('is-playing'));
     revealWithDither(target.querySelector('.media-cover'), () => {
       if (target.getBoundingClientRect().bottom > 0 && target.getBoundingClientRect().top < innerHeight) {
         video.play().catch(() => {});

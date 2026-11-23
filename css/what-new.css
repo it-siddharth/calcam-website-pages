@@ -171,3 +171,8 @@
 .setup-strip .motion-media:not(.is-playing){cursor:pointer}
 .setup-strip .motion-media.is-playing .setup-play{display:none}
 .setup-strip .setup-play:focus-visible{outline:2px solid #fff;outline-offset:3px}
+
+/* The still stays clickable if a browser declines muted autoplay. */
+.motion-media .media-play{position:absolute;top:50%;left:50%;z-index:4;transform:translate(-50%,-50%);min-width:58px;min-height:36px;padding:8px 12px;border:1.1px solid #fff;border-radius:30px;background:#000b;color:#fff;font:500 11px/1 var(--mono);cursor:pointer}
+.motion-media.is-playing .media-play{display:none}
+.motion-media .media-play:focus-visible{outline:2px solid #fff;outline-offset:3px}
