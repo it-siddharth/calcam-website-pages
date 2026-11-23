@@ -156,8 +156,8 @@
   .artist-footer{padding-right:20px}
 }
 
-/* The room photograph is a 9:16 portrait; let its height set its width. */
-.hero-photo{width:auto;aspect-ratio:9/16;object-fit:contain;object-position:center}
+/* Keep the designed photo frame while scaling source pixels uniformly. */
+.hero-photo{align-self:flex-start;width:auto;aspect-ratio:403/505;object-fit:cover;object-position:center}
 
 /* Match the shared site CTA size and increase the outline by 10%. */
 .hero-links .pill{min-height:36px;padding:8px 14px;border:1.1px solid #fff;font:500 14px/1 var(--mono)}
