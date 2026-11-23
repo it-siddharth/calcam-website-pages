@@ -22,12 +22,14 @@
 
   new window.p5((p) => {
     let side = 243;
+    let fixedScale = 1;
     let elapsed = 0;
     let lastFrame = 0;
 
     function resize() {
       side = host.clientWidth;
       p.resizeCanvas(side, side);
+      fixedScale = scaleForFullRotation();
       if (reducedMotion.matches) p.redraw();
     }
 
@@ -47,8 +49,23 @@
       return { ...point, x: side / 2 + point.x * scale, y: side / 2 + point.y * scale };
     }
 
+    function scaleForFullRotation() {
+      let maxX = 0;
+      let maxY = 0;
+      for (let step = 0; step < 720; step++) {
+        const angle = step * Math.PI / 360;
+        corners.forEach(([x, y, z]) => {
+          const point = project(x, y, z, angle);
+          maxX = Math.max(maxX, Math.abs(point.x));
+          maxY = Math.max(maxY, Math.abs(point.y));
+        });
+      }
+      return Math.min(side * .43 / maxX, side * .43 / maxY);
+    }
+
     p.setup = () => {
       side = host.clientWidth;
+      fixedScale = scaleForFullRotation();
       const canvas = p.createCanvas(side, side);
       canvas.parent(host);
       p.pixelDensity(Math.min(2, window.devicePixelRatio || 1));
@@ -65,17 +82,13 @@
       const angle = .76 + (reducedMotion.matches ? 0 : elapsed * .27);
       p.background(0);
 
-      // Fit the full rotating wireframe, including its perspective extremes,
-      // before drawing the particles into the same coordinate system.
+      // Keep one scale through the full turn; only the rotation changes.
       const cube = corners.map(([x, y, z]) => project(x, y, z, angle));
-      const extentX = Math.max(...cube.map((point) => Math.abs(point.x)));
-      const extentY = Math.max(...cube.map((point) => Math.abs(point.y)));
-      const scale = Math.min(side * .43 / extentX, side * .43 / extentY);
 
       const falling = particles.map((particle) => {
         const progress = (particle.phase + elapsed * particle.speed) % 1;
         const y = -.94 + Math.pow(progress, 1.25) * 1.88;
-        return { ...particle, point: fit(project(particle.x, y, particle.z, angle), scale) };
+        return { ...particle, point: fit(project(particle.x, y, particle.z, angle), fixedScale) };
       }).sort((a, b) => a.point.depth - b.point.depth);
 
       p.noStroke();
@@ -85,7 +98,7 @@
         p.rect(Math.round(point.x), Math.round(point.y), pixel, pixel);
       });
 
-      const projectedCorners = cube.map((point) => fit(point, scale));
+      const projectedCorners = cube.map((point) => fit(point, fixedScale));
       p.noFill();
       p.stroke(0, 255, 0);
       p.strokeWeight(Math.max(.65, side / 243));
