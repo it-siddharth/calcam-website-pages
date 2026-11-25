@@ -51,7 +51,7 @@ body.story-departing .credit { opacity: 0; pointer-events: none; transition: opa
 }
 
 /* Installation */
-.installation-title { display: block; top: 40px; left: 50%; right: auto; transform: translateX(-50%); font-family: 'Max Hana', serif; font-size: clamp(44px, 4.1vw, 58px); font-weight: 400; line-height: 1; letter-spacing: -.02em; text-align: center; }
+.installation-title { display: block; top: 61px; left: 50%; right: auto; transform: translateX(-50%); font-family: 'Max Hana', serif; font-size: clamp(44px, 4.1vw, 58px); font-weight: 400; line-height: 1; letter-spacing: -.02em; text-align: center; }
 .anchor-info-panel .panel-title { font-family: 'Max Hana', serif; font-weight: 400; letter-spacing: -.02em; }
 .installation-title .title-word { display: inline; }
 .installation-title .title-word-the::after { content: ' '; white-space: pre; }
@@ -62,7 +62,7 @@ body.story-departing .credit { opacity: 0; pointer-events: none; transition: opa
 .installation-nav { position: fixed; left: 5%; bottom: 40px; z-index: 30; pointer-events: auto; }
 .installation-nav .redesign-pill.is-current { background: transparent; color: #fff; }
 .installation-nav .redesign-pill.is-current:hover { background: #fff; color: #000; }
-.installation-overlay .back-button { top: 40px; left: 30px; }
+.installation-overlay .back-button { top: 16px; left: 30px; right: auto; }
 
 /* Journal */
 .journal-page { display: block !important; position: relative; width: 100vw; height: 100vh; height: 100dvh; }
@@ -167,13 +167,18 @@ body.story-departing .credit { opacity: 0; pointer-events: none; transition: opa
 
 .journal-title { top: 61px; left: 30px; transform: none; font-size: clamp(64px, 6.87vw, 99px) !important; line-height: .869 !important; }
 .journal-title span { display: block; }
-.journal-content .back-button { top: 30px; left: auto; right: 30px; }
+.journal-content .back-button { top: 16px; left: 30px; right: auto; }
 .journal-content .journal-description.desktop-only { top: 269px; left: 30px; right: auto; bottom: auto; width: 373px; max-width: 31vw; }
 .journal-info { left: 30px !important; bottom: 55px !important; }
 .journal-info .cta-primary-row { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
 .journal-info .cta-primary-row .btn { background: #fff; color: #000; }
 .journal-info .nav-links { gap: 10px; }
 .journal-info .btn-arrow { font: italic 18px/18px 'Alegreya', serif; }
+@media (min-width: 901px) {
+  .journal-info { display: flex; align-items: center; gap: 10px; }
+  .journal-info .cta-primary-row { margin-bottom: 0; }
+  .journal-info .nav-links { flex-wrap: nowrap; }
+}
 .book-section { inset: 0 12% 0 36% !important; width: 52% !important; height: 100% !important; }
 /* The open spread is wider than the right column. Give WebGL room to draw both pages. */
 @media (min-width: 769px) {
@@ -199,25 +204,25 @@ body.story-departing .credit { opacity: 0; pointer-events: none; transition: opa
 }
 
 @media (min-width: 769px) and (max-height: 700px) {
-  .journal-title { top: 30px; font-size: clamp(56px, 4.7vw, 78px) !important; }
+  .journal-title { top: 55px; font-size: clamp(56px, 4.7vw, 78px) !important; }
   .journal-content .journal-description.desktop-only { top: 195px; width: min(600px, 40vw); max-width: 40vw; }
   #book-container { transform: translateY(-40px); }
 }
 
 .gallery-title { top: 61px; left: 29px; transform: none; font-size: clamp(64px, 6.87vw, 99px); line-height: .869; }
-.gallery-home { top: 30px; left: auto; right: 30px; }
+.gallery-home { top: 16px; left: 30px; right: auto; }
 .gallery-description { position: absolute; top: calc(79px + clamp(56px, 5.97vw, 86px)); left: 29px; width: 373px; max-width: 31vw; margin: 0; font: 700 18px/24px 'Nanum Myeongjo', serif; }
-.gallery-nav { left: 29px; bottom: 55px; }
-.gallery-cta { position: absolute; left: 29px; bottom: 111px; display: flex; align-items: center; gap: 10px; font: 700 18px/24px 'Nanum Myeongjo', serif; pointer-events: auto; }
-.gallery-cta .redesign-pill { background: #fff; color: #000; }
-.gallery-work { top: 104px; right: 0; bottom: 112px; left: 0; z-index: 3; }
+.gallery-nav { left: 29px; bottom: 55px; gap: 10px; flex-wrap: nowrap; white-space: nowrap; }
+.gallery-cta-label { font: 700 18px/24px 'Nanum Myeongjo', serif; }
+.gallery-room { background: #fff; color: #000; }
+.gallery-work { top: calc(clamp(230px, 26dvh, 300px) - 20px); right: 0; bottom: 132px; left: 0; z-index: 3; }
 
 @media (max-width: 768px) {
   .landing-page .content-section { padding-top: 83px; padding-bottom: 30px; }
   .landing-page .title { font-size: clamp(46px, 12vw, 92px); line-height: .9; margin-bottom: 20px; }
   .landing-page .description { margin-bottom: 20px; }
   .journal-title { top: 100px; left: 20px; font-size: clamp(44px, 11vw, 66px) !important; }
-  .journal-content .back-button { top: 62px; left: 20px; right: auto; }
+  .journal-content .back-button { top: 20px; left: 20px; right: auto; }
   .book-section { inset: 200px 0 100px !important; width: 100% !important; height: auto !important; }
   .page-controls .arrow-btn { bottom: 68px; }
   .page-controls .arrow-left { left: 12px; }
@@ -225,21 +230,20 @@ body.story-departing .credit { opacity: 0; pointer-events: none; transition: opa
   .page-controls .page-indicator { bottom: 78px; }
   .journal-footer { bottom: 142px !important; left: 50% !important; }
   .gallery-title { top: 118px; left: 20px; font-size: clamp(48px, 12vw, 72px); }
-  .gallery-home { top: 65px; left: 20px; right: auto; }
+  .gallery-home { top: 20px; left: 20px; right: auto; }
   .gallery-description { top: calc(136px + clamp(42px, 10.4vw, 63px)); left: 20px; width: calc(100% - 40px); max-width: 373px; font-size: 15px; line-height: 21px; }
-  .gallery-cta { display: none; }
-  .gallery-work { top: 265px; right: 0; bottom: 65px; left: 0; }
+  .gallery-work { top: 245px; right: 0; bottom: 85px; left: 0; }
 }
 
 /* Align page furniture to the same 30px desktop / 20px phone gutter. */
-.installation-nav,.journal-info,.gallery-nav,.gallery-cta{left:30px}
+.installation-nav,.journal-info,.gallery-nav{left:30px}
 .installation-footer{right:30px}
 .gallery-title,.gallery-description{left:30px}
 @media (max-width:768px){
-  .installation-overlay .back-button{left:20px}
+  .installation-overlay .back-button{top:20px;left:20px;right:auto}
   .installation-footer{right:20px}
   .journal-info{left:20px !important}
-  .gallery-title,.gallery-description,.gallery-nav,.gallery-cta{left:20px}
+  .gallery-title,.gallery-description,.gallery-nav{left:20px}
   .gallery-description{width:calc(100% - 40px)}
 }
 
@@ -271,4 +275,41 @@ body.story-departing .credit { opacity: 0; pointer-events: none; transition: opa
   .landing-page .cta-section .btn,.journal-info .btn{padding:7px 11px !important}
   .landing-page .cta-section .btn-text,.journal-info .btn-text{font-size:11px !important}
   .page-controls .arrow-btn{width:50px;height:34px}
+}
+
+/* Keep both arrows and the page count in one centered control row. */
+.page-controls .page-dpad {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  padding-bottom: 95px;
+}
+.page-controls .page-dpad .arrow-btn,
+.page-controls .page-dpad .page-indicator {
+  position: static;
+  transform: none;
+  margin: 0;
+}
+.page-controls .page-dpad .arrow-btn {
+  flex: 0 0 54px;
+  padding: 0;
+}
+.page-controls .page-dpad .arrow-btn:active,
+.page-controls .page-dpad .arrow-btn.pressed {
+  transform: scale(.92);
+}
+.page-controls .page-dpad .page-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 72px;
+  height: 36px;
+  line-height: 1;
+  white-space: pre;
+}
+@media(max-width:768px){
+  .page-controls .page-dpad { gap: 10px; padding-bottom: 68px; }
+  .page-controls .page-dpad .arrow-btn { flex-basis: 50px; }
+  .page-controls .page-dpad .page-indicator { height: 34px; }
 }

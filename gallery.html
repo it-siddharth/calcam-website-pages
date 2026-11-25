@@ -9,9 +9,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/gallery.css?v=16">
-  <link rel="stylesheet" href="css/redesign.css?v=34">
-  <script src="js/gallery.bundle.js?v=15" defer></script>
+  <link rel="stylesheet" href="css/gallery.css?v=25">
+  <link rel="stylesheet" href="css/redesign.css?v=41">
+  <script src="js/gallery.bundle.js?v=20" defer></script>
   <link rel="stylesheet" href="https://use.typekit.net/ayy2ljq.css">
 </head>
 <body>
@@ -22,13 +22,14 @@
 
   <main class="gallery-page">
     <header class="gallery-intro">
+      <a class="site-back gallery-home" href="index.html" aria-label="Back to home"><span class="back-arrow" aria-hidden="true">←</span> BACK</a>
       <h1 class="gallery-title">GALLERY</h1>
       <p class="gallery-description">Some BTS, clips and videos that I was able to take in the chaos of this project.</p>
-      <div class="gallery-cta">See it for yourself <a href="installation.html" class="redesign-pill">VIEW ROOM</a></div>
       <nav class="redesign-nav gallery-nav" aria-label="Explore">
+        <span class="gallery-cta-label">See it for yourself</span>
+        <a href="installation.html" class="redesign-pill gallery-room">VIEW ROOM</a>
         <a href="what-is-this.html" class="redesign-pill">WHAT IS THIS</a>
         <a href="journal.html" class="redesign-pill">VIEWER JOURNAL</a>
-        <a href="gallery.html" class="redesign-pill is-current" aria-current="page">GALLERY</a>
       </nav>
     </header>
     <section class="gallery-work" aria-label="Installation gallery"><div id="gallery-root"></div></section>

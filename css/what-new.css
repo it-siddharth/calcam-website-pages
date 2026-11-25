@@ -104,6 +104,16 @@
 .space-drawing img{width:100%;max-width:100%}
 .space-drawing .label{min-width:0;text-transform:none;overflow-wrap:break-word}
 .space-drawing .prose{text-transform:none}
+.space-model{position:relative;width:100%;height:620px;overflow:hidden;border-radius:8px;background:#000;touch-action:none}
+.space-model-fallback{width:100%;height:100%;object-fit:cover}
+.space-model.is-live .space-model-fallback{display:none}
+.space-model canvas{display:block;width:100%;height:100%;cursor:grab}
+.space-model canvas:active{cursor:grabbing}
+.space-model-meta{position:absolute;inset:18px 20px auto;display:flex;justify-content:space-between;gap:12px;pointer-events:none;color:#ddd;font:500 11px/1.4 var(--mono);letter-spacing:.03em}
+.space-drawing-copy{min-width:0}
+.space-drawing-copy .prose{margin-top:14px}
+@media(max-width:1100px){.space-model{height:auto;aspect-ratio:925/620}}
+@media(max-width:700px){.space-model-meta{inset:12px 12px auto;font-size:9px}.space-model-meta span:last-child{max-width:105px;text-align:right}}
 @media (min-width:1101px){.space-drawing{margin-top:75px}}
 @media (min-width:701px) and (max-width:900px){.space-drawing{display:block}.space-drawing .label{margin-top:24px}}
 .motion-media{position:relative;display:block;overflow:hidden;background:#111}
@@ -190,3 +200,85 @@
   .research-grid>p{max-width:541px}
   .research-grid>div{justify-self:start;margin-left:0;max-width:min(100%,390px)}
 }
+
+/* The live views show the projected pixels straight on, without room geometry. */
+.projection-live{position:relative;width:100%;aspect-ratio:649/313;margin-top:30px;overflow:hidden;background:#000}
+.projection-live canvas{display:block;width:100%;height:100%;border:0}
+.projection-live-status{position:absolute;bottom:10px;left:50%;max-width:calc(100% - 24px);margin:0;padding:4px 8px;transform:translateX(-50%);background:#000c;color:#fff;text-align:center;white-space:nowrap;font:500 10px/1.4 var(--mono)}
+.projection-live.is-active .projection-live-status{display:none}
+
+/* The return control belongs to the left column, above its title. */
+.what-back{position:relative;z-index:1;display:flex;align-items:center;gap:6px;width:fit-content;min-height:36px;margin-bottom:14px;padding:8px 14px;border:1.1px solid #fff;border-radius:30px;background:#000;color:#fff;text-decoration:none;white-space:nowrap;font:500 14px/1 var(--mono)}
+.what-back:hover,.what-back:focus-visible{background:#fff;color:#000}
+.what-back:focus-visible{outline:2px solid #fff;outline-offset:4px}
+@media(max-width:768px){.what-back{min-height:34px;padding:7px 11px;font-size:11px}}
+
+:root {
+  --tt-in-dur: 150ms;
+  --tt-out-dur: 50ms;
+  --tt-scale: 0.98;
+  --tt-delay: 80ms;
+  --tt-in-ease: ease-out;
+  --tt-out-ease: ease-out;
+  --tt-move-dur: 160ms;
+  --tt-move-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tt-bg: #ffffff;
+  --tt-fg: #2f2f2f;
+}
+
+.t-tt-group {
+  position: relative;
+  display: inline-flex;
+}
+.t-tt {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0;                 /* the JS writes the measured width */
+  overflow: hidden;
+  /* Individual transform properties: the travel (translate) and the
+     appear (scale) run on their own clocks. */
+  translate: var(--tt-x, 0px) 0;
+  scale: var(--tt-scale);
+  transform-origin: 50% 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--tt-bg);
+  color: var(--tt-fg);
+  white-space: nowrap;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 2px 6px 0 rgba(0, 0, 0, 0.05),
+    0 4px 42px 0 rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  pointer-events: none;
+  /* Default rule controls the LEAVE state: no delay, so hiding plays
+     immediately. The move lanes are always live. */
+  transition:
+    opacity   var(--tt-out-dur) var(--tt-out-ease),
+    scale     var(--tt-out-dur) var(--tt-out-ease),
+    translate var(--tt-move-dur) var(--tt-move-ease),
+    width     var(--tt-move-dur) var(--tt-move-ease);
+}
+/* The appear delay belongs ONLY to the show rule, so hiding snaps it
+   back to 0. A retarget while showing carries no delay at all. */
+.t-tt[data-show="true"] {
+  opacity: 1;
+  scale: 1;
+  transition:
+    opacity   var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),
+    scale     var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),
+    translate var(--tt-move-dur) var(--tt-move-ease),
+    width     var(--tt-move-dur) var(--tt-move-ease);
+}
+.t-tt-text { white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .t-tt { transition: none !important; }
+}
+
+.space-model .space-model-tooltip{top:0;bottom:auto;left:0;z-index:2;border:1px solid #555;border-radius:3px;background:#111;color:#fff;font:500 11px/1.3 var(--mono);letter-spacing:.02em}
