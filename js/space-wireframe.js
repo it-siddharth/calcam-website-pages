@@ -48,7 +48,9 @@ if (container) {
 
     const w = room.width / 2, d = room.depth / 2, h = room.height;
     // Open front and ceiling keep the full floor plan legible from outside.
-    solid(new THREE.PlaneGeometry(room.width, h), 0, h / 2, -d, 0x050505, 'Back wall');
+    const backWall = solid(new THREE.PlaneGeometry(room.width, h), 0, h / 2, -d, 0x050505, 'Back wall');
+    // From behind, the wall must not cover the room's interior as a black slab.
+    backWall.material.side = THREE.FrontSide;
     const floor = solid(new THREE.PlaneGeometry(room.width, room.depth), 0, 0, 0, 0x050505, 'Gallery floor');
     floor.rotation.x = -Math.PI / 2;
     lines([
@@ -86,22 +88,47 @@ if (container) {
       ring(.03, x, .35, backZ + .755);
     });
 
-    // Ceiling projectors on opposite sides of the gallery.
+    // Each ceiling projector faces the opposite wall, angled 45° downward.
     [-1.85, 1.85].forEach((x, i) => {
-      edgeBox(.34, .17, .42, x, h - .27, .22, white, 1, `${i === 0 ? 'Left' : 'Right'} ceiling projector`);
       lines([[x, h, .22], [x, h - .18, .22]], soft, .75);
-      ring(.055, x, h - .27, .435);
+      const projector = new THREE.Group();
+      projector.position.set(x, h - .27, .22);
+      const aim = new THREE.Vector3(i === 0 ? 1 : -1, -1, 0).normalize();
+      projector.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), aim);
+      const geometry = new THREE.BoxGeometry(.34, .17, .42);
+      const body = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: 0x181818 }));
+      body.userData.label = `${i === 0 ? 'Left' : 'Right'} ceiling projector`;
+      hoverTargets.push(body);
+      projector.add(body);
+      projector.add(new THREE.LineSegments(
+        new THREE.EdgesGeometry(geometry),
+        new THREE.LineBasicMaterial({ color: white })
+      ));
+      const lens = new THREE.Mesh(
+        new THREE.CircleGeometry(.055, 32),
+        new THREE.MeshBasicMaterial({ color: 0x050505, side: THREE.DoubleSide })
+      );
+      lens.position.z = .213;
+      projector.add(lens);
+      const rim = new THREE.Mesh(
+        new THREE.RingGeometry(.052, .057, 32),
+        new THREE.MeshBasicMaterial({ color: white, side: THREE.DoubleSide })
+      );
+      rim.position.z = .215;
+      projector.add(rim);
+      model.add(projector);
     });
 
-    // Three compact camera markers at eye level.
-    [[-w + .15, -.3], [w - .15, -.3], [0, d - .18]].forEach(([x, z], i) => {
+    // Two compact camera markers at eye level.
+    [[-w + .15, -.3], [w - .15, -.3]].forEach(([x, z], i) => {
       edgeBox(.16, .12, .16, x, 1.65, z, soft, .85, `Camera ${i + 1}`);
       lines([[x, 1.59, z], [x, 1.05, z]], soft, .55);
     });
 
     const camera = new THREE.PerspectiveCamera(38, 1, .1, 100);
     const target = new THREE.Vector3(0, 1.35, -.15);
-    let azimuth = .47, elevation = .32, distance = 9.2;
+    let azimuth = .47, elevation = .32;
+    const distance = 9.2;
     const updateCamera = () => {
       camera.position.set(
         target.x + distance * Math.sin(azimuth) * Math.cos(elevation),
@@ -216,12 +243,6 @@ if (container) {
     renderer.domElement.addEventListener('pointercancel', () => { dragging = false; });
     renderer.domElement.addEventListener('lostpointercapture', () => { dragging = false; });
     renderer.domElement.addEventListener('pointerleave', hideTooltip);
-    renderer.domElement.addEventListener('wheel', event => {
-      event.preventDefault();
-      distance = THREE.MathUtils.clamp(distance + event.deltaY * .012, 6, 15);
-      updateCamera();
-      render();
-    }, { passive: false });
   } catch (error) {
     console.warn('Room model could not be displayed:', error);
   }

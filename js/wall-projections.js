@@ -11,6 +11,14 @@ const previews = [...document.querySelectorAll('.projection-live[data-wall]')].m
   };
 });
 
+// Keep each particle in the same place between frames while breaking up the
+// camera's regular sampling grid. Moving the offsets every frame would flicker.
+function hash(x, y) {
+  let value = Math.imul(x + 1, 374761393) + Math.imul(y + 1, 668265263);
+  value = Math.imul(value ^ (value >>> 13), 1274126177);
+  return (value ^ (value >>> 16)) >>> 0;
+}
+
 function draw({ view, projection, canvas }, time) {
   const ratio = Math.min(devicePixelRatio || 1, 2);
   const width = Math.round(canvas.clientWidth * ratio);
@@ -31,40 +39,38 @@ function draw({ view, projection, canvas }, time) {
   const imageHeight = imageWidth / aspect;
   const imageLeft = (width - imageWidth) / 2;
   const imageTop = (height - imageHeight) * 0.35;
-  const settings = projection.getSettings();
-  const square = Math.max(2, Math.round(Math.min(
-    imageWidth / projection.width, imageHeight / projection.height
-  ) * 0.8));
-  ctx.fillStyle = '#fff';
+  const sampleSize = Math.min(imageWidth / projection.width, imageHeight / projection.height);
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath();
 
   if (projection.isReady()) {
     for (const { x, y } of projection.captureFrame()) {
-      ctx.fillRect(Math.round(imageLeft + x * imageWidth - square / 2),
-        Math.round(imageTop + y * imageHeight - square / 2), square, square);
+      const seed = hash(Math.round(x * projection.width), Math.round(y * projection.height));
+      const jitterX = ((seed & 255) / 255 - 0.5) * sampleSize * 0.8;
+      const jitterY = (((seed >>> 8) & 255) / 255 - 0.5) * sampleSize * 0.8;
+      const radius = Math.max(0.8, sampleSize * (0.18 + ((seed >>> 16) & 255) / 255 * 0.13));
+      ctx.moveTo(imageLeft + x * imageWidth + jitterX + radius, imageTop + y * imageHeight + jitterY);
+      ctx.arc(imageLeft + x * imageWidth + jitterX, imageTop + y * imageHeight + jitterY,
+        radius, 0, Math.PI * 2);
     }
   } else {
-    // Same dense, wave-driven square shimmer shown on the walls before capture.
-    const baseDensity = projection.isMobile ? 160 : 260;
-    const columns = Math.max(40, Math.round(120 * Math.sqrt(settings.pixelDensity / baseDensity)));
-    const rows = Math.round(columns * 3 / 4);
-    const baseSize = Math.max(2, Math.round(Math.min(
-      imageWidth / columns, imageHeight / rows
-    ) * 0.8));
+    // A sparse ambient field while the camera starts or awaits permission.
     const t = time / 1000;
     const right = view.dataset.wall === 'right';
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < columns; col++) {
-        const wave1 = Math.sin(t * (right ? 3 : 2.8) + col * (right ? 0.25 : 0.22) + row * (right ? 0.2 : 0.18));
-        const wave2 = Math.sin(t * (right ? 2.3 : 2.1) + col * (right ? 0.15 : 0.12) - row * (right ? 0.18 : 0.2));
-        const wave3 = Math.sin(t * (right ? 1.8 : 1.6) - col * (right ? 0.1 : 0.08) + row * (right ? 0.12 : 0.14));
-        const shimmer = (wave1 * wave2 + wave3 * 0.5) * 0.7;
-        if (shimmer <= -0.15) continue;
-        const size = Math.max(2, Math.round(baseSize * (0.9 + shimmer * 0.3)));
-        ctx.fillRect(Math.round(imageLeft + col / (columns - 1) * imageWidth - size / 2),
-          Math.round(imageTop + row / (rows - 1) * imageHeight - size / 2), size, size);
-      }
+    for (let i = 0; i < 2200; i++) {
+      const seed = hash(i, right ? 1 : 0);
+      const x = (seed & 65535) / 65535;
+      const y = ((seed >>> 16) & 65535) / 65535;
+      const shimmer = Math.sin(x * 15 + y * 9 + t * 1.8) * Math.sin(y * 13 - t * 1.2);
+      if (shimmer < -0.1) continue;
+      const radius = Math.max(0.8, sampleSize * (0.13 + (seed & 7) * 0.018));
+      const px = imageLeft + x * imageWidth;
+      const py = imageTop + y * imageHeight;
+      ctx.moveTo(px + radius, py);
+      ctx.arc(px, py, radius, 0, Math.PI * 2);
     }
   }
+  ctx.fill();
 }
 
 async function start(preview) {
