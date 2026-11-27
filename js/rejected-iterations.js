@@ -59,125 +59,13 @@
     'Red and blue YOU ARE HERE text silhouette',
     'ARE YOU LOOKING and PRESENT text field'
   ];
-  const controlSets = [
-    { title: '01 / GREEN PIXELS', fields: [
-      ['sensitivity', 'Silhouette sensitivity', 0, 50, 1, 0],
-      ['pixelSize', 'Pixel size', 1, 6, 1, 3],
-      ['textSize', 'Question size', 7, 20, 1, 11],
-      ['primary', 'Pixel color', '#9fff3b']
-    ] },
-    { title: '02 / WHITE PIXELS', fields: [
-      ['sensitivity', 'Silhouette sensitivity', 0, 50, 1, 0],
-      ['pixelSize', 'Pixel size', 1, 6, 1, 2],
-      ['textSize', 'Question size', 7, 20, 1, 11],
-      ['primary', 'Pixel color', '#f1eff4']
-    ] },
-    { title: '03 / BLUE TEXT', fields: [
-      ['sensitivity', 'Silhouette sensitivity', 0, 50, 1, 0],
-      ['textSize', 'Text size', 5, 18, 1, 7],
-      ['spacing', 'Text spacing', 30, 110, 2, 58],
-      ['primary', 'Text color', '#6276ff']
-    ] },
-    { title: '04 / RED + BLUE TEXT', fields: [
-      ['sensitivity', 'Silhouette sensitivity', 0, 50, 1, 0],
-      ['textSize', 'Text size', 5, 18, 1, 7],
-      ['spacing', 'Text spacing', 30, 110, 2, 58],
-      ['primary', 'Blue', '#3155ff'],
-      ['secondary', 'Red', '#ff6836']
-    ] },
-    { title: '05 / QUESTION FIELD', fields: [
-      ['sensitivity', 'Silhouette sensitivity', 0, 50, 1, 0],
-      ['textSize', 'Text size', 6, 20, 1, 8],
-      ['spacing', 'Text spacing', 60, 160, 2, 96],
-      ['primary', 'Question color', '#d997aa'],
-      ['secondary', 'Present color', '#b4be75']
-    ] }
+  const settings = [
+    { sensitivity: 0, pixelSize: 1, textSize: 15, primary: '#9fff3b' },
+    { sensitivity: 0, pixelSize: 1, textSize: 15, primary: '#f1eff4' },
+    { sensitivity: 0, textSize: 12, spacing: 58, primary: '#6276ff' },
+    { sensitivity: 10, textSize: 11, spacing: 86, primary: '#3155ff', secondary: '#ff6836' },
+    { sensitivity: 0, textSize: 14, spacing: 154, primary: '#d997aa', secondary: '#b4be75' }
   ];
-  const settings = controlSets.map(({ fields }) => Object.fromEntries(fields.map(field => [field[0], field.at(-1)])));
-  try {
-    const saved = JSON.parse(localStorage.getItem('rejected-iteration-settings') || '[]');
-    settings.forEach((values, index) => controlSets[index].fields.forEach(field => {
-      const [key, , min, max] = field;
-      const value = saved[index]?.[key];
-      if (typeof min === 'number' && Number.isFinite(value) && value >= min && value <= max) values[key] = value;
-      if (typeof min === 'string' && typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)) values[key] = value;
-    }));
-  } catch (_) { /* Local storage may be disabled in a preview. */ }
-  const panels = controlSets.map(({ title, fields }, index) => {
-    const panel = document.createElement('section');
-    panel.className = 'iteration-settings-panel';
-    panel.setAttribute('aria-label', `${title} settings`);
-    panel.hidden = index !== 0;
-    const heading = document.createElement('div');
-    heading.className = 'iteration-settings-heading';
-    const label = document.createElement('h3');
-    label.textContent = title;
-    const reset = document.createElement('button');
-    reset.type = 'button';
-    reset.textContent = 'RESET';
-    reset.setAttribute('aria-label', `Reset ${title} settings`);
-    const copy = document.createElement('button');
-    copy.type = 'button';
-    copy.textContent = 'COPY JSON';
-    copy.setAttribute('aria-label', `Copy ${title} settings as JSON`);
-    copy.addEventListener('click', async () => {
-      const payload = { iteration: title, ...settings[index] };
-      try {
-        await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-        copy.textContent = 'COPIED';
-        setTimeout(() => { copy.textContent = 'COPY JSON'; }, 1600);
-      } catch (_) { copy.textContent = 'COPY FAILED'; }
-    });
-    const actions = document.createElement('div');
-    actions.className = 'iteration-settings-actions';
-    actions.append(copy, reset);
-    heading.append(label, actions);
-    const controls = document.createElement('div');
-    controls.className = 'iteration-settings-controls';
-    const inputs = {};
-    fields.forEach(([key, caption, min, max, step]) => {
-      const field = document.createElement('label');
-      field.className = 'iteration-settings-field';
-      const name = document.createElement('span');
-      name.textContent = caption;
-      const input = document.createElement('input');
-      input.type = typeof min === 'number' ? 'range' : 'color';
-      if (input.type === 'range') {
-        input.min = min;
-        input.max = max;
-        input.step = step;
-      }
-      input.value = settings[index][key];
-      const value = document.createElement('output');
-      value.textContent = input.type === 'range' ? input.value : '';
-      field.append(name, input, value);
-      controls.append(field);
-      inputs[key] = { input, value };
-      input.addEventListener('input', () => {
-        settings[index][key] = input.type === 'range' ? Number(input.value) : input.value;
-        value.textContent = input.type === 'range' ? input.value : '';
-        try { localStorage.setItem('rejected-iteration-settings', JSON.stringify(settings)); } catch (_) {}
-        render();
-      });
-    });
-    reset.addEventListener('click', () => {
-      fields.forEach(field => {
-        const key = field[0];
-        settings[index][key] = field.at(-1);
-        inputs[key].input.value = settings[index][key];
-        inputs[key].value.textContent = inputs[key].input.type === 'range' ? settings[index][key] : '';
-      });
-      try { localStorage.setItem('rejected-iteration-settings', JSON.stringify(settings)); } catch (_) {}
-      render();
-    });
-    panel.append(heading, controls);
-    return panel;
-  });
-  const settingsContainer = document.createElement('div');
-  settingsContainer.className = 'iteration-settings';
-  settingsContainer.setAttribute('aria-label', 'Iteration settings');
-  settingsContainer.append(...panels);
-  gallery.querySelector('.rejected-thumbs').after(settingsContainer);
   let source = recording;
   let stream = null;
   let starting = false;
@@ -187,7 +75,6 @@
 
   function updateControls() {
     buttons.forEach((button, index) => button.setAttribute('aria-pressed', String(index === mode)));
-    panels.forEach((panel, index) => { panel.hidden = index !== mode; });
     canvas.setAttribute('aria-label', names[mode]);
   }
 
@@ -272,6 +159,24 @@
     }
     const bounds = trackedBounds;
 
+    if (mode < 4) {
+      const silhouette = new Uint8Array(width * height);
+      for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+        silhouette[y * width + x] = strengthAt(x, y) >= .2 ? 1 : 0;
+      }
+      const pixelWidth = canvas.width / width;
+      const pixelHeight = canvas.height / height;
+      output.fillStyle = '#fff';
+      for (let y = 1; y < height - 1; y++) for (let x = 1; x < width - 1; x++) {
+        const i = y * width + x;
+        if (silhouette[i]) continue;
+        if (!silhouette[i - width - 1] && !silhouette[i - width] && !silhouette[i - width + 1]
+          && !silhouette[i - 1] && !silhouette[i + 1]
+          && !silhouette[i + width - 1] && !silhouette[i + width] && !silhouette[i + width + 1]) continue;
+        output.fillRect(x * pixelWidth, y * pixelHeight, pixelWidth + .5, pixelHeight + .5);
+      }
+    }
+
     output.textBaseline = 'top';
     if (mode < 2) {
       const step = tuning.pixelSize;
@@ -326,6 +231,16 @@
         output.fillText('YOU ARE HERE', x, y);
       }
     } else {
+      const pixelWidth = canvas.width / width;
+      const pixelHeight = canvas.height / height;
+      output.fillStyle = '#ff6836';
+      for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+        const strength = strengthAt(x, y);
+        if (strength < .2) continue;
+        output.globalAlpha = .45 + strength * .55;
+        output.fillRect(x * pixelWidth, y * pixelHeight, pixelWidth + .5, pixelHeight + .5);
+      }
+      output.globalAlpha = 1;
       output.font = `bold ${tuning.textSize}px "JetBrains Mono", monospace`;
       const xStart = bounds ? bounds.left / width * canvas.width : canvas.width;
       const xEnd = bounds ? bounds.right / width * canvas.width : 0;

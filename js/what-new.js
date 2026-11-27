@@ -5,7 +5,9 @@ const artistDescription = document.querySelector('.artist-footer .prose');
 const artistWorks = [
   { title: 'RAFAEL LOZANO-HEMMER / BODY MOVIES', description: artistDescription.textContent, url: 'https://lozano-hemmer.com/artworks/body_movies.php' },
   { title: 'TEAMLAB / FLOWERS AND PEOPLE', description: 'Flowers respond to the presence of visitors, blooming and fading as people move through the room. I was drawn to how a person can change a projected world simply by being there.', url: 'https://www.teamlab.art/ew/flowersandpeople-azabudai/' },
-  { title: 'JEN LEWIN / THE POOL', description: 'The Pool responds to footsteps and touch with spreading fields of colored light. Its shared, changing image helped me think about an installation shaped by everyone who enters it.', url: 'https://www.jenlewinstudio.com/portfolio/the-pool/' }
+  { title: 'JEN LEWIN / THE POOL', description: 'The Pool responds to footsteps and touch with spreading fields of colored light. Its shared, changing image helped me think about an installation shaped by everyone who enters it.', url: 'https://www.jenlewinstudio.com/portfolio/the-pool/' },
+  { title: 'ROMY ACHITUV & CAMILLE UTTERBACK / TEXT RAIN', description: 'Letters fall onto the projected silhouettes of visitors, who can catch and move them with their bodies. That meeting of live image, text, and gesture helped me think about how words could belong to a moving silhouette.', url: 'https://camilleutterback.com/projects/text-rain/' },
+  { title: 'MEMO AKTEN / BODY PAINT', description: 'Body Paint turns a visitor’s movements into flowing fields of color. I was drawn to the way it makes a person’s gestures visible across a projection, then lets the image fade as they move away.', url: 'https://memo.tv/projects/2009/body-paint/' }
 ];
 const artistSource = document.querySelector('.artist-source');
 let activeArtist = 0;
@@ -25,17 +27,9 @@ function setActiveArtist(index) {
 }
 function syncActiveArtist() {
   if (performance.now() < suspendArtistScrollUntil) return;
-  const left = artistTrack.scrollLeft;
-  const remaining = artistTrack.scrollWidth - artistTrack.clientWidth;
-  if (remaining <= 2 || left < 2) return setActiveArtist(0);
-  if (left >= remaining - 2) return setActiveArtist(artistSlides.length - 1);
-  const focus = left + artistTrack.clientWidth * (.25 + .25 * left / remaining);
   const trackLeft = artistTrack.getBoundingClientRect().left;
-  const index = artistSlides.findIndex((slide) => {
-    const start = slide.getBoundingClientRect().left - trackLeft + left;
-    return focus >= start && focus < start + slide.getBoundingClientRect().width;
-  });
-  if (index >= 0) setActiveArtist(index);
+  const distances = artistSlides.map((slide) => Math.abs(slide.getBoundingClientRect().left - trackLeft));
+  setActiveArtist(distances.indexOf(Math.min(...distances)));
 }
 function updateCarouselEdges(track) {
   const remaining = track.scrollWidth - track.clientWidth;
@@ -344,23 +338,16 @@ setupMedia.forEach((media, index) => {
   updateTransport();
 });
 
-// Give every non-BTS clip an explicit play target if muted autoplay is blocked.
+// Non-sequence clips begin when they enter view, without an overlaid control.
 document.querySelectorAll('.motion-media').forEach((media) => {
   if (media.closest('.setup-strip')) return;
   const video = media.querySelector('video');
-  const playButton = document.createElement('button');
-  playButton.type = 'button';
-  playButton.className = 'media-play';
-  playButton.textContent = 'PLAY';
-  playButton.setAttribute('aria-label', `Play ${video.getAttribute('aria-label') || 'video'}`);
-  playButton.addEventListener('click', () => video.play().catch(() => {}));
-  media.append(playButton);
-  media.addEventListener('click', (event) => {
-    if (event.target !== playButton && !media.classList.contains('is-playing')) {
-      video.play().catch(() => {});
-    }
-  });
+  video.controls = false;
+  video.removeAttribute('controls');
+  video.muted = true;
+  video.playsInline = true;
   video.addEventListener('playing', () => media.classList.add('is-playing'));
+  video.addEventListener('pause', () => media.classList.remove('is-playing'));
 });
 
 // Start the first clip when the strip enters view, then pause off screen.

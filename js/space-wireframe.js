@@ -73,8 +73,8 @@ if (container) {
 
     // Solid faces keep objects behind the acrylic sheets from showing through.
     const panels = [
-      [-.53, 2.05, backZ + .38], [.53, 2.19, backZ + .55],
-      [-.45, 1.28, backZ + .72], [.48, 1.38, backZ + .88]
+      [-.38, 2.05, backZ + .38], [.38, 2.19, backZ + .55],
+      [-.34, 1.28, backZ + .72], [.34, 1.38, backZ + .88]
     ];
     panels.forEach(([x, y, z], i) => {
       edgeBox(.60, 1.02, .018, x, y, z, [0xffed00, 0x24f13e, 0xff3434, 0x344eff][i], .95, `Hanging acrylic panel ${i + 1}`, [0x786f00, 0x0c6e1c, 0x771515, 0x17267c][i]);

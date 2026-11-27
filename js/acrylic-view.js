@@ -3,10 +3,10 @@
 // and outlines keep the acrylic visible against a black frame.
 window.applyAcrylicView = function applyAcrylicView(ctx, width, height) {
   const panels = [
-    { x: .04, y: .03, width: .42, height: .44, color: '#FDFF00' },
-    { x: .54, y: .03, width: .42, height: .44, color: '#11FF00' },
-    { x: .04, y: .53, width: .42, height: .44, color: '#FF0505' },
-    { x: .54, y: .53, width: .42, height: .44, color: '#2600FF' }
+    { x: .02, y: .02, width: .51, height: .51, color: '#FDFF00' },
+    { x: .47, y: .02, width: .51, height: .51, color: '#11FF00' },
+    { x: .02, y: .47, width: .51, height: .51, color: '#FF0505' },
+    { x: .47, y: .47, width: .51, height: .51, color: '#2600FF' }
   ];
 
   ctx.save();

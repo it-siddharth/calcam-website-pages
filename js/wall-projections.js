@@ -46,13 +46,19 @@ function draw({ projection, canvas, view }, time) {
         edgeCount++;
       }
       const background = edgeTotal / Math.max(1, edgeCount);
-      for (let y = 6; y < imageHeight - 6; y += 2) for (let x = 12; x < imageWidth - 12; x += 2) {
+      const insetX = 12;
+      const insetY = 6;
+      for (let y = insetY; y < imageHeight - insetY; y++) for (let x = insetX; x < imageWidth - insetX; x++) {
         const sx = imageWidth - 1 - x;
         const i = (y * imageWidth + sx) * 4;
         const luminance = (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
         const difference = view.dataset.wall === 'right' ? background - luminance : luminance - background;
-        if (difference < 30 || hash(x, y) < .16) continue;
-        points.push({ x: x / imageWidth, y: y / imageHeight, strength: Math.min(1, difference / 100) });
+        if (difference < 24 || hash(x, y) < .12) continue;
+        points.push({
+          x: (x - insetX) / (imageWidth - insetX * 2),
+          y: (y - insetY) / (imageHeight - insetY * 2),
+          strength: Math.min(1, difference / 100)
+        });
       }
     }
   }
@@ -60,26 +66,23 @@ function draw({ projection, canvas, view }, time) {
   if (points.length < 160) {
     // A clearly figurative preview when camera access is unavailable.
     const sway = Math.sin(t * 1.1) * .025;
-    for (let y = 0; y < 95; y++) for (let x = 0; x < 130; x++) {
-      const nx = x / 130;
-      const ny = y / 95;
+    for (let y = 0; y < 120; y++) for (let x = 0; x < 165; x++) {
+      const nx = x / 165;
+      const ny = y / 120;
       const cx = nx - .5 - sway;
       const head = (cx / .09) ** 2 + ((ny - .22) / .15) ** 2 < 1;
       const torso = Math.abs(cx) < .12 + .025 * Math.sin(ny * 5) && ny > .37 && ny < .78;
       const leftArm = Math.abs(cx + .16 + .08 * (ny - .45)) < .035 && ny > .4 && ny < .78;
       const rightArm = Math.abs(cx - .16 + .08 * (ny - .45)) < .035 && ny > .4 && ny < .78;
       const legs = ny >= .76 && ny < 1 && (Math.abs(cx + .06 + .05 * (ny - .76)) < .045 || Math.abs(cx - .06 - .05 * (ny - .76)) < .045);
-      if ((head || torso || leftArm || rightArm || legs) && hash(x, y) > .27) points.push({ x: nx, y: ny, strength: .65 + hash(y, x) * .35 });
+      if ((head || torso || leftArm || rightArm || legs) && hash(x, y) > .18) points.push({ x: nx, y: ny, strength: .65 + hash(y, x) * .35 });
     }
   }
 
-  const scale = Math.min(width / 1.55, height / 1.15);
-  const left = (width - scale) / 2;
-  const top = (height - scale) / 2;
   points.forEach((point, i) => {
     const jitter = (hash(i, Math.floor(t * 10)) - .5) * 1.2 * ratio;
-    const x = left + point.x * scale + jitter;
-    const y = top + point.y * scale;
+    const x = point.x * width + jitter;
+    const y = point.y * height;
     const alpha = .48 + point.strength * .48;
     const radius = (i % 4 === 0 ? 1.05 : .72) * ratio;
     ctx.fillStyle = `rgba(246,247,250,${alpha})`;
