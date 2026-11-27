@@ -36,7 +36,7 @@
 }
 @media(max-width:768px){
   :root{--page-heading-size:48px;--page-vertical-inset:20px}
-  .landing-page .content-section{padding-top:var(--page-vertical-inset)!important}
+  .landing-page .content-section{padding-top:calc(var(--page-vertical-inset) + 30px)!important}
   .installation-title,
   .journal-title,
   .gallery-title{top:calc(var(--page-vertical-inset) + 64px)!important}
