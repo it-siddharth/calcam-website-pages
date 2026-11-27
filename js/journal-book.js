@@ -621,17 +621,17 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
     // User-controlled rotation (persists)
     let userRotationX = isMobile() ? 0 : 0.35;
     let userRotationY = isMobile() ? 0 : 0.04;
-    let idleYawOffset = 0;
+    let idleVerticalTurn = 0;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const IDLE_SPIN_SPEED = (Math.PI * 2) / 60; // One quiet turn per minute.
+    const IDLE_SPIN_SPEED = (Math.PI * 2) / 60; // One slow 3D turn per minute.
     let idleSpinActive = !reducedMotion;
     let lastInteractionTime = performance.now();
 
     function stopIdleSpin() {
       lastInteractionTime = performance.now();
       if (!idleSpinActive) return;
-      userRotationY += idleYawOffset;
-      idleYawOffset = 0;
+      // Return to the nearest face-on angle when someone starts interacting.
+      idleVerticalTurn = Math.atan2(Math.sin(idleVerticalTurn), Math.cos(idleVerticalTurn));
       idleSpinActive = false;
     }
     
@@ -1115,7 +1115,10 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
         idleSpinActive = true;
       }
       if (idleSpinActive && book.progress <= 0.01) {
-        idleYawOffset += Math.min(delta, 0.05) * IDLE_SPIN_SPEED;
+        idleVerticalTurn += Math.min(delta, 0.05) * IDLE_SPIN_SPEED;
+      } else if (!idleSpinActive && idleVerticalTurn !== 0) {
+        idleVerticalTurn *= Math.exp(-Math.min(delta, 0.05) * 5);
+        if (Math.abs(idleVerticalTurn) < 0.001) idleVerticalTurn = 0;
       }
       
       // Update time
@@ -1146,11 +1149,12 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
       // Very subtle organic tilt variations (reduced for user control)
       const baseTiltZ = Math.cos(levitationTime * 0.6 + randomSeed2) * LEVITATION_TILT * 0.5 * interactionDamping;
       
-      // Apply combined rotations: user rotation + subtle levitation
+      // The pages lie in the XZ plane, so world Z is the journal's visible
+      // vertical axis. Turn the centered pivot rather than orbiting its spine.
       bookPivot.position.y = floatY;
       bookPivot.rotation.x = userRotationX;
-      bookPivot.rotation.y = userRotationY + idleYawOffset;
-      bookPivot.rotation.z = isMobile() ? 0 : -0.025 + baseTiltZ;
+      bookPivot.rotation.y = userRotationY;
+      bookPivot.rotation.z = idleVerticalTurn + (isMobile() ? 0 : -0.025 + baseTiltZ);
       
       renderer.render(scene, camera);
     }

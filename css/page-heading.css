@@ -1,5 +1,5 @@
 /* One display scale for the first heading on every main page. */
-:root{--page-heading-size:clamp(64px,6.87vw,99px)}
+:root{--page-heading-size:clamp(64px,6.87vw,99px);--page-vertical-inset:clamp(20px,6.1svh,55px)}
 .landing-page .title,
 .installation-title,
 .journal-title,
@@ -15,7 +15,16 @@
 /* Back links and the opening copy share the page gutter. */
 .installation-title,
 .journal-title,
-.gallery-title{top:82px!important}
+.gallery-title{top:calc(var(--page-vertical-inset) + 66px)!important}
+.installation-overlay .back-button,
+.journal-content .back-button,
+.gallery-home{top:var(--page-vertical-inset)!important}
+@media(min-width:769px){
+  .installation-nav,
+  .installation-footer,
+  .journal-info,
+  .gallery-nav{bottom:var(--page-vertical-inset)!important}
+}
 .what-back{margin-bottom:30px}
 .hero-left .small{margin-top:30px}
 .landing-page .title{margin-bottom:30px!important}
@@ -26,10 +35,11 @@
   text-align:left;
 }
 @media(max-width:768px){
-  :root{--page-heading-size:48px}
+  :root{--page-heading-size:48px;--page-vertical-inset:20px}
+  .landing-page .content-section{padding-top:var(--page-vertical-inset)!important}
   .installation-title,
   .journal-title,
-  .gallery-title{top:84px!important}
+  .gallery-title{top:calc(var(--page-vertical-inset) + 64px)!important}
   .site-back,
   .installation-overlay .site-back,
   .journal-content .site-back,

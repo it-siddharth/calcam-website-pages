@@ -148,7 +148,7 @@
   font-weight: 400;
   letter-spacing: -2.5px;
 }
-.landing-page .content-section { padding-top: 65px; padding-bottom: 55px; }
+.landing-page .content-section { padding-top: var(--page-vertical-inset); padding-bottom: var(--page-vertical-inset); }
 .landing-page .title { font-size: clamp(64px, 6.87vw, 99px); line-height: .869; margin-bottom: 32px; }
 .landing-page .description { margin-bottom: 25px; text-align: left; }
 .landing-page .meta-info { gap: clamp(40px, 9.5vw, 136px); }
@@ -158,7 +158,7 @@
 .journal-title { top: 61px; left: 30px; transform: none; font-size: clamp(64px, 6.87vw, 99px) !important; line-height: .869 !important; }
 .journal-title span { display: block; }
 .journal-content .back-button { top: 16px; left: 30px; right: auto; }
-.journal-content .journal-description.desktop-only { top: calc(112px + clamp(111.2px, 11.94vw, 172px)); left: 30px; right: auto; bottom: auto; width: 373px; max-width: 31vw; }
+.journal-content .journal-description.desktop-only { top: calc(var(--page-vertical-inset) + 96px + clamp(111.2px, 11.94vw, 172px)); left: 30px; right: auto; bottom: auto; width: 373px; max-width: 31vw; }
 .journal-info { left: 30px !important; bottom: 55px !important; }
 .journal-info .cta-primary-row { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
 .journal-info .cta-primary-row .btn { background: #fff; color: #000; }
@@ -202,11 +202,11 @@
 
 .gallery-title { top: 76px; left: 29px; transform: none; font-size: clamp(64px, 6.87vw, 99px); line-height: .869; }
 .gallery-home { top: 16px; left: 30px; right: auto; }
-.gallery-description { position: absolute; top: calc(112px + clamp(55.6px, 5.97vw, 86px)); left: 29px; width: 373px; max-width: min(373px, 45vw); margin: 0; font: 700 18px/28px 'Nanum Myeongjo', serif; }
+.gallery-description { position: absolute; top: calc(var(--page-vertical-inset) + 96px + clamp(55.6px, 5.97vw, 86px)); left: 29px; width: 373px; max-width: min(373px, 45vw); margin: 0; font: 700 18px/28px 'Nanum Myeongjo', serif; }
 .gallery-nav { left: 29px; bottom: 55px; gap: 10px; flex-wrap: nowrap; white-space: nowrap; }
 .gallery-cta-label { font: 700 18px/24px 'Nanum Myeongjo', serif; }
 .gallery-room { background: #fff; color: #000; }
-.gallery-work { top: clamp(260px, 27dvh, 310px); right: 0; bottom: 132px; left: 0; z-index: 3; }
+.gallery-work { top: calc(clamp(260px, 27dvh, 310px) + var(--page-vertical-inset) - 16px); right: 0; bottom: 132px; left: 0; z-index: 3; }
 
 @media (max-width: 768px) {
   .landing-page .content-section { padding-top: 83px; padding-bottom: 30px; }

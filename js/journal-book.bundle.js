@@ -19597,7 +19597,7 @@
   var totalDragDistance = 0;
   var userRotationX = isMobile() ? 0 : 0.35;
   var userRotationY = isMobile() ? 0 : 0.04;
-  var idleYawOffset = 0;
+  var idleVerticalTurn = 0;
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var IDLE_SPIN_SPEED = Math.PI * 2 / 60;
   var idleSpinActive = !reducedMotion;
@@ -19605,8 +19605,7 @@
   function stopIdleSpin() {
     lastInteractionTime = performance.now();
     if (!idleSpinActive) return;
-    userRotationY += idleYawOffset;
-    idleYawOffset = 0;
+    idleVerticalTurn = Math.atan2(Math.sin(idleVerticalTurn), Math.cos(idleVerticalTurn));
     idleSpinActive = false;
   }
   var velocityX = 0;
@@ -19936,7 +19935,10 @@
       idleSpinActive = true;
     }
     if (idleSpinActive && book.progress <= 0.01) {
-      idleYawOffset += Math.min(delta, 0.05) * IDLE_SPIN_SPEED;
+      idleVerticalTurn += Math.min(delta, 0.05) * IDLE_SPIN_SPEED;
+    } else if (!idleSpinActive && idleVerticalTurn !== 0) {
+      idleVerticalTurn *= Math.exp(-Math.min(delta, 0.05) * 5);
+      if (Math.abs(idleVerticalTurn) < 1e-3) idleVerticalTurn = 0;
     }
     levitationTime += delta;
     if (!isDragging) {
@@ -19953,8 +19955,8 @@
     const baseTiltZ = Math.cos(levitationTime * 0.6 + randomSeed2) * LEVITATION_TILT * 0.5 * interactionDamping;
     bookPivot.position.y = floatY;
     bookPivot.rotation.x = userRotationX;
-    bookPivot.rotation.y = userRotationY + idleYawOffset;
-    bookPivot.rotation.z = isMobile() ? 0 : -0.025 + baseTiltZ;
+    bookPivot.rotation.y = userRotationY;
+    bookPivot.rotation.z = idleVerticalTurn + (isMobile() ? 0 : -0.025 + baseTiltZ);
     renderer.render(scene, camera);
   }
   adjustCameraForDevice();

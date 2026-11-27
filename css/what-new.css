@@ -230,8 +230,8 @@
 .what-back:hover,.what-back:focus-visible{background:#fff;color:#000}
 .what-back:focus-visible{outline:2px solid #fff;outline-offset:4px}
 @media(max-width:768px){.what-back{min-height:34px;padding:7px 11px;font-size:11px}}
-.hero-left{padding-top:16px}
-@media(max-width:768px){.hero-left{padding-top:20px}}
+.hero-left{padding-top:var(--page-vertical-inset)}
+.hero-links{bottom:var(--page-vertical-inset)}
 
 :root {
   --tt-in-dur: 150ms;
