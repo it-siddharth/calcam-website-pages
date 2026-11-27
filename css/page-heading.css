@@ -12,11 +12,70 @@
   letter-spacing:-2.5px!important;
   font-feature-settings:'salt' 1,'dlig' 1;
 }
+/* Back links and the opening copy share the page gutter. */
+.installation-title,
+.journal-title,
+.gallery-title{top:82px!important}
+.what-back{margin-bottom:30px}
+.hero-left .small{margin-top:30px}
+.landing-page .title{margin-bottom:30px!important}
+.installation-title{
+  left:30px;
+  right:auto;
+  transform:none;
+  text-align:left;
+}
 @media(max-width:768px){
   :root{--page-heading-size:48px}
+  .installation-title,
+  .journal-title,
+  .gallery-title{top:84px!important}
+  .site-back,
+  .installation-overlay .site-back,
+  .journal-content .site-back,
+  .what-back{
+    padding:0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+  }
+  .site-back:hover,
+  .installation-overlay .site-back:hover,
+  .journal-content .site-back:hover,
+  .what-back:hover{
+    background:transparent;
+    color:#fff;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
   .landing-page .title,
   .installation-title,
   .journal-title,
   .gallery-title,
   .hero h1#page-title{line-height:.9!important}
+
+  /* Match the left edge of each Back link. */
+  .installation-title{
+    left:20px;
+  }
+  .gallery-title,
+  .journal-title{
+    left:20px;
+    transform:none;
+    text-align:left;
+  }
+  .gallery-description,
+  .journal-content .journal-description.mobile-only{
+    left:20px;
+    right:auto;
+    transform:none;
+    text-align:left;
+  }
+  .hero h1#page-title,
+  .hero-left .small{
+    text-align:left;
+  }
+  .hero-left .small{
+    margin-inline:0;
+  }
 }

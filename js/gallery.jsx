@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 const items = [
+  { type: 'video', src: 'assets/videos/vid-4.mp4', alt: 'Visitors interacting with the installation', width: 406, height: 515, cropped: true },
   { src: 'assets/DSC_4949_1.jpg', alt: 'Interactive installation with digital projection', width: 1200, height: 802 },
   { type: 'video', src: 'assets/videos/vid-1.mp4', alt: 'Calculated Camouflage installation film', width: 406, height: 720 },
   { src: 'assets/Frame_11.jpg', alt: 'Digital silhouettes with text overlay', width: 957, height: 1200 },
@@ -15,7 +16,6 @@ const items = [
   { src: 'assets/R0002034.jpg', alt: 'Blue ambient projection portrait', width: 799, height: 1200 },
   { src: 'assets/R0002068_2.jpg', alt: 'Interactive digital experience', width: 803, height: 1200 },
   { src: 'assets/R0002097_1.jpg', alt: 'Calculated Camouflage exhibition moment', width: 1200, height: 1063 },
-  { type: 'video', src: 'assets/videos/vid-4.mp4', alt: 'Calculated Camouflage installation film', width: 406, height: 720 },
   { src: 'assets/R0002355_1.jpg', alt: 'Particle projection with visitor silhouette', width: 1200, height: 799 },
   { src: 'assets/R0002358_1.jpg', alt: 'Gallery installation view', width: 1200, height: 799 },
   { src: 'assets/IMG_6459_1.jpg', alt: 'Exhibition moment', width: 674, height: 1200 },
@@ -27,7 +27,7 @@ const posterFor = (item) => item.src.replace('assets/videos/', 'assets/gallery-t
 
 function Media({ item, spotlight = false }) {
   if (item.type === 'video') {
-    return <video key={item.src} src={item.src} poster={posterFor(item)} width={item.width} height={item.height}
+    return <video key={item.src} className={item.cropped ? 'cropped-video' : undefined} src={item.src} poster={posterFor(item)} width={item.width} height={item.height}
       style={{ '--ratio': `${item.width} / ${item.height}`, '--spotlight-width': `${(70 * item.width / item.height).toFixed(2)}dvh` }}
       muted loop playsInline controls={spotlight} preload="none" aria-label={item.alt} />;
   }
@@ -251,7 +251,7 @@ function Gallery() {
               ref={(node) => { thumbnailRefs.current[index] = node; }}
               onClick={() => scrollToIndex(index)} aria-label={`Show ${item.alt}, ${index + 1} of ${items.length}`}
               aria-pressed={index === active}>
-              <img src={item.type === 'video' ? posterFor(item) : item.src} alt="" loading="lazy" />
+              <img className={item.cropped ? 'cropped-video' : undefined} src={item.type === 'video' ? posterFor(item) : item.src} alt="" loading="lazy" />
               {item.type === 'video' && <span aria-hidden="true">▶</span>}
             </button>
           )}

@@ -361,33 +361,31 @@
     .arrow-btn {
       width: 44px;
       height: 44px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1.5px solid rgba(255, 255, 255, 0.5);
+      border: 0;
+      background: transparent;
       color: rgba(255, 255, 255, 0.9);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      transition: background .15s ease, border-color .15s ease, transform .15s cubic-bezier(.22,1,.36,1);
+      transition: color .15s ease, transform .15s cubic-bezier(.22,1,.36,1);
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .arrow-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
-      border-color: rgba(255, 255, 255, 0.7);
+      color: #fff;
     }
 
     .arrow-btn:active,
     .arrow-btn.pressed {
-      background: rgba(255, 255, 255, 0.35);
-      border-color: rgba(255, 255, 255, 0.8);
       color: #fff;
       transform: scale(0.92);
+    }
+
+    .arrow-btn:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 2px;
     }
 
     .arrow-btn:disabled {
@@ -396,8 +394,6 @@
     }
 
     .arrow-btn:disabled:hover {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.5);
       transform: none;
     }
 
@@ -722,11 +718,11 @@
       opacity: 0;
       transition: opacity .35s ease;
       background: radial-gradient(
-        ellipse 38vw 41vh at 62% 47%,
-        transparent 30%,
-        rgba(0, 0, 0, .12) 53%,
-        rgba(0, 0, 0, .58) 82%,
-        rgba(0, 0, 0, .76) 100%
+        ellipse 65vw 55vh at 54% 47%,
+        transparent 48%,
+        rgba(0, 0, 0, .12) 72%,
+        rgba(0, 0, 0, .58) 95%,
+        rgba(0, 0, 0, .76) 120%
       );
     }
     .journal-spotlight.is-on { opacity: 1; }
@@ -736,8 +732,8 @@
       content: "";
       position: absolute;
       top: 4%;
-      left: 39%;
-      width: 46%;
+      left: 22%;
+      width: 65%;
       height: 65%;
       background: radial-gradient(ellipse at 50% 25%, rgba(255, 250, 225, .09), transparent 66%);
       pointer-events: none;
@@ -745,26 +741,27 @@
     @media (max-width: 768px) {
       .journal-spotlight {
         background: radial-gradient(
-          ellipse 57vw 32vh at 50% 49%,
-          transparent 29%,
-          rgba(0, 0, 0, .12) 55%,
-          rgba(0, 0, 0, .58) 83%,
-          rgba(0, 0, 0, .76) 100%
+          ellipse 72vw 36vh at 50% 49%,
+          transparent 42%,
+          rgba(0, 0, 0, .12) 68%,
+          rgba(0, 0, 0, .58) 94%,
+          rgba(0, 0, 0, .76) 115%
         );
       }
       .journal-spotlight::after {
         inset: 0;
         width: 100%;
         height: 100%;
-        background: radial-gradient(ellipse 45vw 33vh at 50% 49%, rgba(255, 250, 225, .09), transparent 70%);
+        background: radial-gradient(ellipse 58vw 36vh at 50% 49%, rgba(255, 250, 225, .09), transparent 70%);
       }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
     }
   </style>
-  <link rel="stylesheet" href="css/redesign.css?v=50">
-  <link rel="stylesheet" href="css/page-heading.css?v=1">
+  <link rel="stylesheet" href="css/redesign.css?v=57">
+  <link rel="stylesheet" href="css/page-heading.css?v=6">
+  <link rel="stylesheet" href="css/see-it-arrow.css?v=1">
   <link rel="stylesheet" href="css/page-appear.css?v=1">
 </head>
 <body>
@@ -794,7 +791,7 @@
       
       <div class="journal-info">
         <div class="cta-primary-row">
-          <span class="cta-text">See it for yourself</span>
+          <span class="cta-text">See it for yourself <span class="see-it-arrow" aria-hidden="true">→</span></span>
           <a href="installation.html" class="btn btn-primary">
             <span class="btn-text">VIEW ROOM</span>
           </a>
@@ -850,6 +847,6 @@
     }
   </script>
   
-  <script src="js/journal-book.bundle.js" defer></script>
+  <script src="js/journal-book.bundle.js?v=6" defer></script>
 </body>
 </html>

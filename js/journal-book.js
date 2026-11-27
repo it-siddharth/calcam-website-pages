@@ -510,7 +510,10 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
         const shiftFactor = window.innerWidth <= 768 ? 0 :
           Math.max(0, Math.min(0.25, (1500 - window.innerWidth) / 1200));
         const shiftWorld = this.scale.x * shiftFactor * openAmount;
-        this.position.x = offset * this.scale.x - shiftWorld;
+        // Center the pages inside the rotation pivot. Keep the layout shift
+        // on the pivot so dragging does not make the book orbit its spine.
+        this.position.x = offset * this.scale.x;
+        if (this.parent) this.parent.position.x = -shiftWorld;
       }
 
       dispose() {
@@ -576,7 +579,9 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
     });
 
     book.scale.x = 0.8;
-    scene.add(book);
+    const bookPivot = new THREE.Group();
+    bookPivot.add(book);
+    scene.add(bookPivot);
 
     book.setPages(pageImages);
 
@@ -616,11 +621,14 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
     // User-controlled rotation (persists)
     let userRotationX = isMobile() ? 0 : 0.35;
     let userRotationY = isMobile() ? 0 : 0.04;
-    let idleSpinTime = 0;
     let idleYawOffset = 0;
-    let idleSpinActive = !isMobile() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const IDLE_SPIN_SPEED = (Math.PI * 2) / 60; // One quiet turn per minute.
+    let idleSpinActive = !reducedMotion;
+    let lastInteractionTime = performance.now();
 
     function stopIdleSpin() {
+      lastInteractionTime = performance.now();
       if (!idleSpinActive) return;
       userRotationY += idleYawOffset;
       idleYawOffset = 0;
@@ -635,8 +643,8 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
     let prevDragX = 0;
     let prevDragY = 0;
     
-    const DRAG_SENSITIVITY = 0.008;
-    const INERTIA_FRICTION = 0.95;
+    const DRAG_SENSITIVITY = 0.0045;
+    const INERTIA_FRICTION = 0.82;
     const INERTIA_THRESHOLD = 0.0001;
     const CLICK_THRESHOLD = isMobile() ? 30 : 15; // pixels - max movement for a click (more forgiving on mobile)
     const CLICK_TIME_THRESHOLD = 400; // ms - max time for a click
@@ -719,7 +727,7 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
           1600 / height,
           width / 680
         );
-        book.scale.set(1.5 * fit, 1.75 * fit, 1.75 * fit);
+        book.scale.set(1.38 * fit, 1.75 * fit, 1.75 * fit);
       }
     }
 
@@ -885,6 +893,8 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
     function onMouseUp(event) {
       if (!isDragging) return;
       isDragging = false;
+      velocityX *= 0.12;
+      velocityY *= 0.12;
       renderer.domElement.style.cursor = 'grab';
       // Page flipping is now handled by the click event listener
     }
@@ -978,6 +988,8 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
       const wasClick = totalDragDistance < CLICK_THRESHOLD && dragDuration < CLICK_TIME_THRESHOLD;
       
       isDragging = false;
+      velocityX *= 0.12;
+      velocityY *= 0.12;
       
       // If it was a tap (not a drag), try to flip page using the ORIGINAL touch position
       if (wasClick) {
@@ -1057,10 +1069,8 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
       wasDragged = false;
     });
     window.addEventListener('mousemove', (event) => {
-      if (isDragging && totalDragDistance > CLICK_THRESHOLD) {
-        wasDragged = true;
-      }
       onMouseMove(event);
+      if (isDragging && totalDragDistance > CLICK_THRESHOLD) wasDragged = true;
     });
     window.addEventListener('mouseup', onMouseUp);
     
@@ -1099,9 +1109,13 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
         }
       }
       spotlight.classList.toggle('is-on', book.progress >= 1 && book.progress <= book.pages.length - 1);
-      if (idleSpinActive) {
-        idleSpinTime += Math.min(delta, 0.05);
-        idleYawOffset = Math.sin(idleSpinTime * 0.65) * 0.09;
+      if (!reducedMotion && !idleSpinActive && !isDragging && !isPinching &&
+          book.progress <= 0.01 && performance.now() - lastInteractionTime > 3000 &&
+          Math.abs(velocityX) < INERTIA_THRESHOLD && Math.abs(velocityY) < INERTIA_THRESHOLD) {
+        idleSpinActive = true;
+      }
+      if (idleSpinActive && book.progress <= 0.01) {
+        idleYawOffset += Math.min(delta, 0.05) * IDLE_SPIN_SPEED;
       }
       
       // Update time
@@ -1133,10 +1147,10 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
       const baseTiltZ = Math.cos(levitationTime * 0.6 + randomSeed2) * LEVITATION_TILT * 0.5 * interactionDamping;
       
       // Apply combined rotations: user rotation + subtle levitation
-      book.position.y = floatY;
-      book.rotation.x = userRotationX;
-      book.rotation.y = userRotationY + idleYawOffset;
-      book.rotation.z = isMobile() ? 0 : -0.025 + (idleSpinActive ? Math.sin(idleSpinTime * 0.45) * 0.02 : 0) + baseTiltZ;
+      bookPivot.position.y = floatY;
+      bookPivot.rotation.x = userRotationX;
+      bookPivot.rotation.y = userRotationY + idleYawOffset;
+      bookPivot.rotation.z = isMobile() ? 0 : -0.025 + baseTiltZ;
       
       renderer.render(scene, camera);
     }

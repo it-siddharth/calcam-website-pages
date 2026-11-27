@@ -226,10 +226,12 @@
 .projection-live.is-active .projection-live-status{display:none}
 
 /* The return control belongs to the left column, above its title. */
-.what-back{position:relative;z-index:1;display:flex;align-items:center;gap:6px;width:fit-content;min-height:36px;margin-bottom:14px;padding:8px 14px;border:1.1px solid #fff;border-radius:30px;background:#000;color:#fff;text-decoration:none;white-space:nowrap;font:500 14px/1 var(--mono)}
+.what-back{position:relative;z-index:1;display:flex;align-items:center;gap:5px;width:fit-content;min-height:36px;margin-bottom:14px;padding:8px 14px;border:1.1px solid #fff;border-radius:30px;background:transparent;color:#fff;text-decoration:none;white-space:nowrap;font:500 14px/1 var(--mono)}
 .what-back:hover,.what-back:focus-visible{background:#fff;color:#000}
 .what-back:focus-visible{outline:2px solid #fff;outline-offset:4px}
 @media(max-width:768px){.what-back{min-height:34px;padding:7px 11px;font-size:11px}}
+.hero-left{padding-top:16px}
+@media(max-width:768px){.hero-left{padding-top:20px}}
 
 :root {
   --tt-in-dur: 150ms;
