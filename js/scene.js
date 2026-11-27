@@ -51,13 +51,6 @@ const CONFIG = {
 // Global Variables
 // ============================================
 let scene, camera, renderer;
-const STORY_DEPARTURE_DURATION = 1230;
-let storyDeparture = null;
-let storyViewActive = false;
-let storyLayoutFrame = null;
-let storyLayoutReady = null;
-let storyBackground = null;
-const homePageTitle = document.title;
 let tvScreen, tvScreenTexture, tvFrame, screenBorder;
 let tvGroup, standPole;
 let installationGroup;
@@ -220,8 +213,6 @@ function init() {
   
   // Setup mouse tracking for subtle camera movement
   setupMouseTracking(container);
-  preloadStoryLayout();
-  setupStoryNavigation();
   
   // Start cinematic intro zoom-out animation
   startCinematicIntro();
@@ -427,202 +418,6 @@ function updatePanelThickness(thickness) {
 function updatePanelOpacity(opacity) {
   acrylicPanels.forEach(panel => {
     panel.material.opacity = opacity;
-  });
-}
-
-function panelScreenRect(panel, viewport) {
-  const halfWidth = CONFIG.panel.width / 2;
-  const halfHeight = CONFIG.panel.height / 2;
-  const points = [
-    [-halfWidth, -halfHeight], [halfWidth, -halfHeight],
-    [-halfWidth, halfHeight], [halfWidth, halfHeight]
-  ].map(([x, y]) => panel.localToWorld(new THREE.Vector3(x, y, 0)).project(camera));
-  const xs = points.map(point => viewport.left + (point.x + 1) * viewport.width / 2);
-  const ys = points.map(point => viewport.top + (1 - point.y) * viewport.height / 2);
-  const left = Math.min(...xs);
-  const top = Math.min(...ys);
-  return { left, top, width: Math.max(...xs) - left, height: Math.max(...ys) - top };
-}
-
-function preloadStoryLayout() {
-  if (!storyBackground) {
-    storyBackground = document.createElement('div');
-    storyBackground.className = 'story-background';
-    document.body.appendChild(storyBackground);
-  }
-  storyLayoutFrame = document.createElement('iframe');
-  storyLayoutFrame.className = 'story-layout-frame';
-  storyLayoutFrame.title = 'What Is This page transition';
-  storyLayoutFrame.setAttribute('allowtransparency', 'true');
-  storyLayoutFrame.setAttribute('aria-hidden', 'true');
-  storyLayoutFrame.tabIndex = -1;
-  storyLayoutReady = new Promise(resolve => {
-    storyLayoutFrame.addEventListener('load', () => {
-      wireStoryFrame();
-      resolve();
-    }, { once:true });
-    storyLayoutFrame.addEventListener('error', resolve, { once:true });
-  });
-  storyLayoutFrame.src = 'what-is-this.html?layout-probe=2';
-  document.body.appendChild(storyLayoutFrame);
-}
-
-function wireStoryFrame() {
-  const doc = storyLayoutFrame.contentDocument;
-  if (!doc) return;
-  doc.body.classList.add('embedded-story');
-  const syncHash = () => {
-    if (location.pathname.endsWith('what-is-this.html')) {
-      history.replaceState({ calcamStory:true }, '', 'what-is-this.html?from=home' + storyLayoutFrame.contentWindow.location.hash);
-    }
-  };
-  doc.addEventListener('click', event => {
-    const link = event.target.closest('a[href]');
-    if (!link) return;
-    if (link.getAttribute('href').startsWith('#')) {
-      setTimeout(syncHash, 0);
-      return;
-    }
-    event.preventDefault();
-    if (new URL(link.href).pathname.endsWith('/index.html')) history.back();
-    else window.location.assign(link.href);
-  }, true);
-  doc.addEventListener('keydown', event => {
-    if (event.key === 'Escape') setTimeout(syncHash, 0);
-  }, true);
-  storyLayoutFrame.contentWindow.addEventListener('popstate', syncHash);
-  storyLayoutFrame.contentWindow.addEventListener('hashchange', syncHash);
-}
-
-function restoreHomeFromStory() {
-  if (!storyDeparture) return;
-  storyViewActive = false;
-  storyDeparture.backgroundMaterials.forEach(material => { material.opacity = 1; });
-  acrylicPanels.forEach((panel, index) => {
-    panel.visible = true;
-    panel.position.copy(storyDeparture.starts[index]);
-    panel.scale.setScalar(1);
-  });
-  storyDeparture = null;
-  document.querySelectorAll('.story-flight-panel').forEach(panel => panel.remove());
-  storyBackground.style.visibility = 'hidden';
-  storyLayoutFrame.style.visibility = 'hidden';
-  storyLayoutFrame.style.opacity = '0';
-  storyLayoutFrame.style.pointerEvents = 'none';
-  storyLayoutFrame.setAttribute('aria-hidden', 'true');
-  document.querySelector('.landing-page').inert = false;
-  document.body.classList.remove('story-departing');
-  document.title = homePageTitle;
-  onWindowResize();
-  storyLayoutFrame.remove();
-  preloadStoryLayout();
-}
-
-function storyCardTargets() {
-  try {
-    const doc = storyLayoutFrame?.contentDocument;
-    const cards = Array.from(doc?.querySelectorAll('.story-card') || []);
-    if (cards.length !== acrylicPanels.length || !cards[0].dataset.carouselOffset) return null;
-    return cards.map(card => {
-      const rect = card.getBoundingClientRect();
-      const style = doc.defaultView.getComputedStyle(card);
-      return { left:rect.left, top:rect.top, width:rect.width, height:rect.height, backgroundColor:style.backgroundColor, opacity:Number(style.opacity) };
-    });
-  } catch (_) {
-    return null;
-  }
-}
-
-function trackStoryPanels() {
-  const targets = storyCardTargets();
-  const surfaces = document.querySelectorAll('.story-flight-panel');
-  if (!targets || surfaces.length !== targets.length) return;
-  const detailOpen = storyLayoutFrame.contentDocument.querySelector('.overview')?.classList.contains('is-hidden');
-  surfaces.forEach((surface, index) => {
-    const startWidth = Number.parseFloat(surface.style.width);
-    const startHeight = Number.parseFloat(surface.style.height);
-    const target = targets[index];
-    surface.style.transform = `translate3d(${target.left}px, ${target.top}px, 0) scale(${target.width / startWidth}, ${target.height / startHeight})`;
-    surface.style.opacity = detailOpen ? '0' : String(target.opacity * 0.72);
-  });
-}
-
-async function flyPanelsToStory(link) {
-  if (!storyCardTargets()) await Promise.race([storyLayoutReady, new Promise(resolve => setTimeout(resolve, 900))]);
-  const targets = storyCardTargets();
-  if (!targets) {
-    window.location.assign(link.href);
-    return;
-  }
-  camera.updateMatrixWorld();
-  installationGroup.updateMatrixWorld(true);
-  const viewport = document.getElementById('three-container').getBoundingClientRect();
-  const colors = ['#fdff00', '#11ff00', '#ff0505', '#2600ff'];
-  const duration = 1000;
-  const placement = (rect, start) => `translate3d(${rect.left}px, ${rect.top}px, 0) scale(${rect.width / start.width}, ${rect.height / start.height})`;
-  const flights = acrylicPanels.map((panel, index) => {
-    const start = panelScreenRect(panel, viewport);
-    const end = targets[index];
-    const surface = document.createElement('div');
-    surface.className = 'story-flight-panel';
-    surface.style.backgroundColor = colors[index];
-    surface.style.width = start.width + 'px';
-    surface.style.height = start.height + 'px';
-    document.body.appendChild(surface);
-    const from = { transform:placement(start, start), backgroundColor:colors[index], opacity:0.5 };
-    const viaRect = { left:start.left + (end.left - start.left) * 0.55, top:index === 2 ? innerHeight * 0.12 : index === 3 ? innerHeight * 0.72 : start.top + (end.top - start.top) * 0.55, width:start.width + (end.width - start.width) * 0.55, height:start.height + (end.height - start.height) * 0.55 };
-    const via = { transform:placement(viaRect, start), backgroundColor:colors[index], opacity:0.8, offset:0.55 };
-    const landed = { transform:placement(end, start), backgroundColor:colors[index], opacity:end.opacity * 0.72, offset:1 };
-    Object.assign(surface.style, from);
-    panel.visible = false;
-    return surface.animate([from, via, landed], { duration, easing:'cubic-bezier(.22,1,.36,1)', fill:'forwards' });
-  });
-  await Promise.race([
-    Promise.all(flights.map(flight => flight.finished.catch(() => {}))),
-    new Promise(resolve => setTimeout(resolve, duration + 250))
-  ]);
-  document.querySelectorAll('.story-flight-panel').forEach((surface, index) => {
-    const end = targets[index];
-    surface.style.transform = placement(end, { width:Number.parseFloat(surface.style.width), height:Number.parseFloat(surface.style.height) });
-    surface.style.opacity = String(end.opacity * 0.72);
-  });
-  flights.forEach(flight => flight.cancel());
-  storyBackground.style.visibility = 'visible';
-  storyLayoutFrame.style.visibility = 'visible';
-  storyLayoutFrame.style.opacity = '1';
-  storyLayoutFrame.style.pointerEvents = 'auto';
-  storyLayoutFrame.setAttribute('aria-hidden', 'false');
-  document.querySelector('.landing-page').inert = true;
-  history.pushState({ calcamStory:true }, '', link.href);
-  document.title = 'What Is This | Calculated Camouflage';
-  storyViewActive = true;
-  storyLayoutFrame.contentWindow.focus();
-}
-
-function setupStoryNavigation() {
-  const link = document.querySelector('.nav-links a[href^="what-is-this.html"]');
-  if (!link) return;
-  window.addEventListener('popstate', () => {
-    if (!location.pathname.endsWith('what-is-this.html')) restoreHomeFromStory();
-  });
-  link.addEventListener('click', event => {
-    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || storyDeparture || !camera || !acrylicPanels.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    event.preventDefault();
-    document.body.classList.add('story-departing');
-    const viewport = document.getElementById('three-container').getBoundingClientRect();
-    camera.aspect = viewport.width / viewport.height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(viewport.width, viewport.height);
-    const starts = acrylicPanels.map(panel => panel.position.clone());
-    const targets = [-1.26, -0.42, 0.42, 1.26].map(x => new THREE.Vector3(x, 1.35, 0.45));
-    const backgroundMaterials = [];
-    tvGroup.traverse(object => {
-      if (object.material) backgroundMaterials.push(object.material);
-    });
-    if (standPole?.material) backgroundMaterials.push(standPole.material);
-    backgroundMaterials.forEach(material => { material.transparent = true; material.depthWrite = false; });
-    storyDeparture = { started: performance.now(), starts, targets, backgroundMaterials };
-    flyPanelsToStory(link);
   });
 }
 
@@ -1958,10 +1753,6 @@ function adjustCameraForViewport(width, height) {
 // ============================================
 function animate() {
   requestAnimationFrame(animate);
-  if (storyViewActive) {
-    trackStoryPanels();
-    return;
-  }
   
   // Update cinematic zoom animation if active
   if (isCinematicIntro) {
@@ -1997,19 +1788,6 @@ function animate() {
   // Always look at center of model
   camera.lookAt(cameraOffsetX, cameraTargetY, 0);
 
-  if (storyDeparture) {
-    const progress = Math.min((performance.now() - storyDeparture.started) / STORY_DEPARTURE_DURATION, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    camera.position.y += 2.15 * eased;
-    camera.lookAt(cameraOffsetX, cameraTargetY + 0.85 * eased, 0);
-    acrylicPanels.forEach((panel, index) => {
-      panel.position.lerpVectors(storyDeparture.starts[index], storyDeparture.targets[index], eased);
-      panel.scale.setScalar(1 - 0.32 * eased);
-    });
-    const fade = Math.min(progress * 3, 1);
-    const easedFade = fade * fade * (3 - 2 * fade);
-    storyDeparture.backgroundMaterials.forEach(material => { material.opacity = 1 - easedFade; });
-  }
   
   // Render scene
   renderer.render(scene, camera);

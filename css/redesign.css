@@ -40,16 +40,6 @@
 .landing-page .meta-value { white-space: nowrap; }
 .landing-page .cta-section { padding-bottom: 0; }
 .landing-page .credit { font-size: 11px; }
-body.story-departing .content-section,
-body.story-departing .scene-gradient,
-body.story-departing .credit { opacity: 0; pointer-events: none; transition: opacity 300ms ease; }
-.story-background { position:fixed; inset:0; z-index:898; visibility:hidden; background:#000; pointer-events:none; }
-.story-layout-frame { position:fixed; inset:0; width:100vw; height:100dvh; border:0; z-index:900; visibility:hidden; opacity:0; pointer-events:none; }
-.story-flight-panel { position:fixed; top:0; left:0; z-index:899; pointer-events:none; border:1px solid #ffffff55; mix-blend-mode:screen; transform-origin:top left; will-change:transform,opacity; }
-@media (max-width: 768px) {
-  body.story-departing .scene-section { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100dvh !important; min-height: 0 !important; z-index: 20 !important; }
-}
-
 /* Installation */
 .installation-title { display: block; top: 61px; left: 50%; right: auto; transform: translateX(-50%); font-family: 'Max Hana', serif; font-size: clamp(44px, 4.1vw, 58px); font-weight: 400; line-height: 1; letter-spacing: -.02em; text-align: center; }
 .anchor-info-panel .panel-title { font-family: 'Max Hana', serif; font-weight: 400; letter-spacing: -.02em; }
@@ -109,7 +99,7 @@ body.story-departing .credit { opacity: 0; pointer-events: none; transition: opa
   .landing-page .description.mobile-only { display: block !important; text-align: left; font-size: 16px !important; line-height: 20px !important; white-space: normal !important; }
   .landing-page .meta-info { gap: 20px; flex-wrap: wrap; }
   .landing-page .meta-value { white-space: normal; }
-  .installation-title { top: 83px; font-size: clamp(32px, 8vw, 52px); }
+  .installation-title { top: 83px; font-size: 32px; }
   .installation-footer { right: 20px; left: 20px; bottom: 85px; align-items: center; text-align: center; }
   .installation-tour-cta { min-height: 36px; margin-top: 10px; padding: 8px 12px; font-size: 11px; }
   .installation-nav { display: none; }
@@ -138,7 +128,7 @@ body.story-departing .credit { opacity: 0; pointer-events: none; transition: opa
   .installation-nav .redesign-pill, .gallery-nav .redesign-pill { font-size: 10px; }
 }
 @media (max-width: 360px) {
-  .installation-title { left: calc(50% + 25px); font-size: 26px; }
+  .installation-title { left: calc(50% + 25px); }
 }
 
 /* Keep the journal's desktop page links off phones, including landscape phones. */

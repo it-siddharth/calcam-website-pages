@@ -821,7 +821,7 @@ body:not(.cinematic-intro) .skip-hint {
    ============================================ */
 @media screen and (max-width: 768px) {
   :root {
-    --installation-title-size: clamp(24px, 7.2vw, 34px);
+    --installation-title-size: 32px;
     --installation-title-top: calc(env(safe-area-inset-top, 0px) + 71px);
     --installation-title-x: clamp(16px, 5vw, 24px);
     --installation-title-right-x: clamp(16px, 5vw, 24px);
@@ -1003,7 +1003,6 @@ body.pointer-locked .visual-settings-panel { display: none; }
 /* Extra small screens (iPhone SE, etc.) */
 @media screen and (max-width: 480px) {
   :root {
-    --installation-title-size: clamp(23px, 6.9vw, 30px);
     --installation-title-top: calc(env(safe-area-inset-top, 0px) + 71px);
     --installation-title-x: 16px;
     --installation-title-right-x: 16px;

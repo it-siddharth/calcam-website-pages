@@ -1,0 +1,13 @@
+/* A quiet entrance for each full page after navigation. */
+body > main {
+  animation: page-appear 360ms ease-out both;
+}
+
+@keyframes page-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body > main { animation: none; }
+}
