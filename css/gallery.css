@@ -45,12 +45,11 @@ img, video { display: block; }
   background: transparent;
   color: #fff;
   cursor: pointer;
-  opacity: .5;
+  opacity: .2;
   scroll-snap-align: center;
   transition: opacity .3s ease;
 }
 .spatial-card[data-position="current"] { opacity: 1; }
-.spatial-card[data-position="other"]:hover { opacity: .8; }
 .spatial-card img, .spatial-card video { width: 100%; height: 100%; object-fit: contain; border-radius: 6px; }
 .spatial-card:focus-visible, .gallery-lightbox button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 .carousel-footer { position: absolute; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
