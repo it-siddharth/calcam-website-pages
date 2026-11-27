@@ -614,11 +614,11 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
     let totalDragDistance = 0;
     
     // User-controlled rotation (persists)
-    let userRotationX = 0.35;
-    let userRotationY = 0.04;
+    let userRotationX = isMobile() ? 0 : 0.35;
+    let userRotationY = isMobile() ? 0 : 0.04;
     let idleSpinTime = 0;
     let idleYawOffset = 0;
-    let idleSpinActive = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let idleSpinActive = !isMobile() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function stopIdleSpin() {
       if (!idleSpinActive) return;
@@ -665,7 +665,10 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
     
     function applyZoom() {
       if (!isMobile()) return;
-      camera.filmGauge = 35;
+      // The mobile canvas extends beyond the layout section, so preserve the
+      // book's on-screen size while giving rotations room to render there.
+      const sectionHeight = container.parentElement.clientHeight;
+      camera.filmGauge = 35 * Math.pow(container.clientHeight / sectionHeight, 0.72);
       
       // Pull the camera back far enough that the tilted open book
       // stays inside the shorter mobile canvas (header + controls).
@@ -689,11 +692,16 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
     function isMobile() {
       return window.innerWidth <= 768;
     }
+
+    function mobileBookScale() {
+      const openAmount = Math.max(0, Math.min(1, book.progress, book.pages.length - book.progress));
+      return 1.16 - 0.26 * openAmount;
+    }
     
     function adjustBookFraming() {
       if (isMobile()) {
-        // Shrink uniformly so the tilted open spread fits the short canvas.
-        book.scale.set(0.78, 0.78, 0.78);
+        // Keep the journal prominent while its cover opens.
+        book.scale.setScalar(mobileBookScale());
       } else {
         const bookSection = container.parentElement;
         const height = bookSection.clientHeight;
@@ -1078,6 +1086,13 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
       
       const delta = clock.getDelta();
       book.animate(delta);
+      if (isMobile()) {
+        const scale = mobileBookScale();
+        if (Math.abs(book.scale.x - scale) > 0.0001) {
+          book.scale.setScalar(scale);
+          book.flipPages();
+        }
+      }
       spotlight.classList.toggle('is-on', book.progress >= 1 && book.progress <= book.pages.length - 1);
       if (idleSpinActive) {
         idleSpinTime += Math.min(delta, 0.05);
@@ -1116,7 +1131,7 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
       book.position.y = floatY;
       book.rotation.x = userRotationX;
       book.rotation.y = userRotationY + idleYawOffset;
-      book.rotation.z = -0.025 + (idleSpinActive ? Math.sin(idleSpinTime * 0.45) * 0.02 : 0) + baseTiltZ;
+      book.rotation.z = isMobile() ? 0 : -0.025 + (idleSpinActive ? Math.sin(idleSpinTime * 0.45) * 0.02 : 0) + baseTiltZ;
       
       renderer.render(scene, camera);
     }

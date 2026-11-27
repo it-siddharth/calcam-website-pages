@@ -730,6 +730,8 @@
       );
     }
     .journal-spotlight.is-on { opacity: 1; }
+    .journal-page .journal-info { transition: opacity .35s ease; }
+    .journal-spotlight.is-on ~ .journal-page .journal-info { opacity: .24; }
     .journal-spotlight::after {
       content: "";
       position: absolute;
@@ -751,17 +753,17 @@
         );
       }
       .journal-spotlight::after {
-        top: 18%;
-        left: 10%;
-        width: 80%;
-        height: 45%;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(ellipse 45vw 33vh at 50% 49%, rgba(255, 250, 225, .09), transparent 70%);
       }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
     }
   </style>
-  <link rel="stylesheet" href="css/redesign.css?v=41">
+  <link rel="stylesheet" href="css/redesign.css?v=42">
 </head>
 <body>
   <!-- Page Transition Overlay -->
@@ -783,6 +785,9 @@
       
       <p class="journal-description desktop-only">
         While the installation ran, a journal sat open, inviting visitors to leave their mark.<br><br>Given this was my first installation, this memento for me is incredibly special. In moments of self doubt over my personal art practice, I often revisit this to remind myself that I have the capability and proof of making people feel something via my work.
+      </p>
+      <p class="journal-description mobile-only">
+        While the installation ran, a journal sat open, inviting visitors to leave their mark.
       </p>
       
       <div class="journal-info">
@@ -830,11 +835,6 @@
         <p class="instruction-text mobile-only">Swipe to rotate. Tap pages to flip.</p>
       </footer>
     </section>
-    
-    <!-- Mobile Description -->
-    <p class="journal-description mobile-only">
-      While the installation ran, a journal sat open, inviting visitors to leave their mark.
-    </p>
     
     <!-- Mobile Footer (hidden on mobile) -->
     <footer class="journal-footer-mobile"></footer>

@@ -19592,11 +19592,11 @@
   var dragStartY = 0;
   var dragStartTime = 0;
   var totalDragDistance = 0;
-  var userRotationX = 0.35;
-  var userRotationY = 0.04;
+  var userRotationX = isMobile() ? 0 : 0.35;
+  var userRotationY = isMobile() ? 0 : 0.04;
   var idleSpinTime = 0;
   var idleYawOffset = 0;
-  var idleSpinActive = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var idleSpinActive = !isMobile() && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function stopIdleSpin() {
     if (!idleSpinActive) return;
     userRotationY += idleYawOffset;
@@ -19627,7 +19627,8 @@
   }
   function applyZoom() {
     if (!isMobile()) return;
-    camera.filmGauge = 35;
+    const sectionHeight = container.parentElement.clientHeight;
+    camera.filmGauge = 35 * Math.pow(container.clientHeight / sectionHeight, 0.72);
     const baseFocal = 39;
     const baseCamY = 2.7;
     const baseCamZ = 0.92;
@@ -19640,9 +19641,13 @@
   function isMobile() {
     return window.innerWidth <= 768;
   }
+  function mobileBookScale() {
+    const openAmount = Math.max(0, Math.min(1, book.progress, book.pages.length - book.progress));
+    return 1.16 - 0.26 * openAmount;
+  }
   function adjustBookFraming() {
     if (isMobile()) {
-      book.scale.set(0.78, 0.78, 0.78);
+      book.scale.setScalar(mobileBookScale());
     } else {
       const bookSection = container.parentElement;
       const height2 = bookSection.clientHeight;
@@ -19907,6 +19912,13 @@
     requestAnimationFrame(animate);
     const delta = clock.getDelta();
     book.animate(delta);
+    if (isMobile()) {
+      const scale = mobileBookScale();
+      if (Math.abs(book.scale.x - scale) > 1e-4) {
+        book.scale.setScalar(scale);
+        book.flipPages();
+      }
+    }
     spotlight.classList.toggle("is-on", book.progress >= 1 && book.progress <= book.pages.length - 1);
     if (idleSpinActive) {
       idleSpinTime += Math.min(delta, 0.05);
@@ -19928,7 +19940,7 @@
     book.position.y = floatY;
     book.rotation.x = userRotationX;
     book.rotation.y = userRotationY + idleYawOffset;
-    book.rotation.z = -0.025 + (idleSpinActive ? Math.sin(idleSpinTime * 0.45) * 0.02 : 0) + baseTiltZ;
+    book.rotation.z = isMobile() ? 0 : -0.025 + (idleSpinActive ? Math.sin(idleSpinTime * 0.45) * 0.02 : 0) + baseTiltZ;
     renderer.render(scene, camera);
   }
   adjustCameraForDevice();
