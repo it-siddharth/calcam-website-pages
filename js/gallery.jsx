@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
-const items = [
+const mobileItems = [
   { type: 'video', src: 'assets/videos/vid-4.mp4', alt: 'Visitors interacting with the installation', width: 406, height: 515, cropped: true },
   { src: 'assets/DSC_4949_1.jpg', alt: 'Interactive installation with digital projection', width: 1200, height: 802 },
   { type: 'video', src: 'assets/videos/vid-1.mp4', alt: 'Calculated Camouflage installation film', width: 406, height: 720 },
@@ -22,6 +22,7 @@ const items = [
   { type: 'video', src: 'assets/videos/vid-5.mp4', alt: 'Calculated Camouflage installation film', width: 406, height: 720 },
   { src: 'assets/R0002071_1.jpg', alt: 'Visitor experience portrait', width: 800, height: 1200 },
 ];
+const desktopItems = [mobileItems[10], ...mobileItems.slice(0, 10), ...mobileItems.slice(11)];
 
 const posterFor = (item) => item.src.replace('assets/videos/', 'assets/gallery-thumbs/').replace('.mp4', '.jpg');
 
@@ -35,6 +36,8 @@ function Media({ item, spotlight = false }) {
 }
 
 function Gallery() {
+  const [desktop, setDesktop] = useState(() => window.matchMedia('(min-width: 769px)').matches);
+  const items = desktop ? desktopItems : mobileItems;
   const [active, setActive] = useState(0);
   const [selected, setSelected] = useState(null);
   const activeRef = useRef(0);
@@ -45,6 +48,17 @@ function Gallery() {
   const thumbnailStripRef = useRef(null);
   const thumbnailRefs = useRef([]);
   const wheelState = useRef({ delta: 0, lastMove: -Infinity });
+  useEffect(() => {
+    const breakpoint = window.matchMedia('(min-width: 769px)');
+    const updateMode = () => {
+      setDesktop(breakpoint.matches);
+      activeRef.current = 0;
+      setActive(0);
+      setSelected(null);
+    };
+    breakpoint.addEventListener('change', updateMode);
+    return () => breakpoint.removeEventListener('change', updateMode);
+  }, []);
   const scrollToIndex = (index, behavior = 'smooth') => {
     const stage = stageRef.current;
     const card = cardRefs.current[index];
@@ -89,7 +103,7 @@ function Gallery() {
     observer.observe(stage);
     window.addEventListener('resize', updateLayout);
     return () => { observer.disconnect(); window.removeEventListener('resize', updateLayout); };
-  }, []);
+  }, [desktop]);
 
   useEffect(() => {
     const strip = thumbnailStripRef.current;

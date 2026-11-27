@@ -396,6 +396,9 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
           ctx.fillRect(0, 0, cover.width, cover.height);
           ctx.globalAlpha = 1;
           ctx.globalCompositeOperation = 'source-over';
+          // Keep the printed binding black even under the cover grain.
+          ctx.fillStyle = '#050505';
+          ctx.fillRect(0, 0, cover.width * 0.06, cover.height);
           texture.dispose();
           texture = new THREE.CanvasTexture(cover);
         }
@@ -584,6 +587,22 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
     scene.add(bookPivot);
 
     book.setPages(pageImages);
+    // The page planes have no thickness. Give their shared hinge a dark,
+    // non-interactive edge so the spine stays black during the 3D turn.
+    const spine = new THREE.Mesh(
+      new THREE.BoxGeometry(0.024, Math.max(0.026, book.pages.length * 0.001 + 0.008), 1),
+      new THREE.MeshBasicMaterial({ color: 0x050505 })
+    );
+    spine.position.y = -(book.pages.length - 1) * 0.001 / 2;
+    spine.raycast = () => {};
+    book.add(spine);
+    const outerEdge = new THREE.Mesh(
+      new THREE.BoxGeometry(0.036, 0.035, 1.006),
+      new THREE.MeshBasicMaterial({ color: 0x050505 })
+    );
+    outerEdge.position.set(1, spine.position.y, 0);
+    outerEdge.raycast = () => {};
+    book.add(outerEdge);
 
     // Clock for animation
     const clock = new THREE.Clock();
@@ -622,8 +641,9 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
     let userRotationX = isMobile() ? 0 : 0.35;
     let userRotationY = isMobile() ? 0 : 0.04;
     let idleVerticalTurn = 0;
+    let idleTurnDirection = 1;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const IDLE_SPIN_SPEED = (Math.PI * 2) / 60; // One slow 3D turn per minute.
+    const IDLE_SPIN_SPEED = Math.PI / 120; // 120 seconds from face-on to 180 degrees.
     let idleSpinActive = !reducedMotion;
     let lastInteractionTime = performance.now();
 
@@ -1115,7 +1135,14 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
         idleSpinActive = true;
       }
       if (idleSpinActive && book.progress <= 0.01) {
-        idleVerticalTurn += Math.min(delta, 0.05) * IDLE_SPIN_SPEED;
+        idleVerticalTurn += Math.min(delta, 0.05) * IDLE_SPIN_SPEED * idleTurnDirection;
+        if (idleVerticalTurn >= Math.PI) {
+          idleVerticalTurn = Math.PI;
+          idleTurnDirection = -1;
+        } else if (idleVerticalTurn <= -Math.PI) {
+          idleVerticalTurn = -Math.PI;
+          idleTurnDirection = 1;
+        }
       } else if (!idleSpinActive && idleVerticalTurn !== 0) {
         idleVerticalTurn *= Math.exp(-Math.min(delta, 0.05) * 5);
         if (Math.abs(idleVerticalTurn) < 0.001) idleVerticalTurn = 0;

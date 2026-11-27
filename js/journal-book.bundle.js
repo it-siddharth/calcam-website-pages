@@ -19434,6 +19434,8 @@
         ctx.fillRect(0, 0, cover.width, cover.height);
         ctx.globalAlpha = 1;
         ctx.globalCompositeOperation = "source-over";
+        ctx.fillStyle = "#050505";
+        ctx.fillRect(0, 0, cover.width * 0.06, cover.height);
         texture.dispose();
         texture = new CanvasTexture(cover);
       }
@@ -19576,6 +19578,22 @@
   bookPivot.add(book);
   scene.add(bookPivot);
   book.setPages(pageImages);
+  var spine = new Mesh(
+    new BoxGeometry(0.024, Math.max(0.026, book.pages.length * 1e-3 + 8e-3), 1),
+    new MeshBasicMaterial({ color: 328965 })
+  );
+  spine.position.y = -(book.pages.length - 1) * 1e-3 / 2;
+  spine.raycast = () => {
+  };
+  book.add(spine);
+  var outerEdge = new Mesh(
+    new BoxGeometry(0.036, 0.035, 1.006),
+    new MeshBasicMaterial({ color: 328965 })
+  );
+  outerEdge.position.set(1, spine.position.y, 0);
+  outerEdge.raycast = () => {
+  };
+  book.add(outerEdge);
   var clock = new Clock();
   var flipSound = new Audio("vendor/3dflipbook/sounds/start-flip.mp3");
   flipSound.volume = 0.4;
@@ -19598,8 +19616,9 @@
   var userRotationX = isMobile() ? 0 : 0.35;
   var userRotationY = isMobile() ? 0 : 0.04;
   var idleVerticalTurn = 0;
+  var idleTurnDirection = 1;
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var IDLE_SPIN_SPEED = Math.PI * 2 / 60;
+  var IDLE_SPIN_SPEED = Math.PI / 120;
   var idleSpinActive = !reducedMotion;
   var lastInteractionTime = performance.now();
   function stopIdleSpin() {
@@ -19935,7 +19954,14 @@
       idleSpinActive = true;
     }
     if (idleSpinActive && book.progress <= 0.01) {
-      idleVerticalTurn += Math.min(delta, 0.05) * IDLE_SPIN_SPEED;
+      idleVerticalTurn += Math.min(delta, 0.05) * IDLE_SPIN_SPEED * idleTurnDirection;
+      if (idleVerticalTurn >= Math.PI) {
+        idleVerticalTurn = Math.PI;
+        idleTurnDirection = -1;
+      } else if (idleVerticalTurn <= -Math.PI) {
+        idleVerticalTurn = -Math.PI;
+        idleTurnDirection = 1;
+      }
     } else if (!idleSpinActive && idleVerticalTurn !== 0) {
       idleVerticalTurn *= Math.exp(-Math.min(delta, 0.05) * 5);
       if (Math.abs(idleVerticalTurn) < 1e-3) idleVerticalTurn = 0;
