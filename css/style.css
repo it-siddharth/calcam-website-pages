@@ -32,7 +32,7 @@
   --title-letter-spacing: -3.5px;
   
   --body-size: 18px;
-  --body-line-height: 24px;
+  --body-line-height: 28px;
   
   --label-size: 14px;
   --label-line-height: 14px;
@@ -690,7 +690,7 @@ body {
     --title-line-height: 70px;
     --title-letter-spacing: -2px;
     --body-size: 18px;
-    --body-line-height: 24px;
+    --body-line-height: 28px;
   }
   
   .content-section {

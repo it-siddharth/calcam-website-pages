@@ -35,7 +35,7 @@
   --installation-title-right-x: clamp(30px, 3.94vw, 68px);
   
   --body-size: 18px;
-  --body-line-height: 24px;
+  --body-line-height: 28px;
   
   --label-size: 14px;
   --label-line-height: 14px;
@@ -821,13 +821,13 @@ body:not(.cinematic-intro) .skip-hint {
    ============================================ */
 @media screen and (max-width: 768px) {
   :root {
-    --installation-title-size: 32px;
+    --installation-title-size: 36px;
     --installation-title-top: calc(env(safe-area-inset-top, 0px) + 71px);
     --installation-title-x: clamp(16px, 5vw, 24px);
     --installation-title-right-x: clamp(16px, 5vw, 24px);
     
     --body-size: 15px;
-    --body-line-height: 24px;
+    --body-line-height: 26px;
     
     --label-size: 12px;
     --arrow-size: 14px;
@@ -1008,7 +1008,7 @@ body.pointer-locked .visual-settings-panel { display: none; }
     --installation-title-right-x: 16px;
     
     --body-size: 15px;
-    --body-line-height: 24px;
+    --body-line-height: 26px;
   }
   
   .nav-links {
@@ -1331,7 +1331,7 @@ body.anchor-focused .anchor-indicator:not(.active) {
   }
   
   .anchor-info-panel .panel-title {
-    font-size: 18px;
+    font-size: 36px;
     margin-bottom: 10px;
     padding-right: 30px;
   }
@@ -1389,7 +1389,7 @@ body.anchor-focused .anchor-indicator:not(.active) {
   }
   
   .anchor-info-panel .panel-title {
-    font-size: 16px;
+    font-size: 36px;
   }
   
   .anchor-info-panel .panel-description {
