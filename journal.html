@@ -647,9 +647,9 @@
       
       .instruction-text {
         font-family: var(--font-body);
-        font-size: var(--body-size);
+        font-size: 16px;
         font-weight: 700;
-        line-height: var(--body-line-height);
+        line-height: 20px;
         text-align: center;
         opacity: 0.6;
       }
@@ -763,7 +763,7 @@
       *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
     }
   </style>
-  <link rel="stylesheet" href="css/redesign.css?v=43">
+  <link rel="stylesheet" href="css/redesign.css?v=46">
 </head>
 <body>
   <!-- Page Transition Overlay -->
@@ -787,7 +787,7 @@
         While the installation ran, a journal sat open, inviting visitors to leave their mark.<br><br>Given this was my first installation, this memento for me is incredibly special. In moments of self doubt over my personal art practice, I often revisit this to remind myself that I have the capability and proof of making people feel something via my work.
       </p>
       <p class="journal-description mobile-only">
-        While the installation ran, a journal sat open, inviting visitors to leave their mark.
+        While the installation ran, a journal<br>sat open, inviting visitors to leave their mark.
       </p>
       
       <div class="journal-info">
@@ -842,6 +842,11 @@
 
   <!-- Load three.modifiers UMD bundle first -->
   <script src="vendor/quick_flipbook/modifiers.min.js"></script>
+  <script>
+    if (location.protocol === 'file:') {
+      document.write('<script src="js/journal-local-pages.js"><\/script>');
+    }
+  </script>
   
   <script src="js/journal-book.bundle.js" defer></script>
 </body>

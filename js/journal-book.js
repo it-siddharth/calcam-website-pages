@@ -351,7 +351,7 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
         if (!this._url2Loader.has(url)) {
           this._url2Loader.set(url, new Promise((resolve, reject) => {
             new THREE.TextureLoader().load(
-              source,
+              location.protocol === 'file:' ? window.JOURNAL_LOCAL_PAGES?.[source] || source : source,
               (texture) => resolve(this.textureToMaterial(texture, side, source === pageImages[0])),
               undefined,
               (err) => resolve(null)
@@ -695,13 +695,18 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
 
     function mobileBookScale() {
       const openAmount = Math.max(0, Math.min(1, book.progress, book.pages.length - book.progress));
-      return 1.16 - 0.26 * openAmount;
+      return 1.16 - 0.12 * openAmount;
+    }
+
+    function setMobileBookScale() {
+      const scale = mobileBookScale();
+      book.scale.set(scale * 0.92, scale, scale * 1.1);
     }
     
     function adjustBookFraming() {
       if (isMobile()) {
-        // Keep the journal prominent while its cover opens.
-        book.scale.setScalar(mobileBookScale());
+        // Keep the journal prominent with a slightly narrower page proportion.
+        setMobileBookScale();
       } else {
         const bookSection = container.parentElement;
         const height = bookSection.clientHeight;
@@ -1088,8 +1093,8 @@ import * as THREE from '../vendor/three-0.160.0/three.module.js';
       book.animate(delta);
       if (isMobile()) {
         const scale = mobileBookScale();
-        if (Math.abs(book.scale.x - scale) > 0.0001) {
-          book.scale.setScalar(scale);
+        if (Math.abs(book.scale.x - scale * 0.92) > 0.0001) {
+          setMobileBookScale();
           book.flipPages();
         }
       }

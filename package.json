@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "build:journal": "esbuild js/journal-book.js --bundle --format=iife --target=es2020 --outfile=js/journal-book.bundle.js",
+    "build:journal-local": "node scripts/build-journal-local-pages.cjs",
     "build:gallery": "esbuild js/gallery.jsx --bundle --minify --format=iife --target=es2020 --outfile=js/gallery.bundle.js",
     "build:wall-projections": "esbuild js/wall-projections.js --bundle --minify --format=iife --target=es2020 --outfile=js/wall-projections.bundle.js",
     "build:space-wireframe": "esbuild js/space-wireframe.js --bundle --minify --format=iife --target=es2020 --outfile=js/space-wireframe.bundle.js",
