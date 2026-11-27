@@ -77,8 +77,8 @@ if (container) {
       [-.45, 1.28, backZ + .72], [.48, 1.38, backZ + .88]
     ];
     panels.forEach(([x, y, z], i) => {
-      edgeBox(.82, .74, .018, x, y, z, white, .9, `Hanging acrylic panel ${i + 1}`, 0x303030);
-      lines([[x, y + .37, z], [x, h, z]], soft, .55);
+      edgeBox(.60, 1.02, .018, x, y, z, [0xffed00, 0x24f13e, 0xff3434, 0x344eff][i], .95, `Hanging acrylic panel ${i + 1}`, [0x786f00, 0x0c6e1c, 0x771515, 0x17267c][i]);
+      lines([[x, y + .51, z], [x, h, z]], soft, .55);
     });
 
     // Speakers on the floor, with visible circular drivers.
@@ -128,7 +128,7 @@ if (container) {
     const camera = new THREE.PerspectiveCamera(44, 1, .1, 100);
     const target = new THREE.Vector3(0, 1.35, -.15);
     let azimuth = .47, elevation = .32;
-    const distance = 10.5;
+    const distance = 8.75;
     const updateCamera = () => {
       camera.position.set(
         target.x + distance * Math.sin(azimuth) * Math.cos(elevation),
@@ -231,7 +231,7 @@ if (container) {
     });
     renderer.domElement.addEventListener('pointermove', event => {
       if (!dragging) return showTooltip(event);
-      azimuth += (event.clientX - lastX) * .006;
+      azimuth = THREE.MathUtils.clamp(azimuth + (event.clientX - lastX) * .006, -100 * Math.PI / 180, 100 * Math.PI / 180);
       elevation = THREE.MathUtils.clamp(elevation + (lastY - event.clientY) * .006, .08, 1.25);
       lastX = event.clientX;
       lastY = event.clientY;

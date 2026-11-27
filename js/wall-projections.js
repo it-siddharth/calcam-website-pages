@@ -1,25 +1,22 @@
 import { WebcamProjection } from './webcam-projection.js?v=2';
 
-// Straight-on wall previews using the same webcam sampling as the installation.
-const previews = [...document.querySelectorAll('.projection-live[data-wall]')].map(view => {
-  const projection = new WebcamProjection(240, 180);
-  if (view.dataset.wall === 'right' || projection.isMobile) projection.setSetting('invert', true);
-  return {
-    view, projection, canvas: view.querySelector('canvas'),
-    status: view.querySelector('.projection-live-status'),
-    visible: false, started: false, starting: false
-  };
-});
+const previews = [...document.querySelectorAll('.projection-live[data-wall]')].map(view => ({
+  view,
+  projection: new WebcamProjection(160, 120),
+  canvas: view.querySelector('canvas'),
+  status: view.querySelector('.projection-live-status'),
+  visible: false,
+  started: false,
+  starting: false
+}));
 
-// Keep each particle in the same place between frames while breaking up the
-// camera's regular sampling grid. Moving the offsets every frame would flicker.
 function hash(x, y) {
-  let value = Math.imul(x + 1, 374761393) + Math.imul(y + 1, 668265263);
-  value = Math.imul(value ^ (value >>> 13), 1274126177);
-  return (value ^ (value >>> 16)) >>> 0;
+  let n = Math.imul(x + 1, 374761393) + Math.imul(y + 1, 668265263);
+  n = Math.imul(n ^ (n >>> 13), 1274126177);
+  return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
 }
 
-function draw({ view, projection, canvas }, time) {
+function draw({ projection, canvas, view }, time) {
   const ratio = Math.min(devicePixelRatio || 1, 2);
   const width = Math.round(canvas.clientWidth * ratio);
   const height = Math.round(canvas.clientHeight * ratio);
@@ -29,48 +26,70 @@ function draw({ view, projection, canvas }, time) {
     canvas.height = height;
   }
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#202020';
+  ctx.fillStyle = '#050505';
   ctx.fillRect(0, 0, width, height);
-
-  // Cover the wide preview with a proportional camera image. Crop the excess
-  // height instead of stretching a person's face and body sideways.
-  const aspect = projection.isReady() ? projection.getAspectRatio() : 4 / 3;
-  const imageWidth = Math.max(width, height * aspect);
-  const imageHeight = imageWidth / aspect;
-  const imageLeft = (width - imageWidth) / 2;
-  const imageTop = (height - imageHeight) * 0.35;
-  const sampleSize = Math.min(imageWidth / projection.width, imageHeight / projection.height);
-  ctx.fillStyle = 'rgba(255,255,255,0.9)';
-  ctx.beginPath();
+  const t = time / 1000;
+  const points = [];
+  const imageWidth = projection.width;
+  const imageHeight = projection.height;
 
   if (projection.isReady()) {
-    for (const { x, y } of projection.captureFrame()) {
-      const seed = hash(Math.round(x * projection.width), Math.round(y * projection.height));
-      const jitterX = ((seed & 255) / 255 - 0.5) * sampleSize * 0.8;
-      const jitterY = (((seed >>> 8) & 255) / 255 - 0.5) * sampleSize * 0.8;
-      const radius = Math.max(0.8, sampleSize * (0.18 + ((seed >>> 16) & 255) / 255 * 0.13));
-      ctx.moveTo(imageLeft + x * imageWidth + jitterX + radius, imageTop + y * imageHeight + jitterY);
-      ctx.arc(imageLeft + x * imageWidth + jitterX, imageTop + y * imageHeight + jitterY,
-        radius, 0, Math.PI * 2);
-    }
-  } else {
-    // A sparse ambient field while the camera starts or awaits permission.
-    const t = time / 1000;
-    const right = view.dataset.wall === 'right';
-    for (let i = 0; i < 2200; i++) {
-      const seed = hash(i, right ? 1 : 0);
-      const x = (seed & 65535) / 65535;
-      const y = ((seed >>> 16) & 65535) / 65535;
-      const shimmer = Math.sin(x * 15 + y * 9 + t * 1.8) * Math.sin(y * 13 - t * 1.2);
-      if (shimmer < -0.1) continue;
-      const radius = Math.max(0.8, sampleSize * (0.13 + (seed & 7) * 0.018));
-      const px = imageLeft + x * imageWidth;
-      const py = imageTop + y * imageHeight;
-      ctx.moveTo(px + radius, py);
-      ctx.arc(px, py, radius, 0, Math.PI * 2);
+    projection.captureFrame();
+    const pixels = projection.imageData?.data;
+    if (pixels) {
+      let edgeTotal = 0;
+      let edgeCount = 0;
+      for (let y = 0; y < imageHeight; y += 4) for (let x = 0; x < imageWidth; x += 4) {
+        if (x > 15 && x < imageWidth - 15 && y > 12 && y < imageHeight - 12) continue;
+        const i = (y * imageWidth + x) * 4;
+        edgeTotal += (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
+        edgeCount++;
+      }
+      const background = edgeTotal / Math.max(1, edgeCount);
+      for (let y = 6; y < imageHeight - 6; y += 2) for (let x = 12; x < imageWidth - 12; x += 2) {
+        const sx = imageWidth - 1 - x;
+        const i = (y * imageWidth + sx) * 4;
+        const luminance = (pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3;
+        const difference = view.dataset.wall === 'right' ? background - luminance : luminance - background;
+        if (difference < 30 || hash(x, y) < .16) continue;
+        points.push({ x: x / imageWidth, y: y / imageHeight, strength: Math.min(1, difference / 100) });
+      }
     }
   }
-  ctx.fill();
+
+  if (points.length < 160) {
+    // A clearly figurative preview when camera access is unavailable.
+    const sway = Math.sin(t * 1.1) * .025;
+    for (let y = 0; y < 95; y++) for (let x = 0; x < 130; x++) {
+      const nx = x / 130;
+      const ny = y / 95;
+      const cx = nx - .5 - sway;
+      const head = (cx / .09) ** 2 + ((ny - .22) / .15) ** 2 < 1;
+      const torso = Math.abs(cx) < .12 + .025 * Math.sin(ny * 5) && ny > .37 && ny < .78;
+      const leftArm = Math.abs(cx + .16 + .08 * (ny - .45)) < .035 && ny > .4 && ny < .78;
+      const rightArm = Math.abs(cx - .16 + .08 * (ny - .45)) < .035 && ny > .4 && ny < .78;
+      const legs = ny >= .76 && ny < 1 && (Math.abs(cx + .06 + .05 * (ny - .76)) < .045 || Math.abs(cx - .06 - .05 * (ny - .76)) < .045);
+      if ((head || torso || leftArm || rightArm || legs) && hash(x, y) > .27) points.push({ x: nx, y: ny, strength: .65 + hash(y, x) * .35 });
+    }
+  }
+
+  const scale = Math.min(width / 1.55, height / 1.15);
+  const left = (width - scale) / 2;
+  const top = (height - scale) / 2;
+  points.forEach((point, i) => {
+    const jitter = (hash(i, Math.floor(t * 10)) - .5) * 1.2 * ratio;
+    const x = left + point.x * scale + jitter;
+    const y = top + point.y * scale;
+    const alpha = .48 + point.strength * .48;
+    const radius = (i % 4 === 0 ? 1.05 : .72) * ratio;
+    ctx.fillStyle = `rgba(246,247,250,${alpha})`;
+    if (i % 3 === 0) ctx.fillRect(x, y, radius * 1.8, radius * 1.8);
+    else {
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
 }
 
 async function start(preview) {
@@ -83,7 +102,7 @@ async function start(preview) {
     preview.started = true;
     preview.view.classList.add('is-active');
   } else {
-    preview.status.textContent = 'Allow camera access to see your projection.';
+    preview.status.textContent = 'Animated preview · allow camera for your silhouette';
   }
 }
 
@@ -96,18 +115,16 @@ if (previews.length) {
     }
   }, { rootMargin: '200px 0px' });
   previews.forEach(preview => observer.observe(preview.view));
-
-  const retry = () => previews.filter(preview => preview.visible && !preview.started).forEach(start);
+  const retry = () => previews.filter(item => item.visible && !item.started).forEach(start);
   document.addEventListener('pointerdown', retry);
   document.addEventListener('keydown', retry);
-
   let lastFrame = 0;
   function animate(time) {
     requestAnimationFrame(animate);
     if (document.hidden || time - lastFrame < 33) return;
     lastFrame = time;
-    previews.filter(preview => preview.visible).forEach(preview => draw(preview, time));
+    previews.filter(item => item.visible).forEach(item => draw(item, time));
   }
   requestAnimationFrame(animate);
-  window.addEventListener('pagehide', () => previews.forEach(preview => preview.projection.dispose()));
+  window.addEventListener('pagehide', () => previews.forEach(item => item.projection.dispose()));
 }

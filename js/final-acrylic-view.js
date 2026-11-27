@@ -4,8 +4,8 @@
 
   const image = preview.querySelector('img');
   const canvas = preview.querySelector('canvas');
-  const switchButton = preview.querySelector('.t-toggle');
-  const stateLabel = preview.querySelector('.acrylic-view-state');
+  const switchButton = preview.parentElement.querySelector('.t-toggle');
+  const stateLabel = preview.parentElement.querySelector('.acrylic-view-state');
   const ctx = canvas.getContext('2d');
 
   function renderAcrylic() {
@@ -20,7 +20,7 @@
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
     // Match the image's object-fit: cover crop before filtering it.
-    const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
+    const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight) * 1.15;
     const sourceWidth = width / scale;
     const sourceHeight = height / scale;
     const sourceX = (image.naturalWidth - sourceWidth) / 2;

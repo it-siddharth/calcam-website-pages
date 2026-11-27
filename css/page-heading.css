@@ -1,0 +1,22 @@
+/* One display scale for the first heading on every main page. */
+:root{--page-heading-size:clamp(64px,6.87vw,99px)}
+.landing-page .title,
+.installation-title,
+.journal-title,
+.gallery-title,
+.hero h1#page-title{
+  font-family:'slight-chance','Slight Chance','Max Hana','403 Super Vega',serif!important;
+  font-size:var(--page-heading-size)!important;
+  font-weight:400!important;
+  line-height:.869!important;
+  letter-spacing:-2.5px!important;
+  font-feature-settings:'salt' 1,'dlig' 1;
+}
+@media(max-width:768px){
+  :root{--page-heading-size:48px}
+  .landing-page .title,
+  .installation-title,
+  .journal-title,
+  .gallery-title,
+  .hero h1#page-title{line-height:.9!important}
+}

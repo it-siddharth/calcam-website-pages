@@ -2,12 +2,12 @@ const artistTrack = document.querySelector('.artist-track');
 const artistSlides = [...artistTrack.querySelectorAll('img')];
 const artistTitle = document.querySelector('.artist-footer .label u');
 const artistDescription = document.querySelector('.artist-footer .prose');
-const artistDescriptions = [
-  artistDescription.textContent,
-  'A large figure made of overlapping red, green, and blue grids fills the wall as a visitor stands before it.',
-  'A luminous panel frames a human silhouette while another visitor looks on.',
-  'A projected floor grid bends around a person seated beneath a shaft of light.'
+const artistWorks = [
+  { title: 'RAFAEL LOZANO-HEMMER / BODY MOVIES', description: artistDescription.textContent, url: 'https://lozano-hemmer.com/artworks/body_movies.php' },
+  { title: 'TEAMLAB / FLOWERS AND PEOPLE', description: 'Flowers respond to the presence of visitors, blooming and fading as people move through the room. I was drawn to how a person can change a projected world simply by being there.', url: 'https://www.teamlab.art/ew/flowersandpeople-azabudai/' },
+  { title: 'JEN LEWIN / THE POOL', description: 'The Pool responds to footsteps and touch with spreading fields of colored light. Its shared, changing image helped me think about an installation shaped by everyone who enters it.', url: 'https://www.jenlewinstudio.com/portfolio/the-pool/' }
 ];
+const artistSource = document.querySelector('.artist-source');
 let activeArtist = 0;
 let suspendArtistScrollUntil = 0;
 const carousels = document.querySelectorAll('.artist-track, .setup-strip');
@@ -17,8 +17,9 @@ function setActiveArtist(index) {
     slide.classList.toggle('is-active', i === activeArtist);
     if (i !== activeArtist) slide.style.filter = '';
   });
-  artistTitle.textContent = `ARTIST EXHIBIT ${String(activeArtist + 1).padStart(2, '0')}`;
-  artistDescription.textContent = artistDescriptions[activeArtist];
+  artistTitle.textContent = artistWorks[activeArtist].title;
+  artistDescription.textContent = artistWorks[activeArtist].description;
+  artistSource.href = artistWorks[activeArtist].url;
   document.querySelector('.rail-controls [data-dir="-1"]').disabled = activeArtist === 0;
   document.querySelector('.rail-controls [data-dir="1"]').disabled = activeArtist === artistSlides.length - 1;
 }
@@ -229,12 +230,6 @@ const setupReady = new WeakSet();
 let setupIndex = 0;
 let setupFinished = false;
 let setupInView = false;
-const formatSetupTime = (seconds) => {
-  if (!Number.isFinite(seconds)) return '0:00';
-  const value = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(value / 60)}:${String(value % 60).padStart(2, '0')}`;
-};
-
 function selectSetup(index) {
   setupFinished = false;
   setupIndex = index;
@@ -246,6 +241,7 @@ function selectSetup(index) {
     other.classList.remove('is-playing', 'is-sequence-active');
   });
   video.currentTime = 0;
+  media.dataset.playedSeconds = '0';
   playCurrentSetup();
 }
 
@@ -275,50 +271,29 @@ setupMedia.forEach((media, index) => {
 
   const transport = document.createElement('div');
   transport.className = 'setup-transport';
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'setup-toggle';
-  toggle.textContent = 'PLAY';
-  toggle.setAttribute('aria-label', `Play installation clip ${index + 1}`);
-  const scrubber = document.createElement('input');
-  scrubber.className = 'setup-scrubber';
-  scrubber.type = 'range';
-  scrubber.min = '0';
-  scrubber.max = '1000';
-  scrubber.value = '0';
-  scrubber.setAttribute('aria-label', `Seek installation clip ${index + 1}`);
-  const time = document.createElement('span');
-  time.className = 'setup-time';
-  time.textContent = '0:00 / 0:00';
-  transport.append(toggle, scrubber, time);
+  const progress = document.createElement('div');
+  progress.className = 'setup-progress';
+  progress.setAttribute('role', 'progressbar');
+  progress.setAttribute('aria-label', `Installation clip ${index + 1} progress`);
+  progress.setAttribute('aria-valuemin', '0');
+  progress.setAttribute('aria-valuemax', '10');
+  transport.append(progress);
   media.after(transport);
+  let clipStart = 0;
+  video.addEventListener('loadedmetadata', () => { video.loop = video.duration < 10; });
+  if (video.readyState >= HTMLMediaElement.HAVE_METADATA) video.loop = video.duration < 10;
 
   const updateTransport = () => {
-    const duration = Number.isFinite(video.duration) ? video.duration : 0;
-    scrubber.value = duration ? String(Math.round(video.currentTime / duration * 1000)) : '0';
-    scrubber.style.setProperty('--played', `${Number(scrubber.value) / 10}%`);
-    time.textContent = `${formatSetupTime(video.currentTime)} / ${formatSetupTime(duration)}`;
-    const playing = !video.paused && !video.ended;
-    toggle.textContent = playing ? 'PAUSE' : 'PLAY';
-    toggle.setAttribute('aria-label', `${playing ? 'Pause' : 'Play'} installation clip ${index + 1}`);
+    const elapsed = video.paused ? Number(media.dataset.playedSeconds || 0) : Math.min(10, (performance.now() - clipStart) / 1000);
+    progress.style.setProperty('--played', `${Math.max(0, Math.min(100, elapsed * 10))}%`);
+    progress.setAttribute('aria-valuenow', String(Math.round(elapsed)));
   };
-  toggle.addEventListener('click', (event) => {
-    event.stopPropagation();
-    if (setupIndex === index && !video.paused) video.pause();
-    else if (setupIndex === index) video.play().catch(() => {});
-    else selectSetup(index);
-  });
-  scrubber.addEventListener('click', (event) => event.stopPropagation());
-  scrubber.addEventListener('input', (event) => {
-    event.stopPropagation();
-    const requestedPosition = Number(scrubber.value) / 1000;
-    if (setupIndex !== index) selectSetup(index);
-    if (Number.isFinite(video.duration)) video.currentTime = requestedPosition * video.duration;
-    updateTransport();
-  });
   video.addEventListener('loadedmetadata', updateTransport);
   video.addEventListener('durationchange', updateTransport);
-  video.addEventListener('timeupdate', updateTransport);
+  video.addEventListener('timeupdate', () => {
+    updateTransport();
+    if (setupIndex === index && (performance.now() - clipStart) >= 9960) advanceSetup(index);
+  });
   video.addEventListener('seeked', updateTransport);
   media.tabIndex = 0;
   media.setAttribute('role', 'button');
@@ -331,6 +306,7 @@ setupMedia.forEach((media, index) => {
   });
 
   video.addEventListener('playing', () => {
+    clipStart = performance.now() - Number(media.dataset.playedSeconds || 0) * 1000;
     setupIndex = index;
     setupMedia.forEach((other) => {
       if (other === media) return;
@@ -341,12 +317,15 @@ setupMedia.forEach((media, index) => {
     updateTransport();
   });
   video.addEventListener('pause', () => {
+    if (clipStart) media.dataset.playedSeconds = String(Math.min(10, (performance.now() - clipStart) / 1000));
     media.classList.remove('is-sequence-active');
     updateTransport();
   });
-  video.addEventListener('ended', () => {
+  function advanceSetup(finishedIndex) {
+    if (setupIndex !== finishedIndex) return;
     video.pause();
     video.currentTime = 0;
+    media.dataset.playedSeconds = '0';
     media.classList.remove('is-playing', 'is-sequence-active');
     setupIndex = index + 1;
     if (setupIndex >= setupMedia.length) {
@@ -360,7 +339,8 @@ setupMedia.forEach((media, index) => {
       setupStrip.scrollTo({ left: setupStrip.scrollLeft + nextRect.left - stripRect.left, behavior: 'smooth' });
     }
     playCurrentSetup();
-  });
+  }
+  video.addEventListener('ended', () => advanceSetup(index));
   updateTransport();
 });
 

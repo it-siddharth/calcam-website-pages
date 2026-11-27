@@ -116,7 +116,22 @@
     reset.type = 'button';
     reset.textContent = 'RESET';
     reset.setAttribute('aria-label', `Reset ${title} settings`);
-    heading.append(label, reset);
+    const copy = document.createElement('button');
+    copy.type = 'button';
+    copy.textContent = 'COPY JSON';
+    copy.setAttribute('aria-label', `Copy ${title} settings as JSON`);
+    copy.addEventListener('click', async () => {
+      const payload = { iteration: title, ...settings[index] };
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+        copy.textContent = 'COPIED';
+        setTimeout(() => { copy.textContent = 'COPY JSON'; }, 1600);
+      } catch (_) { copy.textContent = 'COPY FAILED'; }
+    });
+    const actions = document.createElement('div');
+    actions.className = 'iteration-settings-actions';
+    actions.append(copy, reset);
+    heading.append(label, actions);
     const controls = document.createElement('div');
     controls.className = 'iteration-settings-controls';
     const inputs = {};
@@ -276,8 +291,18 @@
       output.font = `bold ${tuning.textSize}px "JetBrains Mono", monospace`;
       const anchors = [[.05,.08],[.58,.15],[.25,.3],[.55,.43],[.06,.56],[.64,.67],[.2,.8],[.52,.91]];
       for (let i = 0; bounds && i < anchors.length; i++) {
-        const x = (bounds.left + (bounds.right - bounds.left) * anchors[i][0]) / width * canvas.width;
-        const y = (bounds.top + (bounds.bottom - bounds.top) * anchors[i][1]) / height * canvas.height;
+        const targetX = bounds.left + (bounds.right - bounds.left) * anchors[i][0];
+        const targetY = bounds.top + (bounds.bottom - bounds.top) * anchors[i][1];
+        let bestX = targetX, bestY = targetY, bestDistance = Infinity;
+        for (let oy = -12; oy <= 12; oy += 3) for (let ox = -12; ox <= 12; ox += 3) {
+          const sx = targetX + ox, sy = targetY + oy;
+          if (strengthAt(sx, sy) < .35) continue;
+          const distance = ox * ox + oy * oy;
+          if (distance < bestDistance) { bestDistance = distance; bestX = sx; bestY = sy; }
+        }
+        if (bestDistance === Infinity) continue;
+        const x = bestX / width * canvas.width;
+        const y = bestY / height * canvas.height;
         output.fillStyle = mode === 0
           ? ['#f86ad6', '#f3f3f3', '#fb573e'][i % 3]
           : ['#fb783b', '#f2c7db', '#f1f1f1'][i % 3];
