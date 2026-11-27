@@ -180,6 +180,11 @@
 
 /* Installation clips can still be selected without an overlay. */
 .setup-strip .motion-media{cursor:pointer}
+
+@media(max-width:700px){
+  .hero{height:auto;min-height:100svh;padding-bottom:145px}
+  .hero-left .small,.hero-right .small{font-size:16px;line-height:20px}
+}
 .setup-strip .motion-media:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .setup-strip video::-webkit-media-controls{display:none!important}
 .setup-transport{display:flex;align-items:center;gap:10px;width:288px;max-width:100%;margin-top:10px;color:#fff;font:500 11px/1 var(--mono)}
