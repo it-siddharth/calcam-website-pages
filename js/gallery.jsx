@@ -27,10 +27,9 @@ const posterFor = (item) => item.src.replace('assets/videos/', 'assets/gallery-t
 
 function Media({ item, spotlight = false }) {
   if (item.type === 'video') {
-    if (!spotlight) return <img src={posterFor(item)} alt={item.alt} width={item.width} height={item.height} loading="lazy" />;
     return <video key={item.src} src={item.src} poster={posterFor(item)} width={item.width} height={item.height}
       style={{ '--ratio': `${item.width} / ${item.height}`, '--spotlight-width': `${(70 * item.width / item.height).toFixed(2)}dvh` }}
-      playsInline controls preload="metadata" aria-label={item.alt} />;
+      muted loop playsInline controls={spotlight} preload="none" aria-label={item.alt} />;
   }
   return <img src={item.src} alt={item.alt} width={item.width} height={item.height} loading={spotlight ? 'eager' : 'lazy'} />;
 }
@@ -45,6 +44,7 @@ function Gallery() {
   const closeRef = useRef(null);
   const thumbnailStripRef = useRef(null);
   const thumbnailRefs = useRef([]);
+  const wheelState = useRef({ delta: 0, lastMove: -Infinity });
   const scrollToIndex = (index, behavior = 'smooth') => {
     const stage = stageRef.current;
     const card = cardRefs.current[index];
@@ -96,10 +96,38 @@ function Gallery() {
     const thumbnail = thumbnailRefs.current[active];
     if (!strip || !thumbnail) return;
     strip.scrollTo({
-      left: thumbnail.offsetLeft - (strip.clientWidth - thumbnail.clientWidth) / 2,
+      left: thumbnail.offsetLeft - strip.offsetLeft - (strip.clientWidth - thumbnail.clientWidth) / 2,
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     });
   }, [active]);
+
+  useEffect(() => {
+    const strip = thumbnailStripRef.current;
+    if (!strip) return;
+    let frame;
+    const updateCurve = () => {
+      frame = null;
+      const midpoint = strip.scrollLeft + strip.clientWidth / 2;
+      const radius = strip.clientWidth / 2;
+      thumbnailRefs.current.forEach((thumbnail) => {
+        if (!thumbnail) return;
+        const center = thumbnail.offsetLeft - strip.offsetLeft + thumbnail.offsetWidth / 2;
+        const position = Math.max(-1, Math.min(1, (center - midpoint) / radius));
+        thumbnail.style.setProperty('--curve-angle', `${-position * 58}deg`);
+        thumbnail.style.setProperty('--curve-scale', String(1 - Math.abs(position) * .22));
+      });
+    };
+    const scheduleCurve = () => { if (frame == null) frame = requestAnimationFrame(updateCurve); };
+    scheduleCurve();
+    strip.addEventListener('scroll', scheduleCurve, { passive: true });
+    const observer = new ResizeObserver(scheduleCurve);
+    observer.observe(strip);
+    return () => {
+      strip.removeEventListener('scroll', scheduleCurve);
+      observer.disconnect();
+      if (frame != null) cancelAnimationFrame(frame);
+    };
+  }, []);
 
   useEffect(() => {
     if (selected !== null) return;
@@ -123,10 +151,60 @@ function Gallery() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [selected]);
 
-  const onWheel = (event) => {
-    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-    event.currentTarget.scrollLeft += event.deltaY * (event.deltaMode === 1 ? 16 : 1);
-  };
+  useEffect(() => {
+    const stage = stageRef.current;
+    const stageVideos = [...stage.querySelectorAll('video')];
+    const lightboxVideo = stage.parentElement.querySelector('.lightbox-media video');
+    const visible = new Set();
+    const syncPlayback = () => {
+      stageVideos.forEach((video) => {
+        if (selected === null && visible.has(video) && !document.hidden) {
+          if (video.paused) video.play().catch(() => {});
+        } else video.pause();
+      });
+      if (lightboxVideo) {
+        if (!document.hidden) {
+          if (lightboxVideo.paused) lightboxVideo.play().catch(() => {});
+        } else lightboxVideo.pause();
+      }
+    };
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= .25) visible.add(entry.target);
+        else visible.delete(entry.target);
+      });
+      syncPlayback();
+    }, { root: stage, threshold: [0, .25] });
+    if (selected === null) stageVideos.forEach((video) => observer.observe(video));
+    else syncPlayback();
+    document.addEventListener('visibilitychange', syncPlayback);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', syncPlayback);
+      stageVideos.forEach((video) => video.pause());
+      lightboxVideo?.pause();
+    };
+  }, [selected]);
+
+  useEffect(() => {
+    const gallery = stageRef.current?.parentElement;
+    if (!gallery || selected !== null) return;
+    const onWheel = (event) => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      event.preventDefault();
+      const wheel = wheelState.current;
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1);
+      if (Math.sign(delta) !== Math.sign(wheel.delta)) wheel.delta = 0;
+      wheel.delta += delta;
+      if (Math.abs(wheel.delta) < 35 || performance.now() - wheel.lastMove < 450) return;
+      const direction = Math.sign(wheel.delta);
+      wheel.delta = 0;
+      wheel.lastMove = performance.now();
+      moveBy(direction);
+    };
+    gallery.addEventListener('wheel', onWheel, { passive: false });
+    return () => gallery.removeEventListener('wheel', onWheel);
+  }, [selected]);
 
   const onScroll = (event) => {
     if (scrollFrame.current) return;
@@ -151,7 +229,7 @@ function Gallery() {
 
   return <div className="spatial-gallery">
     <div className="spatial-stage" ref={stageRef} role="region" aria-roledescription="carousel" aria-label="Installation photographs and films"
-      onWheel={onWheel} onScroll={onScroll}>
+      onScroll={onScroll}>
       {items.map((item, index) => {
         return <button className="spatial-card" key={item.src} data-position={index === active ? 'current' : 'other'} type="button"
           ref={(node) => { cardRefs.current[index] = node; }}
@@ -161,25 +239,26 @@ function Gallery() {
             else scrollToIndex(index);
           }} aria-label={`${index === active ? 'Open' : 'Show'} ${item.alt}, ${index + 1} of ${items.length}`}>
           <Media item={item} />
-          {item.type === 'video' && <span className="spatial-play" aria-hidden="true">▶</span>}
         </button>;
       })}
     </div>
-    <div className="carousel-thumbnails" ref={thumbnailStripRef} aria-label="Choose a gallery item">
-      {items.map((item, index) =>
-        <button className={`carousel-thumbnail${index === active ? ' is-active' : ''}`} key={item.src} type="button"
-          ref={(node) => { thumbnailRefs.current[index] = node; }}
-          onClick={() => scrollToIndex(index)} aria-label={`Show ${item.alt}, ${index + 1} of ${items.length}`}
-          aria-pressed={index === active}>
-          <img src={item.type === 'video' ? posterFor(item) : item.src} alt="" loading="lazy" />
-          {item.type === 'video' && <span aria-hidden="true">▶</span>}
-        </button>
-      )}
-    </div>
-    <div className="carousel-controls" aria-label="Gallery navigation">
-      <button type="button" onClick={() => moveBy(-1)} disabled={active === 0} aria-label="Previous image">←</button>
-      <span className="carousel-count" aria-live="polite">{String(active + 1).padStart(2, '0')} <span>/</span> {String(items.length).padStart(2, '0')}</span>
-      <button type="button" onClick={() => moveBy(1)} disabled={active === items.length - 1} aria-label="Next image">→</button>
+    <div className="carousel-footer">
+      <div className="carousel-navigation" aria-label="Gallery navigation">
+        <button className="carousel-arrow" type="button" onClick={() => moveBy(-1)} disabled={active === 0} aria-label="Previous image">←</button>
+        <div className="carousel-thumbnails" ref={thumbnailStripRef} aria-label="Choose a gallery item">
+          {items.map((item, index) =>
+            <button className={`carousel-thumbnail${index === active ? ' is-active' : ''}`} key={item.src} type="button"
+              ref={(node) => { thumbnailRefs.current[index] = node; }}
+              onClick={() => scrollToIndex(index)} aria-label={`Show ${item.alt}, ${index + 1} of ${items.length}`}
+              aria-pressed={index === active}>
+              <img src={item.type === 'video' ? posterFor(item) : item.src} alt="" loading="lazy" />
+              {item.type === 'video' && <span aria-hidden="true">▶</span>}
+            </button>
+          )}
+        </div>
+        <button className="carousel-arrow" type="button" onClick={() => moveBy(1)} disabled={active === items.length - 1} aria-label="Next image">→</button>
+      </div>
+      <p className="carousel-caption" aria-live="polite"><span className="carousel-count">{String(active + 1).padStart(2, '0')} <span>/</span> {String(items.length).padStart(2, '0')}</span><span>{items[active].alt}</span></p>
     </div>
     {selected !== null && <div className="gallery-lightbox" role="dialog" aria-modal="true" aria-label={items[selected].alt}
       onClick={(event) => { if (event.target === event.currentTarget) close(); }}>

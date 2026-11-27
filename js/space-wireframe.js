@@ -125,10 +125,10 @@ if (container) {
       lines([[x, 1.59, z], [x, 1.05, z]], soft, .55);
     });
 
-    const camera = new THREE.PerspectiveCamera(38, 1, .1, 100);
+    const camera = new THREE.PerspectiveCamera(44, 1, .1, 100);
     const target = new THREE.Vector3(0, 1.35, -.15);
     let azimuth = .47, elevation = .32;
-    const distance = 9.2;
+    const distance = 10.5;
     const updateCamera = () => {
       camera.position.set(
         target.x + distance * Math.sin(azimuth) * Math.cos(elevation),
@@ -190,7 +190,6 @@ if (container) {
       tooltip.style.top = `${Math.max(8, event.clientY - rect.top - 50)}px`;
       tooltip.dataset.show = 'true';
       tooltip.setAttribute('aria-hidden', 'false');
-      renderer.domElement.style.cursor = 'help';
     };
 
     const render = () => renderer.render(scene, camera);
