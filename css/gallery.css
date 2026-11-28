@@ -29,7 +29,7 @@ img, video { display: block; }
   gap: 36px;
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-snap-type: x proximity;
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
   touch-action: pan-x;
 }
@@ -48,6 +48,7 @@ img, video { display: block; }
   cursor: pointer;
   opacity: .2;
   scroll-snap-align: center;
+  scroll-snap-stop: always;
   transition: opacity .3s ease;
 }
 .spatial-card[data-position="current"] { opacity: 1; }

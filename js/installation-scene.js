@@ -142,6 +142,8 @@ const _rightWallRotation = new THREE.Quaternion();
 let moveForward = false, moveBackward = false;
 let moveLeft = false, moveRight = false;
 let isSprinting = false;
+let mouseLookFallback = false;
+let pointerLockFallbackTimer = null;
 let joystickActive = false;
 let prevTime = performance.now();
 
@@ -573,11 +575,17 @@ function focusOnAnchor(anchorKey) {
   if (controls.isLocked) {
     controls.unlock();
   }
+  if (mouseLookFallback) stopMouseLookFallback();
   
   // Animate camera to focus position
   const startPos = camera.position.clone();
   const endPos = anchor.cameraPosition;
   const lookTarget = anchor.lookAt;
+  const startQuaternion = camera.quaternion.clone();
+  const targetCamera = camera.clone();
+  targetCamera.position.copy(endPos);
+  targetCamera.lookAt(lookTarget);
+  const endQuaternion = targetCamera.quaternion.clone();
   
   const duration = 1200; // ms
   const startTime = performance.now();
@@ -590,8 +598,8 @@ function focusOnAnchor(anchorKey) {
     // Interpolate camera position
     camera.position.lerpVectors(startPos, endPos, eased);
     
-    // Smoothly look at target
-    camera.lookAt(lookTarget);
+    // Rotate from the current view so switching anchors never snaps on frame one.
+    camera.quaternion.copy(startQuaternion).slerp(endQuaternion, eased);
     
     if (progress < 1) {
       anchorAnimationId = requestAnimationFrame(animateFocus);
@@ -663,6 +671,14 @@ function closeAnchorPanel() {
 // Expose closeAnchorPanel globally for the HTML onclick handler
 window.closeAnchorPanel = closeAnchorPanel;
 
+function stopMouseLookFallback() {
+  clearTimeout(pointerLockFallbackTimer);
+  pointerLockFallbackTimer = null;
+  mouseLookFallback = false;
+  document.body.classList.remove('pointer-locked');
+  moveForward = moveBackward = moveLeft = moveRight = isSprinting = false;
+}
+
 // ============================================
 // Initialize Scene
 // ============================================
@@ -710,18 +726,48 @@ function init() {
     // Don't add pointer-locked class on mobile - keeps anchor indicators interactive
   } else {
     // Desktop: click to enable pointer lock
+    const lookEuler = new THREE.Euler(0, 0, 0, 'YXZ');
+    const startMouseLookFallback = () => {
+      pointerLockFallbackTimer = null;
+      if (controls.isLocked || mouseLookFallback || isAnchorFocused || isCinematicIntro ||
+          document.body.classList.contains('cinematic-intro')) return;
+      mouseLookFallback = true;
+      document.body.classList.add('pointer-locked');
+    };
     container.addEventListener('click', () => {
-      if (!controls.isLocked) {
+      if (isCinematicIntro || document.body.classList.contains('cinematic-intro') ||
+          isAnchorFocused || controls.isLocked) return;
+      if (mouseLookFallback) return;
+      clearTimeout(pointerLockFallbackTimer);
+      try {
         controls.lock();
+      } catch {
+        startMouseLookFallback();
       }
+      // Some embedded browsers reject pointer lock without an error event.
+      if (!mouseLookFallback) pointerLockFallbackTimer = setTimeout(startMouseLookFallback, 350);
+    });
+    document.addEventListener('pointerlockerror', startMouseLookFallback);
+    document.addEventListener('mousemove', (event) => {
+      if (!mouseLookFallback) return;
+      lookEuler.setFromQuaternion(camera.quaternion);
+      lookEuler.y -= event.movementX * 0.002;
+      lookEuler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, lookEuler.x - event.movementY * 0.002));
+      camera.quaternion.setFromEuler(lookEuler);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.code === 'Escape' && mouseLookFallback) stopMouseLookFallback();
     });
     
     controls.addEventListener('lock', () => {
+      clearTimeout(pointerLockFallbackTimer);
+      pointerLockFallbackTimer = null;
+      mouseLookFallback = false;
       document.body.classList.add('pointer-locked');
     });
     
     controls.addEventListener('unlock', () => {
-      document.body.classList.remove('pointer-locked');
+      document.body.classList.toggle('pointer-locked', mouseLookFallback);
       // Reset all movement states when pointer lock is released
       moveForward = false;
       moveBackward = false;
@@ -2904,7 +2950,7 @@ function updateProjectionPlaceholder(time, mesh, rotation) {
 // ============================================
 function updateMovement(delta) {
   // On mobile, always allow movement; on desktop, require pointer lock
-  if (!isMobile && !controls.isLocked) return;
+  if (!isMobile && !controls.isLocked && !mouseLookFallback) return;
   
   const inputZ = Number(moveForward) - Number(moveBackward);
   const inputX = Number(moveRight) - Number(moveLeft);

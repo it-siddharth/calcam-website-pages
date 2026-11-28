@@ -147,6 +147,7 @@
   letter-spacing: -2.5px;
 }
 .landing-page .content-section { padding-top: var(--page-vertical-inset); padding-bottom: var(--page-vertical-inset); }
+.anchor-info-panel .panel-title { letter-spacing: 1px; }
 .landing-page .title { font-size: clamp(64px, 6.87vw, 99px); line-height: .869; margin-bottom: 32px; }
 .landing-page .description { margin-bottom: 25px; text-align: left; }
 .landing-page .meta-info { gap: clamp(40px, 9.5vw, 136px); }

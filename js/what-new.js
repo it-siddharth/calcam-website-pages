@@ -75,7 +75,8 @@ document.querySelectorAll('.rejected-thumbs button').forEach((button) => {
     video.load();
     const cover = rejectedMain.querySelector('.media-cover');
     cover.src = selected.src;
-    revealWithDither(cover, () => video.play().catch(() => {}));
+    showWithoutDither(cover);
+    video.play().catch(() => {});
   });
 });
 
@@ -93,6 +94,17 @@ const bayer = [
 ];
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const activeReveals = new WeakMap();
+
+function showWithoutDither(img) {
+  const previous = activeReveals.get(img);
+  if (previous) {
+    cancelAnimationFrame(previous.frame);
+    previous.canvas?.remove();
+    activeReveals.delete(img);
+  }
+  img.style.opacity = '1';
+  img.style.filter = previous?.originalFilter ?? '';
+}
 
 async function revealWithDither(img, onDone = () => {}) {
   const previous = activeReveals.get(img);
@@ -220,7 +232,6 @@ if (!reduceMotion.matches && 'IntersectionObserver' in window) {
 // it is actually playing, and the next one starts after the previous ends.
 const setupStrip = document.querySelector('.setup-strip');
 const setupMedia = [...setupStrip.querySelectorAll('.motion-media')];
-const setupReady = new WeakSet();
 let setupIndex = 0;
 let setupFinished = false;
 let setupInView = false;
@@ -229,6 +240,7 @@ function selectSetup(index) {
   setupIndex = index;
   const media = setupMedia[index];
   const video = media.querySelector('video');
+  showWithoutDither(media.querySelector('.media-cover'));
   setupMedia.forEach((other) => {
     if (other === media) return;
     other.querySelector('video').pause();
@@ -236,22 +248,13 @@ function selectSetup(index) {
   });
   video.currentTime = 0;
   media.dataset.playedSeconds = '0';
-  playCurrentSetup();
+  video.play().catch(() => {});
 }
 
 function playCurrentSetup() {
   if (setupFinished || !setupInView) return;
   const media = setupMedia[setupIndex];
   if (!media) return;
-  if (!setupReady.has(media)) {
-    if (media.dataset.activated) return;
-    media.dataset.activated = 'true';
-    revealWithDither(media.querySelector('.media-cover'), () => {
-      setupReady.add(media);
-      if (setupMedia[setupIndex] === media) playCurrentSetup();
-    });
-    return;
-  }
   const video = media.querySelector('video');
   if (video.paused && !video.ended) video.play().catch(() => {});
 }
@@ -339,6 +342,8 @@ setupMedia.forEach((media, index) => {
 });
 
 // Non-sequence clips begin when they enter view, without an overlaid control.
+const exhibitionSetupVideo = document.querySelector('.space-photos video[aria-label="Exhibition setup"]');
+if (exhibitionSetupVideo) exhibitionSetupVideo.playbackRate = 2.5;
 document.querySelectorAll('.motion-media').forEach((media) => {
   if (media.closest('.setup-strip')) return;
   const video = media.querySelector('video');

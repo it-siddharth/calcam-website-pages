@@ -47,7 +47,7 @@ function Gallery() {
   const closeRef = useRef(null);
   const thumbnailStripRef = useRef(null);
   const thumbnailRefs = useRef([]);
-  const wheelState = useRef({ delta: 0, lastMove: -Infinity });
+  const wheelState = useRef({ delta: 0, lastEvent: -Infinity, lastMove: -Infinity, lastMagnitude: 0, locked: false });
   useEffect(() => {
     const breakpoint = window.matchMedia('(min-width: 769px)');
     const updateMode = () => {
@@ -154,6 +154,25 @@ function Gallery() {
   }, [selected]);
 
   useEffect(() => {
+    if (selected !== null || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let timer;
+    const schedule = () => {
+      clearTimeout(timer);
+      if (document.hidden) return;
+      timer = window.setTimeout(() => {
+        const next = (activeRef.current + 1) % items.length;
+        scrollToIndex(next, next === 0 ? 'instant' : 'smooth');
+      }, 4000);
+    };
+    schedule();
+    document.addEventListener('visibilitychange', schedule);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', schedule);
+    };
+  }, [active, selected, desktop]);
+
+  useEffect(() => {
     if (selected === null) return;
     closeRef.current?.focus();
     const onKeyDown = (event) => {
@@ -207,13 +226,25 @@ function Gallery() {
       if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
       event.preventDefault();
       const wheel = wheelState.current;
+      const now = performance.now();
       const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1);
+      const magnitude = Math.abs(delta);
+      const newGesture = now - wheel.lastEvent > 120 ||
+        (wheel.locked && now - wheel.lastMove > 180 && magnitude > Math.max(24, wheel.lastMagnitude * 2.2));
+      if (newGesture) {
+        wheel.delta = 0;
+        wheel.locked = false;
+      }
+      wheel.lastEvent = now;
+      wheel.lastMagnitude = magnitude;
+      if (wheel.locked) return;
       if (Math.sign(delta) !== Math.sign(wheel.delta)) wheel.delta = 0;
       wheel.delta += delta;
-      if (Math.abs(wheel.delta) < 35 || performance.now() - wheel.lastMove < 450) return;
+      if (Math.abs(wheel.delta) < 35) return;
       const direction = Math.sign(wheel.delta);
       wheel.delta = 0;
-      wheel.lastMove = performance.now();
+      wheel.locked = true;
+      wheel.lastMove = now;
       moveBy(direction);
     };
     gallery.addEventListener('wheel', onWheel, { passive: false });

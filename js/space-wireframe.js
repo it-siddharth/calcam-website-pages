@@ -128,7 +128,7 @@ if (container) {
     const camera = new THREE.PerspectiveCamera(44, 1, .1, 100);
     const target = new THREE.Vector3(0, 1.35, -.15);
     let azimuth = .47, elevation = .32;
-    const distance = 8.75;
+    let distance = 8.75;
     const updateCamera = () => {
       camera.position.set(
         target.x + distance * Math.sin(azimuth) * Math.cos(elevation),
@@ -168,6 +168,8 @@ if (container) {
     const showTooltip = event => {
       if (dragging || event.pointerType === 'touch') return hideTooltip();
       const rect = renderer.domElement.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      const tooltipX = event.clientX - containerRect.left;
       pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
       model.updateMatrixWorld(true);
       raycaster.setFromCamera(pointer, camera);
@@ -180,14 +182,14 @@ if (container) {
         const width = Math.ceil(tooltipText.scrollWidth + parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight));
         if (!activeLabel) tooltip.style.transition = 'none';
         tooltip.style.width = `${width}px`;
-        tooltip.style.setProperty('--tt-x', `${Math.max(8, Math.min(rect.width - width - 8, event.clientX - rect.left - width / 2))}px`);
+        tooltip.style.setProperty('--tt-x', `${Math.max(8, Math.min(containerRect.width - width - 8, tooltipX - width / 2))}px`);
         if (!activeLabel) { void tooltip.offsetWidth; tooltip.style.transition = ''; }
         activeLabel = label;
       } else {
         const width = tooltip.getBoundingClientRect().width;
-        tooltip.style.setProperty('--tt-x', `${Math.max(8, Math.min(rect.width - width - 8, event.clientX - rect.left - width / 2))}px`);
+        tooltip.style.setProperty('--tt-x', `${Math.max(8, Math.min(containerRect.width - width - 8, tooltipX - width / 2))}px`);
       }
-      tooltip.style.top = `${Math.max(8, event.clientY - rect.top - 50)}px`;
+      tooltip.style.top = `${Math.max(8, event.clientY - containerRect.top - 50)}px`;
       tooltip.dataset.show = 'true';
       tooltip.setAttribute('aria-hidden', 'false');
     };
@@ -196,9 +198,13 @@ if (container) {
     const resize = () => {
       const width = container.clientWidth, height = container.clientHeight;
       if (!width || !height) return;
+      const overscan = window.matchMedia('(max-width: 700px)').matches ? 0 : .2;
+      const scale = 1 + overscan * 2;
+      distance = 8.75 * scale;
+      updateCamera();
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
+      renderer.setSize(width * scale, height * scale);
       render();
     };
     new ResizeObserver(resize).observe(container);
