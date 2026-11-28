@@ -89,3 +89,38 @@
     margin-inline:0;
   }
 }
+
+/* Installation: one centered heading and instruction line. */
+.installation-title {
+  top: var(--page-vertical-inset) !important;
+  left: 50% !important;
+  right: auto !important;
+  width: max-content;
+  max-width: calc(100vw - 140px);
+  margin: 0;
+  transform: translateX(-50%) !important;
+  text-align: center !important;
+  word-spacing: .12em;
+}
+.installation-footer {
+  left: 50% !important;
+  right: auto !important;
+  bottom: calc(var(--page-vertical-inset) + 15px) !important;
+  width: min(560px, calc(100vw - 40px)) !important;
+  transform: translateX(-50%) !important;
+  align-items: center !important;
+  text-align: center !important;
+  pointer-events: none;
+}
+.installation-footer .instruction-text { margin: 0; text-align: center; }
+@media (max-width: 768px) {
+  .installation-title {
+    display: block !important;
+    width: calc(100vw - 130px);
+    max-width: none;
+    white-space: normal;
+  }
+  .installation-footer {
+    bottom: 145px !important;
+  }
+}

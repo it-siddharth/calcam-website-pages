@@ -72,13 +72,19 @@ const CONFIG = {
 // ============================================
 const roomSettings = {
   ambient: 0.00,
-  wallColor: '#3a3a3a',
+  tvGlow: 0.85,
+  glowReach: 3,
+  glowColor: '#ffffff',
+  wallColor: '#1c1c1c',
+  wallTexture: 'smooth',
+  textureStrength: 100,
+  textureScale: 12,
   floorColor: '#242424',
   ceilingColor: '#242424',
   projectionOn: true,
-  projectionIntensity: 0.55,
+  projectionIntensity: 0.7,
   projectionRightOn: true,
-  projectionRightIntensity: 0.55,
+  projectionRightIntensity: 0.65,
   panelOpacity: 0.30,
   tvFrameColor: '#1c1c1c',
   tvBorderVisible: false,
@@ -107,10 +113,11 @@ let acrylicPanels = [];
 let projectionMesh, projectionMaterial; // InstancedMesh for left wall
 let ambientLight, tvGlow;
 let walls = [], floor, ceiling, backWall;
+let wallTextureMap = null;
 let speakers = [];
 let silhouetteCanvas, silhouetteCtx;
 let webcamRenderer = null; // Native webcam text renderer (Safari-compatible)
-const tvSettings = { threshold: 83, density: 1.15, brightness: 1, invert: false };
+const tvSettings = { threshold: 82, density: 2.4, brightness: 0.9, invert: false };
 let webcamProjection = null; // Webcam projection for left wall
 let projectionInitialized = false;
 
@@ -403,12 +410,6 @@ function setupAnchorPoints() {
     }
   });
 
-  document.getElementById('start-installation-tour')?.addEventListener('click', (event) => {
-    event.stopPropagation();
-    if (isCinematicIntro) skipCinematicIntro();
-    focusOnAnchor('center');
-  });
-
   document.querySelectorAll('[data-tour-next]').forEach(button => {
     button.addEventListener('click', (event) => {
       event.stopPropagation();
@@ -646,7 +647,7 @@ function closeAnchorPanel() {
   activeAnchor = null;
   isAnchorFocused = false;
   document.body.classList.remove('anchor-focused');
-  if (panelHadFocus) document.getElementById('start-installation-tour')?.focus({ preventScroll: true });
+  if (panelHadFocus) document.querySelector('.back-button')?.focus({ preventScroll: true });
   
   // Optionally animate back to saved position (or just let user continue from current position)
   // For now, we let user continue from the focused position - feels more natural
@@ -750,7 +751,6 @@ function init() {
     setupModelControls();
     setupProjectionControls();
     setupProjectionControlsRight();
-    setupVisualSettingsPanel();
     setupAnchorPoints();
   }
   
@@ -858,7 +858,7 @@ function createLighting() {
   scene.add(ambientLight);
   
   // TV screen glow
-  tvGlow = new THREE.PointLight(0xffffff, 0.3, 4, 2);
+  tvGlow = new THREE.PointLight(roomSettings.glowColor, roomSettings.tvGlow, roomSettings.glowReach, 2);
   tvGlow.position.set(0, 1.8, -CONFIG.room.depth / 2 + 0.5);
   scene.add(tvGlow);
 }
@@ -890,15 +890,18 @@ function createRoom() {
   scene.add(ceiling);
   
   // Wall material
-  const wallMat = new THREE.MeshBasicMaterial({
-    color: new THREE.Color(roomSettings.wallColor)
+  const wallMat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(roomSettings.wallColor),
+    emissive: new THREE.Color(roomSettings.wallColor),
+    emissiveIntensity: 1,
+    roughness: 1
   });
   
   // Back wall sits darker so the TV and acrylic panels hold focus.
   const backWallColor = new THREE.Color(roomSettings.wallColor).multiplyScalar(0.75);
-  const backWallMat = new THREE.MeshBasicMaterial({
-    color: backWallColor
-  });
+  const backWallMat = wallMat.clone();
+  backWallMat.color.copy(backWallColor);
+  backWallMat.emissive.copy(backWallColor);
   
   // Back wall (where TV is mounted) - 15% darker
   const backWallGeom = new THREE.PlaneGeometry(width, height);
@@ -930,6 +933,56 @@ function createRoom() {
   rightWall.rotation.y = -Math.PI / 2;
   walls.push(rightWall);
   scene.add(rightWall);
+  updateWallTexture();
+}
+
+function updateWallColors() {
+  const baseColor = new THREE.Color(roomSettings.wallColor);
+  walls.forEach(wall => {
+    const color = wall === backWall ? baseColor.clone().multiplyScalar(0.75) : baseColor;
+    wall.material.color.copy(color);
+    wall.material.emissive.copy(color);
+  });
+}
+
+function updateWallTexture() {
+  const previous = wallTextureMap;
+  let texture = null;
+  if (roomSettings.wallTexture !== 'smooth' && roomSettings.textureStrength > 0) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 256;
+    const context = canvas.getContext('2d');
+    const image = context.createImageData(256, 256);
+    let seed = 5831;
+    const random = () => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
+    for (let y = 0; y < 256; y++) {
+      for (let x = 0; x < 256; x++) {
+        const grain = random() - 0.5;
+        const pattern = roomSettings.wallTexture === 'concrete'
+          ? Math.sin(x * 0.09 + Math.sin(y * 0.04) * 2) * 0.18 + Math.sin(y * 0.15) * 0.1
+          : Math.sin(x * 0.18 + Math.sin(y * 0.11) * 3) * Math.cos(y * 0.13) * 0.2;
+        const value = Math.max(0, Math.min(255, 255 - (0.5 - grain * 0.6 - pattern) * roomSettings.textureStrength * 1.6));
+        const index = (y * 256 + x) * 4;
+        image.data[index] = image.data[index + 1] = image.data[index + 2] = value;
+        image.data[index + 3] = 255;
+      }
+    }
+    context.putImageData(image, 0, 0);
+    texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(roomSettings.textureScale, roomSettings.textureScale);
+    texture.colorSpace = THREE.SRGBColorSpace;
+  }
+  wallTextureMap = texture;
+  walls.forEach(wall => {
+    wall.material.map = texture;
+    wall.material.emissiveMap = texture;
+    wall.material.needsUpdate = true;
+  });
+  if (previous) previous.dispose();
 }
 
 // ============================================
@@ -1186,6 +1239,10 @@ function createSpeakers() {
 function createProjection() {
   // Initialize webcam projection handler (lower resolution for performance)
   webcamProjection = new WebcamProjection(240, 180);
+  Object.assign(webcamProjection.settings, {
+    threshold: 106, pixelSize: 0.085, pixelDensity: 790,
+    intensity: 0.7, pixelColor: '#ffffff', invert: false
+  });
   
   // On mobile, match right wall settings (invert: true) for consistent appearance
   // Use the instance's own mobile detection for consistency
@@ -1312,7 +1369,10 @@ function setupProjectionWebcam() {
 function createProjectionRight() {
   // Initialize webcam projection handler (lower resolution for performance)
   webcamProjectionRight = new WebcamProjection(240, 180);
-  webcamProjectionRight.setSetting('invert', true);
+  Object.assign(webcamProjectionRight.settings, {
+    threshold: 118, pixelSize: 0.125, pixelDensity: 745,
+    intensity: 0.65, pixelColor: '#ffffff', invert: true
+  });
   
   // Material for right wall
   projectionMaterialRight = new THREE.MeshBasicMaterial({
@@ -1947,6 +2007,22 @@ function setupRoomControls() {
       ambientLight.intensity = v;
     });
   }
+  for (const [id, key, lightKey, digits] of [
+    ['tvglow', 'tvGlow', 'intensity', 2],
+    ['glowreach', 'glowReach', 'distance', 1]
+  ]) {
+    const input = document.getElementById(`ctrl-${id}`);
+    if (!input) continue;
+    input.addEventListener('input', () => {
+      roomSettings[key] = Number(input.value);
+      tvGlow[lightKey] = roomSettings[key];
+      document.getElementById(`val-${id}`).textContent = roomSettings[key].toFixed(digits);
+    });
+  }
+  document.getElementById('ctrl-glowcolor')?.addEventListener('input', event => {
+    roomSettings.glowColor = event.target.value;
+    tvGlow.color.set(roomSettings.glowColor);
+  });
   
   // Wall color
   const wallCtrl = document.getElementById('ctrl-wallcolor');
@@ -1954,15 +2030,19 @@ function setupRoomControls() {
     wallCtrl.value = roomSettings.wallColor;
     wallCtrl.addEventListener('input', (e) => {
       roomSettings.wallColor = e.target.value;
-      const baseColor = new THREE.Color(e.target.value);
-      const darkColor = baseColor.clone().multiplyScalar(0.85); // 15% darker for back wall
-      walls.forEach(wall => {
-        if (wall === backWall) {
-          wall.material.color.copy(darkColor);
-        } else {
-          wall.material.color.copy(baseColor);
-        }
-      });
+      updateWallColors();
+    });
+  }
+  for (const [id, key, output] of [
+    ['walltexture', 'wallTexture', null],
+    ['texturestrength', 'textureStrength', 'val-texturestrength'],
+    ['texturescale', 'textureScale', 'val-texturescale']
+  ]) {
+    document.getElementById(`ctrl-${id}`)?.addEventListener('input', event => {
+      roomSettings[key] = key === 'wallTexture' ? event.target.value : Number(event.target.value);
+      if (output) document.getElementById(output).textContent = key === 'textureStrength'
+        ? `${roomSettings[key]}%` : String(roomSettings[key]);
+      updateWallTexture();
     });
   }
   
@@ -2232,226 +2312,6 @@ function applyTVSettings() {
   } catch (error) {
     console.warn('Could not update TV projection controls:', error);
   }
-}
-
-const PROJECTION_PRESET_KEY = 'calcam-projection-preset-v1';
-
-function getProjectionPreset() {
-  const wall = projection => {
-    const settings = projection.getSettings();
-    return {
-      threshold: settings.threshold,
-      pixelSize: settings.pixelSize,
-      pixelDensity: settings.pixelDensity,
-      brightness: settings.intensity,
-      color: settings.pixelColor,
-      invert: settings.invert
-    };
-  };
-  return {
-    leftWall: wall(webcamProjection),
-    rightWall: wall(webcamProjectionRight),
-    tv: {
-      threshold: tvSettings.threshold,
-      textDensity: tvSettings.density,
-      brightness: tvSettings.brightness,
-      invert: tvSettings.invert
-    }
-  };
-}
-
-function validateProjectionPreset(preset) {
-  const ranges = {
-    threshold: [0, 255],
-    pixelSize: [0.05, 0.5],
-    pixelDensity: [50, 800],
-    brightness: [0, 1],
-    textDensity: [0.5, 3]
-  };
-  // Expand presets saved while the walls used one shared control.
-  const normalized = preset?.walls
-    ? { leftWall: preset.walls, rightWall: preset.walls, tv: preset.tv }
-    : preset;
-  for (const section of ['leftWall', 'rightWall', 'tv']) {
-    const values = normalized[section];
-    if (!values || typeof values !== 'object' || Array.isArray(values)) throw new Error(`Missing ${section} settings.`);
-    const keys = section === 'tv'
-      ? ['threshold', 'textDensity', 'brightness']
-      : ['threshold', 'pixelSize', 'pixelDensity', 'brightness'];
-    for (const key of keys) {
-      const value = values[key];
-      const [min, max] = ranges[key];
-      if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max) {
-        throw new Error(`${section}.${key} must be between ${min} and ${max}.`);
-      }
-    }
-    if (typeof values.invert !== 'boolean') throw new Error(`${section}.invert must be true or false.`);
-    if (section !== 'tv' && !/^#[0-9a-f]{6}$/i.test(values.color)) {
-      throw new Error(`${section}.color must be a six-digit hex color.`);
-    }
-  }
-  return normalized;
-}
-
-function applyProjectionPreset(preset) {
-  const setInput = (id, value, eventName = 'input') => {
-    const input = document.getElementById(id);
-    if (input.type === 'checkbox') input.checked = value;
-    else input.value = value;
-    input.dispatchEvent(new Event(eventName, { bubbles: true }));
-  };
-  for (const [section, suffix] of [['leftWall', ''], ['rightWall', '-right']]) {
-    const values = preset[section];
-    setInput(`ctrl-threshold${suffix}`, values.threshold);
-    setInput(`ctrl-pixelsize${suffix}`, values.pixelSize);
-    setInput(`ctrl-pixeldensity${suffix}`, values.pixelDensity);
-    setInput(`ctrl-projintensity${suffix}`, values.brightness);
-    setInput(`ctrl-pixelcolor${suffix}`, values.color);
-    setInput(`ctrl-invert${suffix}`, values.invert, 'change');
-  }
-  setInput('ctrl-tv-threshold', preset.tv.threshold);
-  setInput('ctrl-tv-density', preset.tv.textDensity);
-  setInput('ctrl-tv-brightness', preset.tv.brightness);
-  setInput('ctrl-tv-invert', preset.tv.invert, 'change');
-}
-
-function setupVisualSettingsPanel() {
-  const toggle = document.getElementById('visual-settings-toggle');
-  const panel = document.getElementById('visual-settings-panel');
-  const close = document.getElementById('visual-settings-close');
-  if (!toggle || !panel || !close) return;
-
-  function setOpen(open) {
-    panel.hidden = !open;
-    toggle.setAttribute('aria-expanded', String(open));
-  }
-  toggle.addEventListener('click', () => setOpen(panel.hidden));
-  close.addEventListener('click', () => setOpen(false));
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !panel.hidden) setOpen(false);
-  });
-
-  const tabs = [...panel.querySelectorAll('[role="tab"]')];
-  for (const tab of tabs) {
-    tab.addEventListener('click', () => {
-      for (const item of tabs) {
-        const selected = item === tab;
-        item.setAttribute('aria-selected', String(selected));
-        document.getElementById(item.getAttribute('aria-controls')).hidden = !selected;
-      }
-    });
-  }
-
-  for (const [id, key, format] of [
-    ['threshold', 'threshold', value => String(value)],
-    ['density', 'density', value => value.toFixed(2)],
-    ['brightness', 'brightness', value => `${Math.round(value * 100)}%`]
-  ]) {
-    const input = document.getElementById(`ctrl-tv-${id}`);
-    const output = document.getElementById(`val-tv-${id}`);
-    input.addEventListener('input', () => {
-      tvSettings[key] = Number(input.value);
-      output.textContent = format(tvSettings[key]);
-      applyTVSettings();
-    });
-  }
-  document.getElementById('ctrl-tv-invert').addEventListener('change', (event) => {
-    tvSettings.invert = event.target.checked;
-    applyTVSettings();
-  });
-  applyTVSettings();
-
-  // Match both walls' controls to their live projection defaults.
-  for (const [projection, suffix] of [[webcamProjection, ''], [webcamProjectionRight, '-right']]) {
-    const settings = projection.getSettings();
-    document.getElementById(`ctrl-pixelcolor${suffix}`).value = settings.pixelColor;
-    document.getElementById(`ctrl-invert${suffix}`).checked = settings.invert;
-  }
-
-  const details = document.getElementById('visual-settings-json-details');
-  const editor = document.getElementById('visual-settings-json');
-  const copyButton = document.getElementById('visual-settings-copy');
-  const applyButton = document.getElementById('visual-settings-apply');
-  const lockButton = document.getElementById('visual-settings-lock');
-  const status = document.getElementById('visual-settings-status');
-  const controls = [...panel.querySelectorAll('.visual-settings-content input')];
-  let locked = false;
-  const currentJSON = () => JSON.stringify(getProjectionPreset(), null, 2);
-  const refreshEditor = () => { if (document.activeElement !== editor) editor.value = currentJSON(); };
-  const report = message => { status.textContent = message; };
-
-  function setLocked(value) {
-    locked = value;
-    controls.forEach(input => { input.disabled = value; });
-    editor.disabled = value;
-    applyButton.disabled = value;
-    lockButton.textContent = value ? 'UNLOCK SETTINGS' : 'LOCK SETTINGS';
-    lockButton.setAttribute('aria-pressed', String(value));
-  }
-
-  function applyEditor() {
-    const preset = validateProjectionPreset(JSON.parse(editor.value));
-    applyProjectionPreset(preset);
-    editor.value = currentJSON();
-  }
-
-  details.addEventListener('toggle', () => { if (details.open) refreshEditor(); });
-  panel.addEventListener('input', event => {
-    if (controls.includes(event.target)) refreshEditor();
-  });
-  panel.addEventListener('change', event => {
-    if (controls.includes(event.target)) refreshEditor();
-  });
-  copyButton.addEventListener('click', async () => {
-    const json = currentJSON();
-    editor.value = json;
-    try {
-      await navigator.clipboard.writeText(json);
-      report('Current settings copied.');
-    } catch {
-      editor.focus();
-      editor.select();
-      report('Select and copy the JSON above.');
-    }
-  });
-  applyButton.addEventListener('click', () => {
-    try {
-      applyEditor();
-      report('JSON settings applied.');
-    } catch (error) {
-      report(`Could not apply JSON: ${error.message}`);
-    }
-  });
-  lockButton.addEventListener('click', () => {
-    if (locked) {
-      try { localStorage.removeItem(PROJECTION_PRESET_KEY); } catch { /* session-only unlock */ }
-      setLocked(false);
-      report('Settings unlocked.');
-      return;
-    }
-    try {
-      if (details.open && editor.value.trim() && editor.value !== currentJSON()) applyEditor();
-      const json = currentJSON();
-      localStorage.setItem(PROJECTION_PRESET_KEY, json);
-      editor.value = json;
-      setLocked(true);
-      report('Settings locked and saved in this browser.');
-    } catch (error) {
-      report(`Could not lock settings: ${error.message}`);
-    }
-  });
-
-  try {
-    const saved = localStorage.getItem(PROJECTION_PRESET_KEY);
-    if (saved) {
-      applyProjectionPreset(validateProjectionPreset(JSON.parse(saved)));
-      setLocked(true);
-      report('Saved settings loaded.');
-    }
-  } catch (error) {
-    report(`Saved settings could not load: ${error.message}`);
-  }
-  refreshEditor();
 }
 
 // ============================================
